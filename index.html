@@ -78,8 +78,22 @@
         padding:14px;
       }
       .login-title{
-        display:flex; align-items:center; gap:10px;
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:10px;
         margin-bottom:10px;
+      }
+      .login-left{
+        display:flex;
+        align-items:center;
+        gap:10px;
+        min-width:0;
+      }
+      .lang-btn{
+        min-width:70px;
+        justify-content:center;
+        font-weight:700;
       }
       .logo{ width:34px; height:34px; }
       .login-title h1{
@@ -107,15 +121,12 @@
       }
 
       .icons{
-        display:grid;
-        grid-auto-flow:column;
-        grid-template-rows: repeat(6, 88px);
-        grid-auto-columns: 92px;
-        gap:8px;
-        align-content:start;
-        justify-content:start;
+        position:relative;
+        width:100%;
+        height:100%;
       }
       .icon{
+        position:absolute;
         width:92px;
         height:88px;
         display:flex;
@@ -210,6 +221,52 @@
         color:#fff;
       }
       .menu-sep{height:1px; background:#9a9a9a; margin:2px 0;}
+      /* Desktop context menu (Win98 style) */
+.ctx-menu{
+  position:absolute;
+  min-width:220px;
+  padding:2px;
+  z-index:9999;
+}
+.ctx-item{
+  width:100%;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:6px 8px;
+  background:transparent;
+  border:0;
+  font:inherit;
+  color:inherit;
+  cursor:pointer;
+  text-align:left;
+}
+.ctx-item:hover,
+.ctx-item:focus{
+  background:var(--select);
+  color:#fff;
+  outline:none;
+}
+.ctx-left{display:flex; align-items:center; gap:10px;}
+.ctx-sep{height:1px; background:#9a9a9a; margin:2px 0;}
+.ctx-check{
+  width:16px;
+  height:16px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:700;
+  opacity:.95;
+}
+.ctx-shortcut{opacity:.85; font-size:12px;}
+.ctx-item:hover .ctx-shortcut,
+.ctx-item:focus .ctx-shortcut{opacity:1;}
+
+@media (max-width: 720px){
+  .ctx-menu{min-width:200px;}
+  .ctx-item{padding:10px 10px;}
+}
 
       .window{ position:absolute; min-width:320px; min-height:220px; }
       .window .frame{height:100%; display:flex; flex-direction:column;}
@@ -299,36 +356,41 @@
       <div id="login">
         <div class="login-panel bevel">
           <div class="login-title">
-            <svg class="logo pixel" viewBox="0 0 16 16" aria-hidden="true">
-              <rect x="0" y="0" width="16" height="16" fill="#c0c0c0" />
-              <rect x="1" y="1" width="14" height="14" fill="#ffffff" />
-              <rect x="2" y="2" width="12" height="12" fill="#008080" />
-              <rect x="4" y="4" width="8" height="8" fill="#000080" />
-              <rect x="6" y="6" width="4" height="4" fill="#ffcc00" />
-            </svg>
-            <div>
-              <h1>BLISS 98</h1>
-              <p class="login-sub">Entre no sistema para acessar o desktop.</p>
+            <div class="login-left">
+              <svg class="logo pixel" viewBox="0 0 16 16" aria-hidden="true">
+                <rect x="0" y="0" width="16" height="16" fill="#c0c0c0" />
+                <rect x="1" y="1" width="14" height="14" fill="#ffffff" />
+                <rect x="2" y="2" width="12" height="12" fill="#008080" />
+                <rect x="4" y="4" width="8" height="8" fill="#000080" />
+                <rect x="6" y="6" width="4" height="4" fill="#ffcc00" />
+              </svg>
+              <div>
+                <h1>BLISS 98</h1>
+                <p class="login-sub" data-i18n="login.sub">Enter your name to login</p>
+              </div>
             </div>
+            <button id="langBtn" class="btn bevel lang-btn" type="button" aria-label="Language">
+              EN
+            </button>
           </div>
 
           <div class="bevel-in" style="padding:12px;">
             <div class="field-row">
-              <label for="username">Nome:</label>
-              <input id="username" class="bevel-in" type="text" autocomplete="name" placeholder="Digite seu nome" />
+              <label for="username" data-i18n="login.labelName">Name:</label>
+              <input id="username" class="bevel-in" type="text" autocomplete="name" placeholder="Enter your name" data-i18n-placeholder="login.placeholder" />
             </div>
 
             <div class="login-footer">
-              <div class="tiny">Dica: pressione <span class="kbd">Enter</span> para entrar. Seus dados ficam no seu navegador (localStorage).</div>
+              <div class="tiny" data-i18n="login.hint">Hint: Ignorance is BLISS</div>
               <div style="display:flex; gap:6px;">
-                <button id="clearProfile" class="btn bevel" type="button">Limpar</button>
-                <button id="enter" class="btn bevel" type="button"><strong>Entrar</strong></button>
+                <button id="clearProfile" class="btn bevel" type="button" data-i18n="login.clear">Clear</button>
+                <button id="enter" class="btn bevel" type="button"><strong data-i18n="login.enter">Enter</strong></button>
               </div>
             </div>
           </div>
 
           <div class="tiny" style="margin-top:10px; opacity:.9;">
-            © BLISS / DIEV — Bliss 98 (mock OS).
+            <span data-i18n="login.copyright">© BLISS / DIEV — Bliss 98 OS</span>
           </div>
         </div>
       </div>
@@ -367,6 +429,11 @@
           <div class="start-side"><span>BLISS 98</span></div>
           <div class="start-list" id="startList"></div>
         </div>
+
+        <!-- Desktop context menu -->
+        <div id="ctxMenu" class="ctx-menu bevel hidden" role="menu" aria-label="Context menu">
+          <!-- items injected by JS -->
+        </div>
       </div>
     </div>
 
@@ -380,7 +447,347 @@
         zTop: 10,
         activeWindowId: null,
         selectedIconId: null,
+        lang: 'en',
+        gridSnap: true,
       };
+
+      const ICON_POS_KEY = 'bliss98_icon_positions';
+      const ICON_SIZE = { w: 92, h: 88 };
+      const ICON_GAP = { x: 12, y: 8 };
+
+      function loadIconPositions(){
+        try{
+          const raw = localStorage.getItem(ICON_POS_KEY);
+          return raw ? JSON.parse(raw) : {};
+        } catch {
+          return {};
+        }
+      }
+
+      function saveIconPositions(pos){
+        try{
+          localStorage.setItem(ICON_POS_KEY, JSON.stringify(pos));
+        } catch {}
+      }
+
+      function defaultIconPos(index){
+        // Layout similar to the old grid: 6 rows then new column
+        const rows = 6;
+        const col = Math.floor(index / rows);
+        const row = index % rows;
+        return {
+          x: col * (ICON_SIZE.w + ICON_GAP.x),
+          y: row * (ICON_SIZE.h + ICON_GAP.y)
+        };
+      }
+
+      function clampIconPos(x, y){
+        const area = $('#desktopArea').getBoundingClientRect();
+        const maxX = Math.max(0, Math.floor(area.width - ICON_SIZE.w - 6));
+        const maxY = Math.max(0, Math.floor(area.height - ICON_SIZE.h - 6));
+        return {
+          x: clamp(Math.floor(x), 0, maxX),
+          y: clamp(Math.floor(y), 0, maxY)
+        };
+      }
+      const GRID_SNAP_KEY = 'bliss98_grid_snap';
+
+function loadGridSnap(){
+  try{
+    const raw = localStorage.getItem(GRID_SNAP_KEY);
+    if(raw === null) return true;
+    return raw === '1';
+  } catch {
+    return true;
+  }
+}
+
+function saveGridSnap(){
+  try{
+    localStorage.setItem(GRID_SNAP_KEY, state.gridSnap ? '1' : '0');
+  } catch {}
+}
+
+function snapToGrid(x, y){
+  const stepX = ICON_SIZE.w + ICON_GAP.x;
+  const stepY = ICON_SIZE.h + ICON_GAP.y;
+  const sx = Math.round(x / stepX) * stepX;
+  const sy = Math.round(y / stepY) * stepY;
+  return clampIconPos(sx, sy);
+}
+
+function arrangeIcons(){
+  const next = {};
+  APPS.forEach((app, idx) => {
+    next[app.id] = defaultIconPos(idx);
+  });
+  saveIconPositions(next);
+  renderIcons();
+}
+
+function resetIconPositions(){
+  try{ localStorage.removeItem(ICON_POS_KEY); } catch {}
+  renderIcons();
+}
+
+// Context menu state
+let ctxState = { open:false, target:'desktop', appId:null };
+
+function renderCtxMenu(){
+  const menu = $('#ctxMenu');
+  if(!menu) return;
+
+  const isIcon = ctxState.target === 'icon' && !!ctxState.appId;
+  const gridMark = state.gridSnap ? '✓' : '';
+
+  const items = [];
+  if(isIcon){
+    items.push({ action:'open', label:t('ctx.open') });
+    items.push({ sep:true });
+  }
+
+  items.push({ action:'arrange', label:t('ctx.arrange') });
+  items.push({ action:'grid', label:t('ctx.grid'), check:gridMark });
+  items.push({ sep:true });
+  items.push({ action:'settings', label:t('ctx.settings') });
+  items.push({ action:'language', label:t('ctx.language'), right: state.lang.toUpperCase() });
+  items.push({ action:'about', label:t('ctx.about') });
+  items.push({ sep:true });
+  items.push({ action:'logoff', label:t('ctx.logoff') });
+
+  menu.innerHTML = items.map(it => {
+    if(it.sep) return `<div class="ctx-sep"></div>`;
+    const check = it.check ? `<span class="ctx-check" aria-hidden="true">${it.check}</span>` : `<span class="ctx-check" aria-hidden="true"></span>`;
+    const right = it.right ? `<span class="ctx-shortcut">${it.right}</span>` : `<span class="ctx-shortcut"></span>`;
+    return `
+      <button class="ctx-item" type="button" role="menuitem" data-ctx-action="${it.action}">
+        <span class="ctx-left">${check}<span>${it.label}</span></span>
+        ${right}
+      </button>
+    `;
+  }).join('');
+}
+
+function positionCtxMenu(x, y){
+  const menu = $('#ctxMenu');
+  if(!menu) return;
+  const area = $('#desktopArea').getBoundingClientRect();
+
+  menu.classList.remove('hidden');
+  menu.style.left = '0px';
+  menu.style.top = '0px';
+  const rect = menu.getBoundingClientRect();
+
+  const maxX = area.left + area.width - rect.width - 6;
+  const maxY = area.top + area.height - rect.height - 6;
+
+  const px = clamp(x, area.left + 6, maxX);
+  const py = clamp(y, area.top + 6, area.top + area.height - rect.height - 6);
+
+  menu.style.left = (px - area.left) + 'px';
+  menu.style.top = (py - area.top) + 'px';
+}
+
+function openCtxMenu(x, y, target='desktop', appId=null){
+  if($('#desktop').classList.contains('hidden')) return;
+  ctxState = { open:true, target, appId };
+  closeStartMenu();
+  renderCtxMenu();
+  positionCtxMenu(x, y);
+  const menu = $('#ctxMenu');
+  if(menu){
+    menu.classList.remove('hidden');
+    const first = menu.querySelector('.ctx-item');
+    if(first) first.focus();
+  }
+}
+
+function closeCtxMenu(){
+  const menu = $('#ctxMenu');
+  if(!menu) return;
+  menu.classList.add('hidden');
+  ctxState = { open:false, target:'desktop', appId:null };
+}
+
+function handleCtxAction(action){
+  if(action === 'open' && ctxState.target === 'icon' && ctxState.appId){
+    openApp(ctxState.appId);
+  }
+  if(action === 'arrange') arrangeIcons();
+  if(action === 'grid'){
+    state.gridSnap = !state.gridSnap;
+    saveGridSnap();
+    renderCtxMenu();
+  }
+  if(action === 'settings') openApp('settings');
+  if(action === 'language') toggleLang();
+  if(action === 'about') openApp('about');
+  if(action === 'logoff'){
+    closeCtxMenu();
+    closeStartMenu();
+    showLogin();
+  }
+}
+
+// Long-press support (mobile/touch)
+function installLongPress(el, getTarget){
+  let timer = null;
+  let start = null;
+  const threshold = 8;
+  const delay = 520;
+
+  const clear = ()=>{
+    if(timer){ clearTimeout(timer); timer = null; }
+    start = null;
+  };
+
+  el.addEventListener('pointerdown', (e)=>{
+    if(e.pointerType === 'mouse' && e.button !== 0) return;
+    start = { x:e.clientX, y:e.clientY };
+    timer = setTimeout(()=>{
+      const tgt = getTarget ? getTarget() : { target:'desktop', appId:null };
+      openCtxMenu(e.clientX, e.clientY, tgt.target, tgt.appId);
+      clear();
+    }, delay);
+  });
+
+  el.addEventListener('pointermove', (e)=>{
+    if(!start || !timer) return;
+    const dx = e.clientX - start.x;
+    const dy = e.clientY - start.y;
+    if(Math.hypot(dx,dy) > threshold){
+      clear();
+    }
+  });
+
+  el.addEventListener('pointerup', clear);
+  el.addEventListener('pointercancel', clear);
+}
+
+      const I18N = {
+        en: {
+          'login.sub': 'Enter your name to login',
+          'login.labelName': 'Name:',
+          'login.placeholder': 'Enter your name',
+          'login.hint': 'Hint: Ignorance is BLISS',
+          'login.clear': 'Clear',
+          'login.enter': 'Enter',
+          'login.copyright': '© BLISS / DIEV — Bliss 98 OS',
+
+          'app.clothes': 'Clothes',
+          'app.music': 'Music',
+          'app.art': 'Art',
+          'app.games': 'Games',
+          'app.videos': 'Videos',
+          'app.about': 'About',
+          'app.contact': 'Contact',
+          'app.diev': 'Diev',
+          'app.settings': 'Settings',
+
+          'menu.logoff': 'Log off…',
+
+          'ctx.open': 'Open',
+          'ctx.arrange': 'Arrange icons',
+          'ctx.grid': 'Grid (snap)',
+          'ctx.settings': 'Settings',
+          'ctx.language': 'Language',
+          'ctx.about': 'About',
+          'ctx.logoff': 'Log off…',
+
+          'settings.title': 'Settings',
+          'settings.languageTab': 'Language',
+          'settings.languageDesc': 'Choose your language for Bliss 98.',
+          'settings.lang.en': 'English',
+          'settings.lang.pt': 'Português (BR)'
+        },
+        pt: {
+          'login.sub': 'Digite seu nome para entrar',
+          'login.labelName': 'Nome:',
+          'login.placeholder': 'Digite seu nome',
+          'login.hint': 'Dica: Ignorância é BLISS',
+          'login.clear': 'Limpar',
+          'login.enter': 'Entrar',
+          'login.copyright': '© BLISS / DIEV — Bliss 98 OS',
+
+          'app.clothes': 'Roupas',
+          'app.music': 'Música',
+          'app.art': 'Arte',
+          'app.games': 'Jogos',
+          'app.videos': 'Vídeos',
+          'app.about': 'Sobre',
+          'app.contact': 'Contato',
+          'app.diev': 'Diev',
+          'app.settings': 'Configurações',
+
+          'menu.logoff': 'Sair…',
+
+          'ctx.open': 'Abrir',
+          'ctx.arrange': 'Organizar ícones',
+          'ctx.grid': 'Grade (snap)',
+          'ctx.settings': 'Configurações',
+          'ctx.language': 'Idioma',
+          'ctx.about': 'Sobre',
+          'ctx.logoff': 'Sair…',
+
+          'settings.title': 'Configurações',
+          'settings.languageTab': 'Idioma',
+          'settings.languageDesc': 'Escolha o idioma do Bliss 98.',
+          'settings.lang.en': 'English',
+          'settings.lang.pt': 'Português (BR)'
+        }
+      };
+
+      function t(key){
+        return (I18N[state.lang] && I18N[state.lang][key]) || (I18N.en && I18N.en[key]) || key;
+      }
+
+      function applyI18n(){
+        // text nodes
+        $$('[data-i18n]').forEach(el => {
+          const key = el.getAttribute('data-i18n');
+          if(key) el.textContent = t(key);
+        });
+        // placeholders
+        $$('[data-i18n-placeholder]').forEach(el => {
+          const key = el.getAttribute('data-i18n-placeholder');
+          if(key) el.setAttribute('placeholder', t(key));
+        });
+
+        // Update language button label
+        const lb = $('#langBtn');
+        if(lb) lb.textContent = state.lang.toUpperCase();
+
+        // Re-render desktop UI labels
+        renderIcons();
+        renderStartMenu();
+        updateOpenWindowTitles();
+        renderTaskButtons();
+        renderCtxMenu();
+      }
+
+      function setLang(lang){
+        state.lang = (lang === 'pt') ? 'pt' : 'en';
+        localStorage.setItem('bliss98_lang', state.lang);
+        applyI18n();
+      }
+
+      function toggleLang(){
+        setLang(state.lang === 'en' ? 'pt' : 'en');
+      }
+
+      function updateOpenWindowTitles(){
+        // Update stored titles and the DOM titlebars
+        state.windows.forEach((w, id) => {
+          const app = APPS.find(a => a.id === id);
+          const title = app ? t(app.titleKey) : (w.titleKey ? t(w.titleKey) : id);
+          w.title = title;
+          const winEl = document.getElementById(`win_${id}`);
+          if(winEl){
+            const titleEl = winEl.querySelector('.title-left strong');
+            if(titleEl) titleEl.textContent = title;
+          }
+        });
+      }
 
       function iconSVG(type){
         const common = `viewBox="0 0 16 16" class="pixel" aria-hidden="true"`;
@@ -401,20 +808,23 @@
             return `<svg ${common}><rect x="1" y="3" width="14" height="10" fill="#fff" stroke="#000"/><path d="M1 4l7 5 7-5" fill="none" stroke="#000080" stroke-width="1"/></svg>`;
           case 'user':
             return `<svg ${common}><rect x="1" y="1" width="14" height="14" fill="#fff" stroke="#000"/><circle cx="8" cy="6" r="2" fill="#000080"/><path d="M4 13c1-2 7-2 8 0" stroke="#000080" fill="none"/></svg>`;
+          case 'settings':
+            return `<svg ${common}><rect x="1" y="1" width="14" height="14" fill="#fff" stroke="#000"/><circle cx="8" cy="8" r="3" fill="#c0c0c0" stroke="#000"/><path d="M8 2v2M8 12v2M2 8h2M12 8h2M3.5 3.5l1.4 1.4M11.1 11.1l1.4 1.4M12.5 3.5l-1.4 1.4M4.9 11.1l-1.4 1.4" stroke="#000080"/></svg>`;
           default:
             return `<svg ${common}><rect x="1" y="1" width="14" height="14" fill="#fff" stroke="#000"/><rect x="4" y="4" width="8" height="8" fill="#000080"/></svg>`;
         }
       }
 
       const APPS = [
-        { id:'clothes', title:'Clothes', icon:'folder' },
-        { id:'music', title:'Music', icon:'music' },
-        { id:'art', title:'Art', icon:'art' },
-        { id:'games', title:'Games', icon:'game' },
-        { id:'videos', title:'Videos', icon:'video' },
-        { id:'about', title:'About', icon:'info' },
-        { id:'contact', title:'Contact', icon:'mail' },
-        { id:'diev', title:'Diev', icon:'user' },
+        { id:'clothes', titleKey:'app.clothes', icon:'folder' },
+        { id:'music', titleKey:'app.music', icon:'music' },
+        { id:'art', titleKey:'app.art', icon:'art' },
+        { id:'games', titleKey:'app.games', icon:'game' },
+        { id:'videos', titleKey:'app.videos', icon:'video' },
+        { id:'about', titleKey:'app.about', icon:'info' },
+        { id:'contact', titleKey:'app.contact', icon:'mail' },
+        { id:'diev', titleKey:'app.diev', icon:'user' },
+        { id:'settings', titleKey:'app.settings', icon:'settings' },
       ];
 
       const CONTENT = {
@@ -432,12 +842,85 @@
           </div>
         `,
         clothes: () => `<h2>BLISS — Clothes</h2><p>Área de roupas (placeholder).</p>`,
-        music: () => `<h2>BLISS — Music</h2><p>Área de música (placeholder).</p>`,
+        music: () => `
+  <h2>BLISS — Music</h2>
+  <p style="margin:0 0 10px 0;">Listen everywhere:</p>
+
+  <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:12px;">
+    <a href="https://open.spotify.com/artist/6bjnHKF2yjUlKyYD15cNGq" target="_blank" rel="noreferrer" style="text-decoration:none; color:inherit;">
+      <div class="bevel" style="padding:10px; display:flex; flex-direction:column; align-items:center; gap:8px;">
+        <div class="bevel-in" style="width:44px; height:44px; display:flex; align-items:center; justify-content:center; padding:2px;">
+          <img class="pixel" src="/assets/icons/spotify.png" width="32" height="32" alt="Spotify" style="display:block;" />
+        </div>
+        <div style="font-weight:700; text-align:center;">Spotify</div>
+      </div>
+    </a>
+
+    <a href="https://music.youtube.com/channel/UCSjAU7hceaYUQPZml7HUFgA" target="_blank" rel="noreferrer" style="text-decoration:none; color:inherit;">
+      <div class="bevel" style="padding:10px; display:flex; flex-direction:column; align-items:center; gap:8px;">
+        <div class="bevel-in" style="width:44px; height:44px; display:flex; align-items:center; justify-content:center;">
+          <div class="pixel" style="width:32px; height:32px; background:#ff0000; border:1px solid #000;"></div>
+        </div>
+        <div style="font-weight:700; text-align:center;">YouTube Music</div>
+      </div>
+    </a>
+
+    <a href="https://music.apple.com/us/artist/diev/1586153318" target="_blank" rel="noreferrer" style="text-decoration:none; color:inherit;">
+      <div class="bevel" style="padding:10px; display:flex; flex-direction:column; align-items:center; gap:8px;">
+        <div class="bevel-in" style="width:44px; height:44px; display:flex; align-items:center; justify-content:center;">
+          <div class="pixel" style="width:32px; height:32px; background:#111111; border:1px solid #000;"></div>
+        </div>
+        <div style="font-weight:700; text-align:center;">Apple Music</div>
+      </div>
+    </a>
+
+    <a href="https://music.amazon.com.br/artists/B00F5I7CC6/diev" target="_blank" rel="noreferrer" style="text-decoration:none; color:inherit;">
+      <div class="bevel" style="padding:10px; display:flex; flex-direction:column; align-items:center; gap:8px;">
+        <div class="bevel-in" style="width:44px; height:44px; display:flex; align-items:center; justify-content:center;">
+          <div class="pixel" style="width:32px; height:32px; background:#00a8e1; border:1px solid #000;"></div>
+        </div>
+        <div style="font-weight:700; text-align:center;">Amazon Music</div>
+      </div>
+    </a>
+
+    <a href="https://soundcloud.com/die_v/tracks" target="_blank" rel="noreferrer" style="text-decoration:none; color:inherit;">
+      <div class="bevel" style="padding:10px; display:flex; flex-direction:column; align-items:center; gap:8px;">
+        <div class="bevel-in" style="width:44px; height:44px; display:flex; align-items:center; justify-content:center;">
+          <div class="pixel" style="width:32px; height:32px; background:#ff5500; border:1px solid #000;"></div>
+        </div>
+        <div style="font-weight:700; text-align:center;">SoundCloud</div>
+      </div>
+    </a>
+
+    <a href="https://www.deezer.com/en/artist/5170963" target="_blank" rel="noreferrer" style="text-decoration:none; color:inherit;">
+      <div class="bevel" style="padding:10px; display:flex; flex-direction:column; align-items:center; gap:8px;">
+        <div class="bevel-in" style="width:44px; height:44px; display:flex; align-items:center; justify-content:center;">
+          <div class="pixel" style="width:32px; height:32px; background:#7c3aed; border:1px solid #000;"></div>
+        </div>
+        <div style="font-weight:700; text-align:center;">Deezer</div>
+      </div>
+    </a>
+  </div>
+
+  <div class="hr98"></div>
+  <div class="tiny">Tip: you can replace the squares with real pixel icons later.</div>
+`,
         art: () => `<h2>BLISS — Art</h2><p>Galeria (placeholder).</p>`,
         games: () => `<h2>BLISS — Games</h2><p>Jogos (placeholder).</p>`,
         videos: () => `<h2>BLISS — Videos</h2><p>Vídeos (placeholder).</p>`,
         contact: () => `<h2>Contact</h2><p>Contato (placeholder).</p>`,
         diev: () => `<h2>Diev</h2><p>Bio/press (placeholder).</p>`,
+        settings: () => `
+          <h2 data-i18n="settings.title">Settings</h2>
+          <div class="card bevel">
+            <strong data-i18n="settings.languageTab">Language</strong>
+            <p style="margin:6px 0 10px 0;" data-i18n="settings.languageDesc">Choose your language for Bliss 98.</p>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <button class="btn bevel" type="button" data-set-lang="en"><span class="kbd" style="margin-right:6px;">EN</span><span data-i18n="settings.lang.en">English</span></button>
+              <button class="btn bevel" type="button" data-set-lang="pt"><span class="kbd" style="margin-right:6px;">PT</span><span data-i18n="settings.lang.pt">Português (BR)</span></button>
+            </div>
+          </div>
+        `,
       };
 
       function getDisplayTime(){
@@ -471,16 +954,48 @@
       function renderIcons(){
         const grid = $('#iconGrid');
         grid.innerHTML = '';
-        APPS.forEach(app => {
+
+        const saved = loadIconPositions();
+
+        APPS.forEach((app, idx) => {
           const el = document.createElement('div');
           el.className = 'icon';
           el.dataset.appId = app.id;
+
+          const def = defaultIconPos(idx);
+          const pos = (saved && saved[app.id]) ? saved[app.id] : def;
+          const clamped = clampIconPos(pos.x, pos.y);
+          el.style.left = clamped.x + 'px';
+          el.style.top = clamped.y + 'px';
+
           el.innerHTML = `
             <div class="pixel" style="width:34px;height:34px;display:flex;align-items:center;justify-content:center;">${iconSVG(app.icon)}</div>
-            <span>${app.title}</span>
+            <span>${t(app.titleKey)}</span>
           `;
-          el.addEventListener('click', (e)=>{ e.stopPropagation(); selectIcon(app.id); });
-          el.addEventListener('dblclick', (e)=>{ e.stopPropagation(); openApp(app.id); });
+
+          // Click select
+          el.addEventListener('click', (e)=>{
+            e.stopPropagation();
+            if(el.dataset.dragged === '1'){
+              // prevent post-drag click from changing selection unexpectedly
+              el.dataset.dragged = '0';
+              return;
+            }
+            selectIcon(app.id);
+          });
+
+          // Double click open
+          el.addEventListener('dblclick', (e)=>{
+            e.stopPropagation();
+            openApp(app.id);
+          });
+
+          makeIconDraggable(el);
+          el.addEventListener('contextmenu', (ev)=>{
+            ev.preventDefault();
+            openCtxMenu(ev.clientX, ev.clientY, 'icon', app.id);
+          });
+          installLongPress(el, ()=>({ target:'icon', appId: app.id }));
           grid.appendChild(el);
         });
       }
@@ -489,11 +1004,92 @@
         $$('.icon').forEach(i=>i.classList.toggle('selected', i.dataset.appId === id));
       }
 
+      function makeIconDraggable(iconEl){
+        let down = false;
+        let dragging = false;
+        let startX = 0, startY = 0;
+        let origX = 0, origY = 0;
+
+        const onDown = (e)=>{
+          if(e.button !== 0) return;
+          e.stopPropagation();
+          closeStartMenu();
+          selectIcon(iconEl.dataset.appId);
+
+          down = true;
+          dragging = false;
+          iconEl.dataset.dragged = '0';
+
+          startX = e.clientX;
+          startY = e.clientY;
+          origX = parseInt(iconEl.style.left || '0', 10);
+          origY = parseInt(iconEl.style.top || '0', 10);
+
+          document.addEventListener('mousemove', onMove);
+          document.addEventListener('mouseup', onUp);
+        };
+
+        const onMove = (e)=>{
+          if(!down) return;
+          const dx = e.clientX - startX;
+          const dy = e.clientY - startY;
+
+          if(!dragging && (Math.abs(dx) + Math.abs(dy) > 4)){
+            dragging = true;
+          }
+          if(!dragging) return;
+
+          const next = clampIconPos(origX + dx, origY + dy);
+          iconEl.style.left = next.x + 'px';
+          iconEl.style.top = next.y + 'px';
+        };
+
+        const onUp = ()=>{
+          if(!down) return;
+          down = false;
+
+          document.removeEventListener('mousemove', onMove);
+          document.removeEventListener('mouseup', onUp);
+
+          if(dragging){
+            iconEl.dataset.dragged = '1';
+
+            let x = parseInt(iconEl.style.left || '0', 10);
+            let y = parseInt(iconEl.style.top || '0', 10);
+
+            if(state.gridSnap){
+              const snapped = snapToGrid(x, y);
+              x = snapped.x;
+              y = snapped.y;
+              iconEl.style.left = x + 'px';
+              iconEl.style.top = y + 'px';
+            }
+
+            const saved = loadIconPositions();
+            saved[iconEl.dataset.appId] = { x, y };
+            saveIconPositions(saved);
+          }
+        };
+
+        iconEl.addEventListener('mousedown', onDown);
+      }
+
       $('#desktopArea').addEventListener('click', ()=>{
         state.selectedIconId = null;
         $$('.icon').forEach(i=>i.classList.remove('selected'));
         closeStartMenu();
+        closeCtxMenu();
       });
+
+      // Right-click / two-finger click on desktop
+      $('#desktopArea').addEventListener('contextmenu', (e)=>{
+        if($('#desktop').classList.contains('hidden')) return;
+        e.preventDefault();
+        openCtxMenu(e.clientX, e.clientY, 'desktop', null);
+      });
+
+      // Long-press on desktop (mobile/touch)
+      installLongPress($('#desktopArea'), ()=>({ target:'desktop', appId:null }));
 
       function renderStartMenu(){
         const list = $('#startList');
@@ -503,7 +1099,7 @@
           item.className = 'menu-item';
           item.innerHTML = `
             <div style="width:18px;height:18px;">${iconSVG(app.icon)}</div>
-            <div>${app.title}</div>
+            <div>${t(app.titleKey)}</div>
           `;
           item.addEventListener('click', ()=>{ openApp(app.id); closeStartMenu(); });
           list.appendChild(item);
@@ -515,7 +1111,7 @@
 
         const logout = document.createElement('div');
         logout.className = 'menu-item';
-        logout.innerHTML = `<div style="width:18px;height:18px;">${iconSVG('user')}</div><div>Log off…</div>`;
+        logout.innerHTML = `<div style="width:18px;height:18px;">${iconSVG('user')}</div><div>${t('menu.logoff')}</div>`;
         logout.addEventListener('click', ()=>{ closeStartMenu(); showLogin(); });
         list.appendChild(logout);
       }
@@ -559,7 +1155,8 @@
         const rect = defaultWindowRect();
         const wstate = {
           id: appId,
-          title: app.title,
+          title: t(app.titleKey),
+          titleKey: app.titleKey,
           icon: app.icon,
           minimized: false,
           left: rect.left,
@@ -776,11 +1373,12 @@
         if(!name){ $('#username').focus(); return; }
         setUser(name);
         showDesktop();
-        if(!state.windows.has('about')) openApp('about');
+        if(!state.windows.has('music')) openApp('music');
       }
 
       $('#enter').addEventListener('click', enter);
       $('#username').addEventListener('keydown', (e)=>{ if(e.key==='Enter') enter(); });
+      $('#langBtn').addEventListener('click', (e)=>{ e.preventDefault(); toggleLang(); });
 
       $('#clearProfile').addEventListener('click', ()=>{
         localStorage.removeItem('bliss98_user');
@@ -788,13 +1386,81 @@
         $('#username').focus();
       });
 
-      document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeStartMenu(); });
+      document.addEventListener('keydown', (e)=>{
+        if(e.key==='Escape'){
+          closeStartMenu();
+          closeCtxMenu();
+        }
+
+        // Keyboard context menu (Shift+F10)
+        if(e.shiftKey && e.key === 'F10'){
+          if($('#desktop').classList.contains('hidden')) return;
+          e.preventDefault();
+          const area = $('#desktopArea').getBoundingClientRect();
+          openCtxMenu(area.left + area.width/2, area.top + area.height/2, 'desktop', null);
+        }
+
+        // Basic keyboard navigation inside context menu
+        const menu = $('#ctxMenu');
+        if(menu && !menu.classList.contains('hidden')){
+          const items = Array.from(menu.querySelectorAll('.ctx-item'));
+          const idx = items.indexOf(document.activeElement);
+          if(e.key === 'ArrowDown'){
+            e.preventDefault();
+            const next = items[Math.min(items.length-1, Math.max(0, idx+1))] || items[0];
+            if(next) next.focus();
+          }
+          if(e.key === 'ArrowUp'){
+            e.preventDefault();
+            const prev = items[Math.max(0, idx-1)] || items[items.length-1];
+            if(prev) prev.focus();
+          }
+        }
+      });
+      document.addEventListener('click', (e)=>{
+        const btn = e.target.closest && e.target.closest('[data-set-lang]');
+        if(btn && btn.dataset && btn.dataset.setLang){
+          setLang(btn.dataset.setLang);
+        }
+
+        const ctxBtn = e.target.closest && e.target.closest('[data-ctx-action]');
+        if(ctxBtn && ctxBtn.dataset && ctxBtn.dataset.ctxAction){
+          e.preventDefault();
+          e.stopPropagation();
+          handleCtxAction(ctxBtn.dataset.ctxAction);
+          closeCtxMenu();
+        }
+      });
 
       (function init(){
+        const savedLang = localStorage.getItem('bliss98_lang') || 'en';
+        state.lang = (savedLang === 'pt') ? 'pt' : 'en';
+
         const saved = localStorage.getItem('bliss98_user');
         if(saved){ setUser(saved); $('#username').value = saved; }
+
+        state.gridSnap = loadGridSnap();
+
+        // Apply translations immediately (default is English)
+        applyI18n();
+
         showLogin();
-        document.addEventListener('click', ()=> closeStartMenu());
+        document.addEventListener('click', ()=>{ closeStartMenu(); closeCtxMenu(); });
+        const cm = $('#ctxMenu');
+        if(cm){
+          cm.addEventListener('click', (ev)=>{
+            const btn = ev.target.closest && ev.target.closest('[data-ctx-action]');
+            if(btn && btn.dataset && btn.dataset.ctxAction){
+              ev.preventDefault();
+              ev.stopPropagation();
+              handleCtxAction(btn.dataset.ctxAction);
+              closeCtxMenu();
+              return;
+            }
+            // Prevent clicks inside the menu from bubbling to the document closer
+            ev.stopPropagation();
+          });
+        }
       })();
     </script>
   </body>
