@@ -1047,71 +1047,142 @@ function installLongPress(el, getTarget){
       function makeIconDraggable(iconEl){
         let down = false;
         let dragging = false;
-        let startX = 0, startY = 0;
-        let origX = 0, origY = 0;
+        let pointerId = null;
 
-        const onDown = (e)=>{
-          if(e.button !== 0) return;
+        let startX = 0, startY = 0;
+        let group = [];
+        let startPositions = []; // { el, id, x, y }
+
+        // group bounds + allowed delta range
+        let dxMin = 0, dxMax = 0, dyMin = 0, dyMax = 0;
+
+        const onPointerDown = (e)=>{
+          if($('#desktop').classList.contains('hidden')) return;
+          if(e.pointerType === 'mouse' && e.button !== 0) return;
+
           e.stopPropagation();
           closeStartMenu();
-          selectIcon(iconEl.dataset.appId);
+          closeCtxMenu();
+
+          // If multiple icons are selected and the one we grabbed is selected, drag the whole group.
+          const selectedEls = $$('.icon.selected');
+          const isSelected = iconEl.classList.contains('selected');
+          if(selectedEls.length > 1 && isSelected){
+            group = selectedEls;
+          } else {
+            // Otherwise, single-select the grabbed icon
+            selectIcon(iconEl.dataset.appId);
+            group = [iconEl];
+          }
 
           down = true;
           dragging = false;
-          iconEl.dataset.dragged = '0';
-
+          pointerId = e.pointerId;
           startX = e.clientX;
           startY = e.clientY;
-          origX = parseInt(iconEl.style.left || '0', 10);
-          origY = parseInt(iconEl.style.top || '0', 10);
 
-          document.addEventListener('mousemove', onMove);
-          document.addEventListener('mouseup', onUp);
+          // Snapshot starting positions
+          startPositions = group.map(el => ({
+            el,
+            id: el.dataset.appId,
+            x: parseInt(el.style.left || '0', 10),
+            y: parseInt(el.style.top || '0', 10)
+          }));
+
+          // Compute bounds in desktop coordinates (relative to desktopArea)
+          const area = $('#desktopArea').getBoundingClientRect();
+          let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+          startPositions.forEach(p => {
+            minX = Math.min(minX, p.x);
+            minY = Math.min(minY, p.y);
+            maxX = Math.max(maxX, p.x + ICON_SIZE.w);
+            maxY = Math.max(maxY, p.y + ICON_SIZE.h);
+          });
+
+          // Right/bottom limits match `clampIconPos` behavior (icon right edge <= area.width - 6)
+          dxMin = -minX;
+          dxMax = (Math.floor(area.width - 6) - maxX);
+          dyMin = -minY;
+          dyMax = (Math.floor(area.height - 6) - maxY);
+
+          // Prevent accidental post-drag clicks
+          group.forEach(el => (el.dataset.dragged = '0'));
+
+          document.body.classList.add('dragging');
+          try{ iconEl.setPointerCapture(pointerId); } catch {}
+
+          iconEl.addEventListener('pointermove', onPointerMove);
+          iconEl.addEventListener('pointerup', onPointerUp);
+          iconEl.addEventListener('pointercancel', onPointerUp);
+
+          e.preventDefault();
         };
 
-        const onMove = (e)=>{
+        const onPointerMove = (e)=>{
           if(!down) return;
-          const dx = e.clientX - startX;
-          const dy = e.clientY - startY;
+          if(pointerId !== null && e.pointerId !== pointerId) return;
 
-          if(!dragging && (Math.abs(dx) + Math.abs(dy) > 4)){
+          const dxRaw = e.clientX - startX;
+          const dyRaw = e.clientY - startY;
+
+          if(!dragging && (Math.abs(dxRaw) + Math.abs(dyRaw) > 4)){
             dragging = true;
           }
           if(!dragging) return;
 
-          const next = clampIconPos(origX + dx, origY + dy);
-          iconEl.style.left = next.x + 'px';
-          iconEl.style.top = next.y + 'px';
+          // Clamp movement so the whole group stays within the desktop
+          const dx = clamp(dxRaw, dxMin, dxMax);
+          const dy = clamp(dyRaw, dyMin, dyMax);
+
+          // Move all icons in the group
+          startPositions.forEach(p => {
+            p.el.style.left = (p.x + dx) + 'px';
+            p.el.style.top = (p.y + dy) + 'px';
+          });
+
+          e.preventDefault();
         };
 
-        const onUp = ()=>{
+        const onPointerUp = (e)=>{
           if(!down) return;
-          down = false;
+          if(pointerId !== null && e.pointerId !== pointerId) return;
 
-          document.removeEventListener('mousemove', onMove);
-          document.removeEventListener('mouseup', onUp);
+          down = false;
+          try{ iconEl.releasePointerCapture(e.pointerId); } catch {}
+
+          iconEl.removeEventListener('pointermove', onPointerMove);
+          iconEl.removeEventListener('pointerup', onPointerUp);
+          iconEl.removeEventListener('pointercancel', onPointerUp);
+
+          document.body.classList.remove('dragging');
 
           if(dragging){
-            iconEl.dataset.dragged = '1';
-
-            let x = parseInt(iconEl.style.left || '0', 10);
-            let y = parseInt(iconEl.style.top || '0', 10);
-
-            if(state.gridSnap){
-              const snapped = snapToGrid(x, y);
-              x = snapped.x;
-              y = snapped.y;
-              iconEl.style.left = x + 'px';
-              iconEl.style.top = y + 'px';
-            }
-
+            // Save all moved positions in one write
             const saved = loadIconPositions();
-            saved[iconEl.dataset.appId] = { x, y };
+            startPositions.forEach(p => {
+              let x = parseInt(p.el.style.left || '0', 10);
+              let y = parseInt(p.el.style.top || '0', 10);
+
+              if(state.gridSnap){
+                const snapped = snapToGrid(x, y);
+                x = snapped.x;
+                y = snapped.y;
+                p.el.style.left = x + 'px';
+                p.el.style.top = y + 'px';
+              }
+
+              saved[p.id] = { x, y };
+              p.el.dataset.dragged = '1';
+            });
             saveIconPositions(saved);
           }
+
+          dragging = false;
+          pointerId = null;
         };
 
-        iconEl.addEventListener('mousedown', onDown);
+        // Pointer events handle mouse + touch + pen
+        iconEl.addEventListener('pointerdown', onPointerDown);
       }
 
       $('#desktopArea').addEventListener('click', ()=>{
