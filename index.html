@@ -1,0 +1,801 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BLISS 98</title>
+    <style>
+      :root{
+        --bg:#008080;
+        --shadow-dark:#0a0a0a;
+        --shadow-mid:#808080;
+        --shadow-light:#dfdfdf;
+        --shadow-white:#ffffff;
+        --title:#000080;
+        --title2:#1084d0;
+        --task:#c0c0c0;
+        --text:#000;
+        --menu:#c0c0c0;
+        --select:#000080;
+      }
+
+      html,body{height:100%;margin:0;}
+      body{
+        background:var(--bg);
+        color:var(--text);
+        font-family:"MS Sans Serif", Tahoma, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+        font-size:13px;
+        overflow:hidden;
+        user-select:none;
+      }
+      .hidden{display:none !important;}
+      .pixel{image-rendering:pixelated; image-rendering:crisp-edges;}
+
+      .bevel{
+        background:var(--task);
+        border-top:2px solid var(--shadow-white);
+        border-left:2px solid var(--shadow-white);
+        border-right:2px solid var(--shadow-dark);
+        border-bottom:2px solid var(--shadow-dark);
+        box-shadow: 1px 1px 0 0 var(--shadow-mid) inset, -1px -1px 0 0 var(--shadow-light) inset;
+      }
+      .bevel-in{
+        background:#fff;
+        border-top:2px solid var(--shadow-dark);
+        border-left:2px solid var(--shadow-dark);
+        border-right:2px solid var(--shadow-white);
+        border-bottom:2px solid var(--shadow-white);
+        box-shadow: 1px 1px 0 0 var(--shadow-mid) inset, -1px -1px 0 0 var(--shadow-light) inset;
+      }
+      .btn{
+        height:24px;
+        padding:0 10px;
+        display:inline-flex;
+        align-items:center;
+        gap:6px;
+        cursor:pointer;
+      }
+      .btn:active{ filter:brightness(0.97); }
+      .btn.pressed{
+        border-top:2px solid var(--shadow-dark);
+        border-left:2px solid var(--shadow-dark);
+        border-right:2px solid var(--shadow-white);
+        border-bottom:2px solid var(--shadow-white);
+        box-shadow: 1px 1px 0 0 var(--shadow-mid) inset, -1px -1px 0 0 var(--shadow-light) inset;
+      }
+
+      #app{height:100%;}
+
+      #login{
+        position:absolute; inset:0;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        background:radial-gradient(circle at 40% 35%, rgba(255,255,255,.15), rgba(255,255,255,0) 45%), var(--bg);
+      }
+      .login-panel{
+        width:min(520px, calc(100% - 32px));
+        padding:14px;
+      }
+      .login-title{
+        display:flex; align-items:center; gap:10px;
+        margin-bottom:10px;
+      }
+      .logo{ width:34px; height:34px; }
+      .login-title h1{
+        font-size:18px;
+        margin:0;
+        letter-spacing:0.2px;
+      }
+      .login-sub{opacity:.9;margin:2px 0 0 0;}
+      .field-row{display:flex; gap:8px; align-items:center; margin-top:12px;}
+      label{white-space:nowrap;}
+      input[type="text"]{
+        flex:1;
+        height:26px;
+        padding:0 8px;
+        outline:none;
+      }
+      .login-footer{display:flex; justify-content:space-between; align-items:center; margin-top:12px; gap:10px;}
+      .tiny{font-size:12px; opacity:.85; user-select:text;}
+      .kbd{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:12px; background:#fff; padding:1px 5px; border:1px solid #999;}
+
+      #desktop{ position:absolute; inset:0; }
+      .desktop-area{
+        position:absolute; inset:0 0 30px 0;
+        padding:10px;
+      }
+
+      .icons{
+        display:grid;
+        grid-auto-flow:column;
+        grid-template-rows: repeat(6, 88px);
+        grid-auto-columns: 92px;
+        gap:8px;
+        align-content:start;
+        justify-content:start;
+      }
+      .icon{
+        width:92px;
+        height:88px;
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        justify-content:flex-start;
+        gap:6px;
+        padding:6px 4px;
+        border:1px solid transparent;
+        cursor:default;
+      }
+      .icon.selected{
+        border:1px dotted rgba(255,255,255,0.9);
+        background:rgba(0,0,0,0.12);
+      }
+      .icon span{
+        color:#fff;
+        text-align:center;
+        line-height:1.1;
+        text-shadow: 1px 1px 0 rgba(0,0,0,0.65);
+        padding:1px 2px;
+        max-width:86px;
+        word-break:break-word;
+      }
+      .icon.selected span{
+        background:rgba(0,0,128,0.9);
+        outline:1px dotted #fff;
+      }
+
+      .taskbar{
+        position:absolute;
+        left:0; right:0; bottom:0;
+        height:30px;
+        display:flex;
+        align-items:center;
+        gap:6px;
+        padding:2px 6px;
+      }
+      .task-left{display:flex; align-items:center; gap:6px;}
+      .task-buttons{
+        display:flex;
+        align-items:center;
+        gap:4px;
+        flex:1;
+        overflow:auto hidden;
+        padding:0 6px;
+      }
+      .task-buttons::-webkit-scrollbar{height:8px;}
+      .task-buttons::-webkit-scrollbar-thumb{background:#9a9a9a;}
+      .task-right{ display:flex; align-items:center; gap:8px; }
+      .tray{
+        height:24px;
+        display:flex;
+        align-items:center;
+        padding:0 8px;
+      }
+      .clock{min-width:72px; text-align:right; font-variant-numeric:tabular-nums;}
+
+      .start-menu{
+        position:absolute;
+        left:6px;
+        bottom:32px;
+        width:260px;
+        display:flex;
+        padding:0;
+      }
+      .start-side{
+        width:30px;
+        background:linear-gradient(#000080, #000);
+        color:#fff;
+        display:flex;
+        align-items:flex-end;
+        justify-content:center;
+        padding:8px 0;
+      }
+      .start-side span{
+        writing-mode:vertical-rl;
+        transform:rotate(180deg);
+        letter-spacing:1px;
+        font-weight:700;
+      }
+      .start-list{ flex:1; padding:2px; }
+      .menu-item{
+        display:flex;
+        align-items:center;
+        gap:10px;
+        padding:6px 8px;
+        cursor:pointer;
+      }
+      .menu-item:hover{
+        background:var(--select);
+        color:#fff;
+      }
+      .menu-sep{height:1px; background:#9a9a9a; margin:2px 0;}
+
+      .window{ position:absolute; min-width:320px; min-height:220px; }
+      .window .frame{height:100%; display:flex; flex-direction:column;}
+      .titlebar{
+        height:22px;
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        padding:2px 3px;
+        background:linear-gradient(90deg, var(--title), var(--title2));
+        color:#fff;
+        cursor:move;
+      }
+      .title-left{display:flex; align-items:center; gap:6px;}
+      .title-left strong{font-weight:700; font-size:12px;}
+      .title-controls{display:flex; gap:4px;}
+      .wctl{
+        width:18px; height:18px;
+        display:flex; align-items:center; justify-content:center;
+        cursor:pointer;
+        font-size:12px;
+        line-height:1;
+      }
+      .menubar{
+        height:22px;
+        display:flex;
+        align-items:center;
+        gap:14px;
+        padding:0 8px;
+        background:var(--task);
+        border-bottom:1px solid #9a9a9a;
+        user-select:none;
+      }
+      .menubar span{cursor:default;}
+      .content{
+        flex:1;
+        padding:10px;
+        overflow:auto;
+        background:#fff;
+        color:#000;
+        user-select:text;
+      }
+      .content h2{margin:0 0 8px 0; font-size:16px;}
+      .content p{margin:0 0 10px 0; line-height:1.35;}
+      .content .card{ padding:10px; margin:10px 0; }
+      .content a{color:#0000ee;}
+      .statusbar{
+        height:22px;
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        padding:0 8px;
+        background:var(--task);
+        border-top:1px solid #9a9a9a;
+        font-size:12px;
+      }
+
+      .resize{
+        position:absolute;
+        width:14px; height:14px;
+        right:2px; bottom:2px;
+        cursor:nwse-resize;
+        background:conic-gradient(from 225deg, #0000 0 25%, #666 0 35%, #0000 0 50%, #666 0 60%, #0000 0 75%, #666 0 85%, #0000 0 100%);
+        opacity:.55;
+      }
+
+      .hr98{height:1px; background:#b0b0b0; border-bottom:1px solid #fff; margin:10px 0;}
+      .grid2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+      .list98{padding-left:18px; margin:0;}
+      .tag{
+        display:inline-block;
+        padding:1px 6px;
+        border:1px solid #999;
+        background:#f2f2f2;
+        margin-right:6px;
+        font-size:12px;
+      }
+
+      @media (max-width: 720px){
+        .icons{grid-template-rows: repeat(5, 88px);}
+        .window{min-width:280px;}
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <div id="login">
+        <div class="login-panel bevel">
+          <div class="login-title">
+            <svg class="logo pixel" viewBox="0 0 16 16" aria-hidden="true">
+              <rect x="0" y="0" width="16" height="16" fill="#c0c0c0" />
+              <rect x="1" y="1" width="14" height="14" fill="#ffffff" />
+              <rect x="2" y="2" width="12" height="12" fill="#008080" />
+              <rect x="4" y="4" width="8" height="8" fill="#000080" />
+              <rect x="6" y="6" width="4" height="4" fill="#ffcc00" />
+            </svg>
+            <div>
+              <h1>BLISS 98</h1>
+              <p class="login-sub">Entre no sistema para acessar o desktop.</p>
+            </div>
+          </div>
+
+          <div class="bevel-in" style="padding:12px;">
+            <div class="field-row">
+              <label for="username">Nome:</label>
+              <input id="username" class="bevel-in" type="text" autocomplete="name" placeholder="Digite seu nome" />
+            </div>
+
+            <div class="login-footer">
+              <div class="tiny">Dica: pressione <span class="kbd">Enter</span> para entrar. Seus dados ficam no seu navegador (localStorage).</div>
+              <div style="display:flex; gap:6px;">
+                <button id="clearProfile" class="btn bevel" type="button">Limpar</button>
+                <button id="enter" class="btn bevel" type="button"><strong>Entrar</strong></button>
+              </div>
+            </div>
+          </div>
+
+          <div class="tiny" style="margin-top:10px; opacity:.9;">
+            © BLISS / DIEV — Bliss 98 (mock OS).
+          </div>
+        </div>
+      </div>
+
+      <div id="desktop" class="hidden">
+        <div class="desktop-area" id="desktopArea">
+          <div class="icons" id="iconGrid"></div>
+          <div id="windows"></div>
+        </div>
+
+        <div class="taskbar bevel" id="taskbar">
+          <div class="task-left">
+            <div id="startBtn" class="btn bevel" title="Menu">
+              <svg class="pixel" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+                <rect x="0" y="0" width="16" height="16" fill="#000080" />
+                <rect x="2" y="2" width="5" height="5" fill="#ffcc00" />
+                <rect x="9" y="2" width="5" height="5" fill="#00ff99" />
+                <rect x="2" y="9" width="5" height="5" fill="#ff6699" />
+                <rect x="9" y="9" width="5" height="5" fill="#66ccff" />
+              </svg>
+              <strong>Bliss</strong>
+            </div>
+          </div>
+
+          <div class="task-buttons" id="taskButtons"></div>
+
+          <div class="task-right">
+            <div class="tray bevel">
+              <span id="who" style="margin-right:10px;"></span>
+              <span class="clock" id="clock"></span>
+            </div>
+          </div>
+        </div>
+
+        <div id="startMenu" class="start-menu bevel hidden" role="menu" aria-label="Menu Bliss">
+          <div class="start-side"><span>BLISS 98</span></div>
+          <div class="start-list" id="startList"></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const $ = (sel, root=document) => root.querySelector(sel);
+      const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+
+      const state = {
+        user: null,
+        windows: new Map(),
+        zTop: 10,
+        activeWindowId: null,
+        selectedIconId: null,
+      };
+
+      function iconSVG(type){
+        const common = `viewBox="0 0 16 16" class="pixel" aria-hidden="true"`;
+        switch(type){
+          case 'folder':
+            return `<svg ${common}><rect width="16" height="16" fill="none"/><path d="M1 4h6l1 2h7v8H1z" fill="#ffcc66" stroke="#000" stroke-width="1"/><path d="M1 4h6l1 2H1z" fill="#ffd88a" stroke="#000" stroke-width="1"/></svg>`;
+          case 'music':
+            return `<svg ${common}><rect x="1" y="1" width="14" height="14" fill="#fff" stroke="#000"/><path d="M10 3v7.5a2 2 0 1 1-1-1.7V5h-3V3z" fill="#000080"/></svg>`;
+          case 'art':
+            return `<svg ${common}><rect x="1" y="1" width="14" height="14" fill="#fff" stroke="#000"/><rect x="3" y="3" width="10" height="10" fill="#c0c0c0" stroke="#000"/><path d="M4 11l2-2 2 2 2-3 3 3" stroke="#000080" stroke-width="1" fill="none"/></svg>`;
+          case 'game':
+            return `<svg ${common}><rect x="2" y="5" width="12" height="7" rx="2" fill="#c0c0c0" stroke="#000"/><rect x="5" y="7" width="1" height="3" fill="#000"/><rect x="4" y="8" width="3" height="1" fill="#000"/><circle cx="11" cy="8" r="1" fill="#ff3366"/><circle cx="12.8" cy="9.5" r="1" fill="#66ccff"/></svg>`;
+          case 'video':
+            return `<svg ${common}><rect x="1" y="3" width="12" height="10" fill="#fff" stroke="#000"/><path d="M13 6l2-1v6l-2-1z" fill="#000"/></svg>`;
+          case 'info':
+            return `<svg ${common}><rect x="1" y="1" width="14" height="14" fill="#fff" stroke="#000"/><circle cx="8" cy="5" r="1" fill="#000"/><rect x="7" y="7" width="2" height="6" fill="#000080"/></svg>`;
+          case 'mail':
+            return `<svg ${common}><rect x="1" y="3" width="14" height="10" fill="#fff" stroke="#000"/><path d="M1 4l7 5 7-5" fill="none" stroke="#000080" stroke-width="1"/></svg>`;
+          case 'user':
+            return `<svg ${common}><rect x="1" y="1" width="14" height="14" fill="#fff" stroke="#000"/><circle cx="8" cy="6" r="2" fill="#000080"/><path d="M4 13c1-2 7-2 8 0" stroke="#000080" fill="none"/></svg>`;
+          default:
+            return `<svg ${common}><rect x="1" y="1" width="14" height="14" fill="#fff" stroke="#000"/><rect x="4" y="4" width="8" height="8" fill="#000080"/></svg>`;
+        }
+      }
+
+      const APPS = [
+        { id:'clothes', title:'Clothes', icon:'folder' },
+        { id:'music', title:'Music', icon:'music' },
+        { id:'art', title:'Art', icon:'art' },
+        { id:'games', title:'Games', icon:'game' },
+        { id:'videos', title:'Videos', icon:'video' },
+        { id:'about', title:'About', icon:'info' },
+        { id:'contact', title:'Contact', icon:'mail' },
+        { id:'diev', title:'Diev', icon:'user' },
+      ];
+
+      const CONTENT = {
+        about: () => `
+          <h2>About — BLISS 98</h2>
+          <p><strong>BLISS 98</strong> é um site que simula um sistema operacional estilo Windows 98.</p>
+          <div class="card bevel">
+            <strong>O que tem aqui</strong>
+            <ul class="list98">
+              <li>Login com nome</li>
+              <li>Desktop com ícones</li>
+              <li>Taskbar + Menu Bliss</li>
+              <li>Janelas arrastáveis, minimizáveis e redimensionáveis</li>
+            </ul>
+          </div>
+        `,
+        clothes: () => `<h2>BLISS — Clothes</h2><p>Área de roupas (placeholder).</p>`,
+        music: () => `<h2>BLISS — Music</h2><p>Área de música (placeholder).</p>`,
+        art: () => `<h2>BLISS — Art</h2><p>Galeria (placeholder).</p>`,
+        games: () => `<h2>BLISS — Games</h2><p>Jogos (placeholder).</p>`,
+        videos: () => `<h2>BLISS — Videos</h2><p>Vídeos (placeholder).</p>`,
+        contact: () => `<h2>Contact</h2><p>Contato (placeholder).</p>`,
+        diev: () => `<h2>Diev</h2><p>Bio/press (placeholder).</p>`,
+      };
+
+      function getDisplayTime(){
+        const d = new Date();
+        const hh = String(d.getHours()).padStart(2,'0');
+        const mm = String(d.getMinutes()).padStart(2,'0');
+        return `${hh}:${mm}`;
+      }
+      function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
+
+      function setUser(name){
+        state.user = name;
+        localStorage.setItem('bliss98_user', name);
+        $('#who').textContent = name ? name : '';
+      }
+
+      function showDesktop(){
+        $('#login').classList.add('hidden');
+        $('#desktop').classList.remove('hidden');
+        $('#username').blur();
+        renderIcons();
+        renderStartMenu();
+        tickClock();
+      }
+      function showLogin(){
+        $('#desktop').classList.add('hidden');
+        $('#login').classList.remove('hidden');
+        $('#username').focus();
+      }
+
+      function renderIcons(){
+        const grid = $('#iconGrid');
+        grid.innerHTML = '';
+        APPS.forEach(app => {
+          const el = document.createElement('div');
+          el.className = 'icon';
+          el.dataset.appId = app.id;
+          el.innerHTML = `
+            <div class="pixel" style="width:34px;height:34px;display:flex;align-items:center;justify-content:center;">${iconSVG(app.icon)}</div>
+            <span>${app.title}</span>
+          `;
+          el.addEventListener('click', (e)=>{ e.stopPropagation(); selectIcon(app.id); });
+          el.addEventListener('dblclick', (e)=>{ e.stopPropagation(); openApp(app.id); });
+          grid.appendChild(el);
+        });
+      }
+      function selectIcon(id){
+        state.selectedIconId = id;
+        $$('.icon').forEach(i=>i.classList.toggle('selected', i.dataset.appId === id));
+      }
+
+      $('#desktopArea').addEventListener('click', ()=>{
+        state.selectedIconId = null;
+        $$('.icon').forEach(i=>i.classList.remove('selected'));
+        closeStartMenu();
+      });
+
+      function renderStartMenu(){
+        const list = $('#startList');
+        list.innerHTML = '';
+        APPS.forEach(app => {
+          const item = document.createElement('div');
+          item.className = 'menu-item';
+          item.innerHTML = `
+            <div style="width:18px;height:18px;">${iconSVG(app.icon)}</div>
+            <div>${app.title}</div>
+          `;
+          item.addEventListener('click', ()=>{ openApp(app.id); closeStartMenu(); });
+          list.appendChild(item);
+        });
+
+        const sep = document.createElement('div');
+        sep.className = 'menu-sep';
+        list.appendChild(sep);
+
+        const logout = document.createElement('div');
+        logout.className = 'menu-item';
+        logout.innerHTML = `<div style="width:18px;height:18px;">${iconSVG('user')}</div><div>Log off…</div>`;
+        logout.addEventListener('click', ()=>{ closeStartMenu(); showLogin(); });
+        list.appendChild(logout);
+      }
+
+      function toggleStartMenu(){
+        const menu = $('#startMenu');
+        const btn = $('#startBtn');
+        const isOpen = !menu.classList.contains('hidden');
+        if(isOpen) closeStartMenu();
+        else { menu.classList.remove('hidden'); btn.classList.add('pressed'); }
+      }
+      function closeStartMenu(){
+        $('#startMenu').classList.add('hidden');
+        $('#startBtn').classList.remove('pressed');
+      }
+      $('#startBtn').addEventListener('click', (e)=>{ e.stopPropagation(); toggleStartMenu(); });
+
+      function defaultWindowRect(){
+        const area = $('#desktopArea').getBoundingClientRect();
+        const w = clamp(Math.round(area.width * 0.56), 320, 720);
+        const h = clamp(Math.round(area.height * 0.58), 240, 640);
+        const left = Math.round((area.width - w) * (0.18 + Math.random()*0.18));
+        const top = Math.round((area.height - h) * (0.12 + Math.random()*0.18));
+        return { left, top, width:w, height:h };
+      }
+
+      function openApp(appId){
+        const app = APPS.find(a=>a.id===appId);
+        if(!app) return;
+
+        if(state.windows.has(appId)){
+          const w = state.windows.get(appId);
+          w.minimized = false;
+          const el = document.getElementById(`win_${appId}`);
+          if(el) el.classList.remove('hidden');
+          focusWindow(appId);
+          renderTaskButtons();
+          return;
+        }
+
+        const rect = defaultWindowRect();
+        const wstate = {
+          id: appId,
+          title: app.title,
+          icon: app.icon,
+          minimized: false,
+          left: rect.left,
+          top: rect.top,
+          width: rect.width,
+          height: rect.height,
+          z: ++state.zTop,
+        };
+        state.windows.set(appId, wstate);
+        createWindowElement(wstate);
+        focusWindow(appId);
+        renderTaskButtons();
+      }
+
+      function closeApp(appId){
+        state.windows.delete(appId);
+        const el = document.getElementById(`win_${appId}`);
+        if(el) el.remove();
+        if(state.activeWindowId === appId) state.activeWindowId = null;
+        renderTaskButtons();
+      }
+      function minimizeApp(appId){
+        const w = state.windows.get(appId);
+        if(!w) return;
+        w.minimized = true;
+        const el = document.getElementById(`win_${appId}`);
+        if(el) el.classList.add('hidden');
+        if(state.activeWindowId === appId) state.activeWindowId = null;
+        renderTaskButtons();
+      }
+
+      function focusWindow(appId){
+        const w = state.windows.get(appId);
+        if(!w) return;
+        w.z = ++state.zTop;
+        state.activeWindowId = appId;
+        const el = document.getElementById(`win_${appId}`);
+        if(el){
+          el.style.zIndex = String(w.z);
+          $$('.window').forEach(winEl=>{
+            winEl.dataset.active = (winEl.id === `win_${appId}`) ? '1' : '0';
+            const tb = winEl.querySelector('.titlebar');
+            if(tb) tb.style.filter = (winEl.dataset.active==='1') ? 'none' : 'grayscale(0.35) brightness(0.9)';
+          });
+        }
+        renderTaskButtons();
+      }
+
+      function createWindowElement(wstate){
+        const appId = wstate.id;
+        const el = document.createElement('div');
+        el.className = 'window';
+        el.id = `win_${appId}`;
+        el.style.left = wstate.left + 'px';
+        el.style.top = wstate.top + 'px';
+        el.style.width = wstate.width + 'px';
+        el.style.height = wstate.height + 'px';
+        el.style.zIndex = String(wstate.z);
+
+        const bodyHTML = (CONTENT[appId] ? CONTENT[appId]() : `<h2>${wstate.title}</h2><p>Sem conteúdo.</p>`);
+
+        el.innerHTML = `
+          <div class="frame bevel">
+            <div class="titlebar" data-drag="1">
+              <div class="title-left">
+                <span style="width:16px;height:16px;display:inline-flex;">${iconSVG(wstate.icon)}</span>
+                <strong>${wstate.title}</strong>
+              </div>
+              <div class="title-controls">
+                <div class="wctl bevel" title="Minimizar" data-action="min">_</div>
+                <div class="wctl bevel" title="Fechar" data-action="close">×</div>
+              </div>
+            </div>
+            <div class="menubar"><span>File</span><span>Edit</span><span>View</span><span>Help</span></div>
+            <div class="content">${bodyHTML}</div>
+            <div class="statusbar"><span>Ready</span><span>BLISS 98</span></div>
+          </div>
+          <div class="resize" title="Resize"></div>
+        `;
+
+        el.addEventListener('mousedown', (e)=>{ e.stopPropagation(); focusWindow(appId); closeStartMenu(); });
+        el.addEventListener('click', (e)=>{
+          const act = e.target?.dataset?.action;
+          if(!act) return;
+          e.stopPropagation();
+          if(act==='close') closeApp(appId);
+          if(act==='min') minimizeApp(appId);
+        });
+
+        makeDraggable(el, appId);
+        makeResizable(el, appId);
+
+        $('#windows').appendChild(el);
+      }
+
+      function makeDraggable(winEl, appId){
+        const titlebar = winEl.querySelector('[data-drag="1"]');
+        if(!titlebar) return;
+        let dragging = false;
+        let startX=0, startY=0, startL=0, startT=0;
+
+        const onDown = (e)=>{
+          if(e.button !== 0) return;
+          if(e.target?.dataset?.action) return;
+          dragging = true;
+          const rect = winEl.getBoundingClientRect();
+          startX = e.clientX; startY = e.clientY;
+          startL = rect.left; startT = rect.top;
+          document.addEventListener('mousemove', onMove);
+          document.addEventListener('mouseup', onUp);
+        };
+
+        const onMove = (e)=>{
+          if(!dragging) return;
+          const area = $('#desktopArea').getBoundingClientRect();
+          const dx = e.clientX - startX;
+          const dy = e.clientY - startY;
+          const newL = clamp(startL + dx - area.left, 0, area.width - 80);
+          const newT = clamp(startT + dy - area.top, 0, area.height - 60);
+          winEl.style.left = newL + 'px';
+          winEl.style.top = newT + 'px';
+          const w = state.windows.get(appId);
+          if(w){ w.left = newL; w.top = newT; }
+        };
+
+        const onUp = ()=>{
+          dragging = false;
+          document.removeEventListener('mousemove', onMove);
+          document.removeEventListener('mouseup', onUp);
+        };
+
+        titlebar.addEventListener('mousedown', onDown);
+      }
+
+      function makeResizable(winEl, appId){
+        const handle = winEl.querySelector('.resize');
+        if(!handle) return;
+        let resizing = false;
+        let startX=0, startY=0, startW=0, startH=0;
+
+        const onDown = (e)=>{
+          if(e.button !== 0) return;
+          resizing = true;
+          const rect = winEl.getBoundingClientRect();
+          startX = e.clientX; startY = e.clientY;
+          startW = rect.width; startH = rect.height;
+          document.addEventListener('mousemove', onMove);
+          document.addEventListener('mouseup', onUp);
+        };
+
+        const onMove = (e)=>{
+          if(!resizing) return;
+          const dx = e.clientX - startX;
+          const dy = e.clientY - startY;
+          const newW = clamp(startW + dx, 280, 920);
+          const newH = clamp(startH + dy, 200, 780);
+          winEl.style.width = newW + 'px';
+          winEl.style.height = newH + 'px';
+          const w = state.windows.get(appId);
+          if(w){ w.width = newW; w.height = newH; }
+        };
+
+        const onUp = ()=>{
+          resizing = false;
+          document.removeEventListener('mousemove', onMove);
+          document.removeEventListener('mouseup', onUp);
+        };
+
+        handle.addEventListener('mousedown', onDown);
+      }
+
+      function renderTaskButtons(){
+        const host = $('#taskButtons');
+        host.innerHTML = '';
+        const wins = Array.from(state.windows.values()).sort((a,b)=>a.title.localeCompare(b.title));
+        wins.forEach(w => {
+          const b = document.createElement('div');
+          b.className = 'btn bevel';
+          const isActive = (state.activeWindowId === w.id && !w.minimized);
+          if(isActive) b.classList.add('pressed');
+          b.style.maxWidth = '240px';
+          b.style.overflow = 'hidden';
+          b.style.whiteSpace = 'nowrap';
+          b.style.textOverflow = 'ellipsis';
+          b.innerHTML = `
+            <span style="width:16px;height:16px;display:inline-flex;">${iconSVG(w.icon)}</span>
+            <span>${w.title}</span>
+          `;
+          b.addEventListener('click', (e)=>{
+            e.stopPropagation();
+            closeStartMenu();
+            if(w.minimized){
+              w.minimized = false;
+              const el = document.getElementById(`win_${w.id}`);
+              if(el) el.classList.remove('hidden');
+              focusWindow(w.id);
+            } else if(state.activeWindowId === w.id){
+              minimizeApp(w.id);
+            } else {
+              focusWindow(w.id);
+            }
+          });
+          host.appendChild(b);
+        });
+      }
+
+      function tickClock(){
+        $('#clock').textContent = getDisplayTime();
+        setTimeout(tickClock, 1000);
+      }
+
+      function enter(){
+        const name = $('#username').value.trim();
+        if(!name){ $('#username').focus(); return; }
+        setUser(name);
+        showDesktop();
+        if(!state.windows.has('about')) openApp('about');
+      }
+
+      $('#enter').addEventListener('click', enter);
+      $('#username').addEventListener('keydown', (e)=>{ if(e.key==='Enter') enter(); });
+
+      $('#clearProfile').addEventListener('click', ()=>{
+        localStorage.removeItem('bliss98_user');
+        $('#username').value = '';
+        $('#username').focus();
+      });
+
+      document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeStartMenu(); });
+
+      (function init(){
+        const saved = localStorage.getItem('bliss98_user');
+        if(saved){ setUser(saved); $('#username').value = saved; }
+        showLogin();
+        document.addEventListener('click', ()=> closeStartMenu());
+      })();
+    </script>
+  </body>
+</html>
