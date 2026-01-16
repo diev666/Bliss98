@@ -279,6 +279,7 @@
         background:linear-gradient(90deg, var(--title), var(--title2));
         color:#fff;
         cursor:move;
+        touch-action:none;
       }
       .title-left{display:flex; align-items:center; gap:6px;}
       .title-left strong{font-weight:700; font-size:12px;}
@@ -331,6 +332,7 @@
         cursor:nwse-resize;
         background:conic-gradient(from 225deg, #0000 0 25%, #666 0 35%, #0000 0 50%, #666 0 60%, #0000 0 75%, #666 0 85%, #0000 0 100%);
         opacity:.55;
+        touch-action:none;
       }
 
       .hr98{height:1px; background:#b0b0b0; border-bottom:1px solid #fff; margin:10px 0;}
@@ -1255,77 +1257,133 @@ function installLongPress(el, getTarget){
       function makeDraggable(winEl, appId){
         const titlebar = winEl.querySelector('[data-drag="1"]');
         if(!titlebar) return;
-        let dragging = false;
-        let startX=0, startY=0, startL=0, startT=0;
 
-        const onDown = (e)=>{
-          if(e.button !== 0) return;
-          if(e.target?.dataset?.action) return;
+        let dragging = false;
+        let pointerId = null;
+        let startX = 0, startY = 0, startL = 0, startT = 0;
+
+        const onPointerDown = (e)=>{
+          // Ignore non-primary mouse buttons
+          if(e.pointerType === 'mouse' && e.button !== 0) return;
+          // Ignore clicks on window control buttons
+          if(e.target && e.target.dataset && e.target.dataset.action) return;
+
+          e.preventDefault();
           dragging = true;
+          pointerId = e.pointerId;
+
+          // Focus window when starting drag
+          try{ focusWindow(appId); } catch {}
+
           const rect = winEl.getBoundingClientRect();
-          startX = e.clientX; startY = e.clientY;
-          startL = rect.left; startT = rect.top;
-          document.addEventListener('mousemove', onMove);
-          document.addEventListener('mouseup', onUp);
+          startX = e.clientX;
+          startY = e.clientY;
+          startL = rect.left;
+          startT = rect.top;
+
+          // Capture pointer so drag continues even if the finger leaves the titlebar
+          try{ titlebar.setPointerCapture(pointerId); } catch {}
+
+          titlebar.addEventListener('pointermove', onPointerMove);
+          titlebar.addEventListener('pointerup', onPointerUp);
+          titlebar.addEventListener('pointercancel', onPointerUp);
         };
 
-        const onMove = (e)=>{
+        const onPointerMove = (e)=>{
           if(!dragging) return;
+          if(pointerId !== null && e.pointerId !== pointerId) return;
+
+          e.preventDefault();
+
           const area = $('#desktopArea').getBoundingClientRect();
           const dx = e.clientX - startX;
           const dy = e.clientY - startY;
+
           const newL = clamp(startL + dx - area.left, 0, area.width - 80);
           const newT = clamp(startT + dy - area.top, 0, area.height - 60);
+
           winEl.style.left = newL + 'px';
           winEl.style.top = newT + 'px';
+
           const w = state.windows.get(appId);
           if(w){ w.left = newL; w.top = newT; }
         };
 
-        const onUp = ()=>{
+        const onPointerUp = (e)=>{
+          if(pointerId !== null && e.pointerId !== pointerId) return;
+
           dragging = false;
-          document.removeEventListener('mousemove', onMove);
-          document.removeEventListener('mouseup', onUp);
+          pointerId = null;
+
+          try{ titlebar.releasePointerCapture(e.pointerId); } catch {}
+
+          titlebar.removeEventListener('pointermove', onPointerMove);
+          titlebar.removeEventListener('pointerup', onPointerUp);
+          titlebar.removeEventListener('pointercancel', onPointerUp);
         };
 
-        titlebar.addEventListener('mousedown', onDown);
+        // Pointer events handle mouse + touch + pen
+        titlebar.addEventListener('pointerdown', onPointerDown);
       }
 
       function makeResizable(winEl, appId){
         const handle = winEl.querySelector('.resize');
         if(!handle) return;
-        let resizing = false;
-        let startX=0, startY=0, startW=0, startH=0;
 
-        const onDown = (e)=>{
-          if(e.button !== 0) return;
+        let resizing = false;
+        let pointerId = null;
+        let startX = 0, startY = 0, startW = 0, startH = 0;
+
+        const onPointerDown = (e)=>{
+          if(e.pointerType === 'mouse' && e.button !== 0) return;
+          e.preventDefault();
+
           resizing = true;
+          pointerId = e.pointerId;
+
           const rect = winEl.getBoundingClientRect();
-          startX = e.clientX; startY = e.clientY;
-          startW = rect.width; startH = rect.height;
-          document.addEventListener('mousemove', onMove);
-          document.addEventListener('mouseup', onUp);
+          startX = e.clientX;
+          startY = e.clientY;
+          startW = rect.width;
+          startH = rect.height;
+
+          try{ handle.setPointerCapture(pointerId); } catch {}
+
+          handle.addEventListener('pointermove', onPointerMove);
+          handle.addEventListener('pointerup', onPointerUp);
+          handle.addEventListener('pointercancel', onPointerUp);
         };
 
-        const onMove = (e)=>{
+        const onPointerMove = (e)=>{
           if(!resizing) return;
+          if(pointerId !== null && e.pointerId !== pointerId) return;
+          e.preventDefault();
+
           const dx = e.clientX - startX;
           const dy = e.clientY - startY;
           const newW = clamp(startW + dx, 280, 920);
           const newH = clamp(startH + dy, 200, 780);
+
           winEl.style.width = newW + 'px';
           winEl.style.height = newH + 'px';
+
           const w = state.windows.get(appId);
           if(w){ w.width = newW; w.height = newH; }
         };
 
-        const onUp = ()=>{
+        const onPointerUp = (e)=>{
+          if(pointerId !== null && e.pointerId !== pointerId) return;
           resizing = false;
-          document.removeEventListener('mousemove', onMove);
-          document.removeEventListener('mouseup', onUp);
+          pointerId = null;
+
+          try{ handle.releasePointerCapture(e.pointerId); } catch {}
+
+          handle.removeEventListener('pointermove', onPointerMove);
+          handle.removeEventListener('pointerup', onPointerUp);
+          handle.removeEventListener('pointercancel', onPointerUp);
         };
 
-        handle.addEventListener('mousedown', onDown);
+        handle.addEventListener('pointerdown', onPointerDown);
       }
 
       function renderTaskButtons(){
