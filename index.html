@@ -526,24 +526,51 @@
       }
       .music-grid{
         display:grid;
-        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        grid-template-columns: repeat(auto-fill, 92px);
         gap:12px;
+        align-items:start;
       }
-      .music-card{
+      .music-item{
         display:flex;
         flex-direction:column;
         align-items:center;
-        gap:8px;
-        padding:10px;
+        gap:6px;
+        width:92px;
+        max-width:92px;
+        padding:6px 4px;
+        border:1px solid transparent;
+        background:transparent;
+        appearance:none;
         cursor:default;
       }
-      .music-card.selected{
-        outline:1px dotted #000080;
+      .music-item.selected{
+        border:1px dotted #000080;
         background:#d6e6ff;
       }
-      .music-small .music-card{padding:6px; gap:6px;}
-      .music-small .music-card .music-label{font-size:12px;}
+      .music-item span{
+        text-align:center;
+        line-height:1.1;
+        max-width:86px;
+        word-break:break-word;
+      }
+      .music-small .music-item{padding:6px; gap:6px;}
+      .music-small .music-label{font-size:12px;}
       .music-hide-icons .music-icon{display:none;}
+      @media (max-width: 520px){
+        .music-grid{
+          grid-template-columns:1fr;
+        }
+        .music-item{
+          width:100%;
+          max-width:100%;
+          flex-direction:row;
+          justify-content:flex-start;
+        }
+        .music-item span{
+          max-width:none;
+          text-align:left;
+        }
+      }
       .poetry-grid{
         display:grid;
         grid-template-columns: repeat(auto-fill, 92px);
@@ -3485,11 +3512,11 @@ Eu sou o buffalo branco extinto`
 
   <div class="music-grid">
     ${MUSIC_LINKS.map(link => `
-      <button class="music-card bevel" type="button" data-music-id="${link.id}" data-music-link="${link.url}">
-        <div class="bevel-in music-icon" style="width:44px; height:44px; display:flex; align-items:center; justify-content:center; padding:2px;">
+      <button class="music-item" type="button" data-music-id="${link.id}" data-music-link="${link.url}">
+        <div class="music-icon pixel" style="width:34px;height:34px;display:flex;align-items:center;justify-content:center;">
           <img class="pixel" src="${link.icon}" width="32" height="32" alt="${link.label}" style="display:block;" />
         </div>
-        <div class="music-label" style="font-weight:700; text-align:center;">${link.label}</div>
+        <span class="music-label" style="font-weight:700;">${link.label}</span>
       </button>
     `).join('')}
   </div>
@@ -3896,6 +3923,15 @@ Eu sou o buffalo branco extinto`
       let lastPoetryTap = { id: null, time: 0 };
       document.addEventListener('pointerdown', (e)=>{
         if(e.pointerType !== 'touch') return;
+        const musicCard = e.target.closest && e.target.closest('[data-music-id]');
+        if(musicCard && musicCard.dataset && musicCard.dataset.musicLink){
+          const id = musicCard.dataset.musicId;
+          state.music.selected = new Set([id]);
+          applyMusicState();
+          musicCard.dataset.touchOpened = '1';
+          openLink(musicCard.dataset.musicLink, 'music');
+          return;
+        }
         const poemItem = e.target.closest && e.target.closest('[data-poem-id]');
         if(!poemItem || !poemItem.dataset) return;
         const id = poemItem.dataset.poemId;
@@ -5014,6 +5050,10 @@ Eu sou o buffalo branco extinto`
         }
         const musicCard = e.target.closest && e.target.closest('[data-music-id]');
         if(musicCard){
+          if(musicCard.dataset && musicCard.dataset.touchOpened === '1'){
+            delete musicCard.dataset.touchOpened;
+            return;
+          }
           const id = musicCard.dataset.musicId;
           if(e.ctrlKey || e.metaKey){
             if(state.music.selected.has(id)) state.music.selected.delete(id);
