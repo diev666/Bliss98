@@ -943,6 +943,31 @@ function getIconLabel(app){
   return state.iconLabels[app.id] || t(app.titleKey);
 }
 
+function getTrashIconFile(){
+  return state.trash && state.trash.size > 0
+    ? '/assets/icons/trash2.png'
+    : '/assets/icons/trash1.png';
+}
+
+function updateTrashIconUI(){
+  const trashFile = getTrashIconFile();
+
+  const desktopIcon = document.querySelector('.icon[data-app-id="trash"] img');
+  if(desktopIcon) desktopIcon.src = trashFile;
+
+  const startIcon = document.querySelector('#startMenu .menu-item img[data-app-id="trash"]');
+  if(startIcon) startIcon.src = trashFile;
+
+  const win = document.getElementById('win_trash');
+  if(win){
+    const titleIcon = win.querySelector('.title-left img');
+    if(titleIcon) titleIcon.src = trashFile;
+  }
+
+  const taskBtn = document.querySelector('#taskButtons img[data-app-id="trash"]');
+  if(taskBtn) taskBtn.src = trashFile;
+}
+
 function buildOccupied(excludeIds, metrics){
   const occupied = new Map();
   const exclude = new Set(excludeIds || []);
@@ -972,6 +997,7 @@ function moveIconsToTrash(ids){
   saveTrash();
   renderIcons();
   renderTrashWindow();
+  updateTrashIconUI();
 }
 
 function restoreFromTrash(ids){
@@ -982,6 +1008,7 @@ function restoreFromTrash(ids){
   saveTrash();
   renderIcons();
   renderTrashWindow();
+  updateTrashIconUI();
 }
 
 function emptyTrash(){
@@ -990,6 +1017,7 @@ function emptyTrash(){
   saveTrash();
   renderIcons();
   renderTrashWindow();
+  updateTrashIconUI();
 }
 
 function renderTrashWindow(){
@@ -2776,11 +2804,14 @@ function installLongPress(el, getTarget){
               center.textContent = t('about.footer');
             }
 
-            if(id === 'mediaplayer') {
-              setTimeout(mpInitInWindow, 0);
-            }
+          if(id === 'mediaplayer') {
+            setTimeout(mpInitInWindow, 0);
           }
-        });
+          if(id === 'trash'){
+            updateTrashIconUI();
+          }
+        }
+      });
       }
 
       function iconSVG(type){
@@ -2812,7 +2843,7 @@ function installLongPress(el, getTarget){
       }
 
       const APPS = [
-        { id:'trash', titleKey:'app.trash', icon:'trash', showInStart:false },
+        { id:'trash', titleKey:'app.trash', icon:'trash', iconFile:getTrashIconFile, showInStart:false },
         { id:'clothes', titleKey:'app.clothes', icon:'folder', iconFile:'/assets/icons/Clothes.png' },
         { id:'music', titleKey:'app.music', icon:'music', iconFile:'/assets/icons/Music.png' },
         { id:'mediaplayer', titleKey:'app.mediaplayer', icon:'music', iconFile:'/assets/icons/BLISS%20mediaplayer.png' },
@@ -3323,8 +3354,9 @@ function installLongPress(el, getTarget){
           }
 
           const label = getIconLabel(app);
-          const iconHtml = app.iconFile
-            ? `<img class="pixel" src="${app.iconFile}" width="32" height="32" alt="${label}" style="display:block;" />`
+          const iconFile = typeof app.iconFile === 'function' ? app.iconFile() : app.iconFile;
+          const iconHtml = iconFile
+            ? `<img class="pixel" src="${iconFile}" width="32" height="32" alt="${label}" style="display:block;" />`
             : iconSVG(app.icon);
 
           el.innerHTML = `
@@ -3683,8 +3715,9 @@ function installLongPress(el, getTarget){
         APPS.filter(app => app.showInStart !== false).forEach(app => {
           const item = document.createElement('div');
           item.className = 'menu-item';
+          const iconFile = typeof app.iconFile === 'function' ? app.iconFile() : app.iconFile;
           item.innerHTML = `
-            <div style="width:18px;height:18px;display:flex;align-items:center;justify-content:center;">${app.iconFile ? `<img class="pixel" src="${app.iconFile}" width="16" height="16" alt="" style="display:block;" />` : iconSVG(app.icon)}</div>
+            <div style="width:18px;height:18px;display:flex;align-items:center;justify-content:center;">${iconFile ? `<img class="pixel" src="${iconFile}" width="16" height="16" alt="" style="display:block;" data-app-id="${app.id}" />` : iconSVG(app.icon)}</div>
             <div>${t(app.titleKey)}</div>
           `;
           item.addEventListener('click', ()=>{ openApp(app.id); closeStartMenu(); });
@@ -3739,12 +3772,13 @@ function installLongPress(el, getTarget){
         }
 
         const rect = defaultWindowRect();
+        const iconFile = typeof app.iconFile === 'function' ? app.iconFile() : app.iconFile;
         const wstate = {
           id: appId,
           title: t(app.titleKey),
           titleKey: app.titleKey,
           icon: app.icon,
-          iconFile: app.iconFile || null,
+          iconFile: iconFile || null,
           minimized: false,
           left: rect.left,
           top: rect.top,
@@ -3878,10 +3912,12 @@ function installLongPress(el, getTarget){
         makeResizable(el, appId);
 
         if(appId === 'mediaplayer') { setTimeout(mpInitInWindow, 0); }
+        if(appId === 'trash') { updateTrashIconUI(); }
 
         $('#windows').appendChild(el);
         applyI18nTo(el);
         applyWindowState(el, appId);
+        if(appId === 'trash') updateTrashIconUI();
         if(state.animations){
           el.addEventListener('animationend', ()=>{ el.classList.remove('anim-open'); }, { once:true });
         }
@@ -4127,7 +4163,7 @@ function installLongPress(el, getTarget){
           b.style.whiteSpace = 'nowrap';
           b.style.textOverflow = 'ellipsis';
           b.innerHTML = `
-            <span style="width:16px;height:16px;display:inline-flex;">${w.iconFile ? `<img class="pixel" src="${w.iconFile}" width="16" height="16" alt="" style="display:block;" />` : iconSVG(w.icon)}</span>
+            <span style="width:16px;height:16px;display:inline-flex;">${w.iconFile ? `<img class="pixel" src="${w.iconFile}" width="16" height="16" alt="" style="display:block;" data-app-id="${w.id}" />` : iconSVG(w.icon)}</span>
             <span>${w.title}</span>
           `;
           b.addEventListener('click', (e)=>{
@@ -4358,6 +4394,7 @@ function installLongPress(el, getTarget){
         // Apply translations immediately (default is English)
         applyI18n();
         applyScanlines();
+        updateTrashIconUI();
 
         showLogin();
         document.addEventListener('click', ()=>{ closeStartMenu(); closeCtxMenu(); });
