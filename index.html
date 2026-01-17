@@ -834,7 +834,7 @@
         } catch {}
       }
 
-      function defaultIconPos(index){
+      function legacyDefaultIconPos(index){
         // Layout similar to the old grid: 6 rows then new column
         const rows = 6;
         const col = Math.floor(index / rows);
@@ -982,6 +982,62 @@ function buildOccupied(excludeIds, metrics){
   return occupied;
 }
 
+function getDefaultIconLayout(){
+  const area = $('#desktopArea').getBoundingClientRect();
+  const metrics = getGridMetrics();
+  const isMobile = area.width <= 520;
+  const order = ['settings','games','about','videos','mediaplayer','diev','art','contact','music','clothes'];
+  const available = APPS.filter(app => app.showOnDesktop !== false && app.id !== 'trash' && !state.trash.has(app.id));
+  const availableIds = new Set(available.map(app => app.id));
+  const ordered = order.filter(id => availableIds.has(id)).concat(
+    available.map(app => app.id).filter(id => !order.includes(id))
+  );
+
+  const layout = {};
+  const maxX = Math.max(0, Math.floor(area.width - ICON_SIZE.w - 6));
+  const maxY = Math.max(0, Math.floor(area.height - ICON_SIZE.h - 6));
+
+  if(isMobile){
+    const cols = Math.max(1, Math.floor((area.width - 6) / metrics.stepX));
+    const rows = Math.max(1, Math.floor((area.height - 6) / metrics.stepY));
+    const trashCell = { col: cols - 1, row: rows - 1 };
+    let i = 0;
+    ordered.forEach(id => {
+      let col = i % cols;
+      let row = Math.floor(i / cols);
+      if(col === trashCell.col && row === trashCell.row){
+        i += 1;
+        col = i % cols;
+        row = Math.floor(i / cols);
+      }
+      const x = clamp(col * metrics.stepX, 0, maxX);
+      const y = clamp(row * metrics.stepY, 0, maxY);
+      layout[id] = snapToGridClamped(x, y, metrics);
+      i += 1;
+    });
+  } else {
+    let col = 0;
+    let row = 0;
+    const maxRows = Math.max(1, Math.floor((area.height - 6) / metrics.stepY));
+    ordered.forEach(id => {
+      const x = clamp(col * metrics.stepX, 0, maxX);
+      const y = clamp(row * metrics.stepY, 0, maxY);
+      layout[id] = snapToGridClamped(x, y, metrics);
+      row += 1;
+      if(row >= maxRows){
+        row = 0;
+        col += 1;
+      }
+    });
+  }
+
+  const trashX = snapToGridClamped(maxX, maxY, metrics).x;
+  const trashY = snapToGridClamped(maxX, maxY, metrics).y;
+  layout.trash = { x: trashX, y: trashY };
+
+  return layout;
+}
+
 function isOverTrash(x, y){
   const trashEl = document.querySelector('.icon[data-app-id="trash"]');
   if(!trashEl) return false;
@@ -1035,10 +1091,7 @@ function renderTrashWindow(){
 }
 
 function arrangeIcons(){
-  const next = {};
-  APPS.forEach((app, idx) => {
-    next[app.id] = defaultIconPos(idx);
-  });
+  const next = getDefaultIconLayout();
   saveIconPositions(next);
   renderIcons();
 }
@@ -3336,6 +3389,7 @@ function installLongPress(el, getTarget){
         const metrics = getGridMetrics();
         const occupied = new Map();
         let needsSave = false;
+        const defaultLayout = getDefaultIconLayout();
 
         APPS.filter(app => app.showOnDesktop !== false).forEach((app, idx) => {
           if(app.id !== 'trash' && state.trash.has(app.id)) return;
@@ -3343,7 +3397,7 @@ function installLongPress(el, getTarget){
           el.className = 'icon';
           el.dataset.appId = app.id;
 
-          const def = defaultIconPos(idx);
+          const def = defaultLayout[app.id] || legacyDefaultIconPos(idx);
           const pos = (saved && saved[app.id]) ? saved[app.id] : def;
           const placed = placeOnFreeCell(pos.x, pos.y, occupied, metrics);
           el.style.left = placed.x + 'px';
