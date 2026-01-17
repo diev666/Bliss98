@@ -571,6 +571,42 @@
           text-align:left;
         }
       }
+      .clothes-grid{
+        display:grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap:12px;
+        align-items:start;
+      }
+      .clothes-item{
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        padding:6px;
+        border:1px solid transparent;
+        background:transparent;
+      }
+      .clothes-item:focus,
+      .clothes-item:focus-visible{
+        outline:1px dotted #000080;
+        background:#d6e6ff;
+      }
+      .clothes-thumb{
+        width:100%;
+        height:auto;
+        aspect-ratio:1/1;
+        object-fit:cover;
+        border:1px solid #777;
+        background:#fff;
+        display:block;
+      }
+      .clothes-status{
+        margin-top:10px;
+      }
+      @media (max-width: 520px){
+        .clothes-grid{
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
       .poetry-grid{
         display:grid;
         grid-template-columns: repeat(auto-fill, 92px);
@@ -891,6 +927,23 @@
       const SCANLINES_KEY = 'bliss98_scanlines';
       const TRASH_KEY = 'bliss98_trash';
       const ICON_LABELS_KEY = 'bliss98_icon_labels';
+      const CLOTHES_CACHE_KEY = 'bliss98_clothes_cache';
+      const CLOTHES_CACHE_TTL = 1000 * 60 * 60 * 3;
+      const SFX = {
+        boot: {
+          src: '/assets/audio/boot.mp3',
+          audio: null,
+          played: false,
+          pending: false,
+          unlockArmed: false,
+          playing: false,
+        },
+        logoff: {
+          src: '/assets/audio/logoff.mp3',
+          audio: null,
+          playing: false,
+        }
+      };
       const WALLPAPERS = [
         {
           id: 'classic',
@@ -921,6 +974,117 @@
           repeat: 'repeat'
         },
       ];
+
+      function initSfx(){
+        Object.values(SFX).forEach(entry => {
+          entry.audio = new Audio(entry.src);
+          entry.audio.preload = 'auto';
+          entry.audio.volume = 0.5;
+        });
+      }
+
+      function playSfx(name){
+        const entry = SFX[name];
+        if(!entry || !entry.audio) return Promise.resolve(false);
+        if(entry.playing) return Promise.resolve(false);
+        entry.playing = true;
+        try{
+          entry.audio.currentTime = 0;
+          const p = entry.audio.play();
+          if(p && typeof p.then === 'function'){
+            return p.then(()=>{
+              entry.playing = false;
+              return true;
+            }).catch(()=>{
+              entry.playing = false;
+              return false;
+            });
+          }
+          entry.playing = false;
+          return Promise.resolve(true);
+        } catch {
+          entry.playing = false;
+          return Promise.resolve(false);
+        }
+      }
+
+      function playSfxOnce(name, opts = {}){
+        const entry = SFX[name];
+        if(!entry || entry.played) return Promise.resolve(false);
+        return playSfx(name).then((ok)=>{
+          if(ok){
+            entry.played = true;
+            entry.pending = false;
+          } else if(opts.allowPending){
+            entry.pending = true;
+          }
+          return ok;
+        });
+      }
+
+      function playSfxAndWait(name){
+        const entry = SFX[name];
+        if(!entry || !entry.audio) return Promise.resolve(false);
+        if(entry.playing) return Promise.resolve(false);
+        entry.playing = true;
+        return new Promise(resolve => {
+          const audio = entry.audio;
+          const cleanup = ()=>{
+            audio.removeEventListener('ended', onEnd);
+            audio.removeEventListener('error', onError);
+          };
+          const onEnd = ()=>{
+            cleanup();
+            entry.playing = false;
+            resolve(true);
+          };
+          const onError = ()=>{
+            cleanup();
+            entry.playing = false;
+            resolve(false);
+          };
+          audio.addEventListener('ended', onEnd, { once: true });
+          audio.addEventListener('error', onError, { once: true });
+          try{
+            audio.currentTime = 0;
+            const p = audio.play();
+            if(p && typeof p.then === 'function'){
+              p.catch(()=>{ onError(); });
+            }
+          } catch {
+            onError();
+          }
+        });
+      }
+
+      function armBootUnlock(){
+        const entry = SFX.boot;
+        if(!entry || entry.played || !entry.pending || entry.unlockArmed) return;
+        entry.unlockArmed = true;
+        const loginEl = $('#login');
+        if(!loginEl){
+          entry.unlockArmed = false;
+          return;
+        }
+        const handler = ()=>{
+          if($('#login').classList.contains('hidden')){
+            entry.pending = false;
+            entry.unlockArmed = false;
+            return;
+          }
+          playSfxOnce('boot').finally(()=>{
+            entry.pending = false;
+            entry.unlockArmed = false;
+          });
+        };
+        const wrapped = ()=>{
+          loginEl.removeEventListener('pointerdown', wrapped, true);
+          loginEl.removeEventListener('keydown', wrapped, true);
+          handler();
+        };
+        loginEl.addEventListener('pointerdown', wrapped, true);
+        loginEl.addEventListener('keydown', wrapped, true);
+      }
 
       function loadIconPositions(){
         try{
@@ -1209,6 +1373,109 @@ function renderPoetryWindow(){
   items.forEach(item => {
     const id = item.dataset.poemId;
     item.classList.toggle('selected', state.poetry.selectedId === id);
+  });
+}
+
+function loadClothesCache(){
+  try{
+    const raw = localStorage.getItem(CLOTHES_CACHE_KEY);
+    if(!raw) return null;
+    const parsed = JSON.parse(raw);
+    if(!parsed || !Array.isArray(parsed.items)) return null;
+    if(!parsed.ts || (Date.now() - parsed.ts) > CLOTHES_CACHE_TTL) return null;
+    return parsed.items;
+  } catch {
+    return null;
+  }
+}
+
+function saveClothesCache(items){
+  try{
+    localStorage.setItem(CLOTHES_CACHE_KEY, JSON.stringify({ ts: Date.now(), items }));
+  } catch {}
+}
+
+function decodeInstagramUrl(url){
+  if(!url) return '';
+  return url
+    .replace(/\\u0026/g, '&')
+    .replace(/\\u003d/g, '=')
+    .replace(/\\\//g, '/');
+}
+
+function parseInstagramHtml(html){
+  if(!html) return [];
+  const items = [];
+  const re = /"shortcode":"(.*?)".*?"display_url":"(.*?)"/g;
+  let match;
+  while((match = re.exec(html)) && items.length < 12){
+    const shortcode = match[1];
+    const display = decodeInstagramUrl(match[2]);
+    if(!shortcode || !display) continue;
+    items.push({
+      img: display,
+      url: `https://www.instagram.com/p/${shortcode}/`
+    });
+  }
+  return items;
+}
+
+function fetchClothesFromInstagram(){
+  const url = 'https://r.jina.ai/http://www.instagram.com/blissworldweb/';
+  return fetch(url, { cache: 'no-store' })
+    .then(res => res.ok ? res.text() : Promise.reject(new Error('bad')))
+    .then(html => parseInstagramHtml(html))
+    .catch(() => []);
+}
+
+function renderClothesItems(winEl, items){
+  const grid = winEl.querySelector('#clothesGrid');
+  if(!grid) return;
+  const profile = 'https://www.instagram.com/blissworldweb/';
+  const alt = t('clothes.thumbAlt');
+  grid.innerHTML = items.map(item => {
+    const href = item.url || profile;
+    const img = item.img || '/assets/icons/Clothes.png';
+    return `
+      <a class="clothes-item" href="${href}" target="_blank" rel="noopener noreferrer" aria-label="${alt}">
+        <img class="clothes-thumb" src="${img}" alt="${alt}" loading="lazy" />
+      </a>
+    `;
+  }).join('');
+}
+
+function updateClothesStatus(winEl, key){
+  const status = winEl.querySelector('#clothesStatus');
+  if(!status) return;
+  if(!key){
+    status.textContent = '';
+    status.classList.add('hidden');
+  } else {
+    status.textContent = t(key);
+    status.classList.remove('hidden');
+  }
+}
+
+function initClothesWindow(winEl){
+  const win = winEl || document.getElementById('win_clothes');
+  if(!win) return;
+  const cached = loadClothesCache();
+  if(cached && cached.length){
+    renderClothesItems(win, cached);
+    updateClothesStatus(win, null);
+    return;
+  }
+  updateClothesStatus(win, 'clothes.loading');
+  fetchClothesFromInstagram().then(items => {
+    if(items && items.length) saveClothesCache(items);
+    const fallback = (items && items.length) ? items : CLOTHES_FALLBACK;
+    if(fallback && fallback.length){
+      renderClothesItems(win, fallback);
+      updateClothesStatus(win, null);
+    } else {
+      renderClothesItems(win, []);
+      updateClothesStatus(win, 'clothes.unavailable');
+    }
   });
 }
 
@@ -1553,7 +1820,7 @@ function handleCtxAction(action){
   if(action === 'logoff'){
     closeCtxMenu();
     closeStartMenu();
-    showLogin();
+    doLogoff();
   }
 }
 
@@ -1831,6 +2098,12 @@ function installLongPress(el, getTarget){
           'music.subtitle': 'Listen everywhere:',
           'music.tip': 'Music is a beautiful thing, innit?',
 
+          'clothes.title': 'BLISS — Clothes',
+          'clothes.subtitle': 'Latest from Instagram.',
+          'clothes.loading': 'Loading…',
+          'clothes.unavailable': 'Unable to load right now.',
+          'clothes.thumbAlt': 'BLISS Instagram',
+
           'about.title': 'About',
           'about.p1': 'BLISS is a project that aims to bring together independent, weird, and unique artists,',
           'about.p2': 'supporting every form of art and self-expression.',
@@ -1841,6 +2114,10 @@ function installLongPress(el, getTarget){
           'about.footer': 'BLISS 98 Desing by DIEV',
 
           'contact.title': 'Contact',
+          'contact.label.instagramDIEV': 'Instagram (DIEV):',
+          'contact.label.twitterDIEV': 'Twitter/X (DIEV):',
+          'contact.label.emailBusiness': 'Email (Business):',
+          'contact.label.instagramBLISS': 'Instagram (BLISS):',
           'diev.title': 'DIEV',
           'diev.p1': 'Official page for DIEV.',
 
@@ -2093,6 +2370,12 @@ function installLongPress(el, getTarget){
           'music.subtitle': 'Ouça em todas as plataformas:',
           'music.tip': 'Música é uma coisa linda, não é?',
 
+          'clothes.title': 'BLISS — Roupas',
+          'clothes.subtitle': 'Últimos do Instagram.',
+          'clothes.loading': 'Carregando…',
+          'clothes.unavailable': 'Não foi possível carregar agora.',
+          'clothes.thumbAlt': 'Instagram da BLISS',
+
           'about.title': 'Sobre',
           'about.p1': 'BLISS é um projeto que visa unir artistas independentes, estranhos e únicos,',
           'about.p2': 'apoiando toda forma de arte e autoexpressão.',
@@ -2103,6 +2386,10 @@ function installLongPress(el, getTarget){
           'about.footer': 'BLISS 98 Desing by DIEV',
 
           'contact.title': 'Contato',
+          'contact.label.instagramDIEV': 'Instagram (DIEV):',
+          'contact.label.twitterDIEV': 'Twitter/X (DIEV):',
+          'contact.label.emailBusiness': 'Email (Business):',
+          'contact.label.instagramBLISS': 'Instagram (BLISS):',
           'diev.title': 'DIEV',
           'diev.p1': 'Página oficial do DIEV.',
 
@@ -2611,7 +2898,7 @@ function installLongPress(el, getTarget){
           return;
         }
         if(action === 'global:logoff'){
-          showLogin();
+          doLogoff();
           return;
         }
         if(action === 'global:controls'){
@@ -3015,6 +3302,9 @@ function installLongPress(el, getTarget){
           if(id === 'poetry'){
             renderPoetryWindow();
           }
+          if(id === 'clothes'){
+            initClothesWindow(winEl);
+          }
         }
       });
       }
@@ -3099,6 +3389,16 @@ function installLongPress(el, getTarget){
           url: 'https://www.deezer.com/en/artist/5170963',
           icon: '/assets/icons/deezer.png'
         }
+      ];
+
+      // Update the fallback list with real Instagram thumbnails when needed.
+      const CLOTHES_FALLBACK = [
+        { img: '/assets/icons/Clothes.png', url: 'https://www.instagram.com/blissworldweb/' },
+        { img: '/assets/icons/Clothes.png', url: 'https://www.instagram.com/blissworldweb/' },
+        { img: '/assets/icons/Clothes.png', url: 'https://www.instagram.com/blissworldweb/' },
+        { img: '/assets/icons/Clothes.png', url: 'https://www.instagram.com/blissworldweb/' },
+        { img: '/assets/icons/Clothes.png', url: 'https://www.instagram.com/blissworldweb/' },
+        { img: '/assets/icons/Clothes.png', url: 'https://www.instagram.com/blissworldweb/' }
       ];
 
       const VIDEO_CHANNEL_URL = 'https://www.youtube.com/@diev';
@@ -3505,7 +3805,12 @@ Eu sou o buffalo branco extinto`
           <p>${t('about.p5')}</p>
           <p>${t('about.p6')}</p>
         `,
-        clothes: () => `<h2>BLISS — ${t('app.clothes')}</h2><p>${t('common.soon')}</p>`,
+        clothes: () => `
+          <h2>${t('clothes.title')}</h2>
+          <p class="tiny" data-i18n="clothes.subtitle">${t('clothes.subtitle')}</p>
+          <div class="clothes-grid" id="clothesGrid"></div>
+          <div class="tiny clothes-status" id="clothesStatus" data-i18n="clothes.loading">${t('clothes.loading')}</div>
+        `,
         music: () => `
   <h2>${t('music.title')}</h2>
   <p style="margin:0 0 10px 0;">${t('music.subtitle')}</p>
@@ -3614,7 +3919,15 @@ Eu sou o buffalo branco extinto`
           }).join('');
           return `<div class="trash-grid">${grid}</div>`;
         },
-        contact: () => `<h2>${t('contact.title')}</h2><p>${t('common.soon')}</p>`,
+        contact: () => `
+          <h2>${t('contact.title')}</h2>
+          <div class="contact-list" style="display:flex; flex-direction:column; gap:8px;">
+            <div><strong>${t('contact.label.instagramDIEV')}</strong> <a href="https://www.instagram.com/die.verson/" target="_blank" rel="noopener noreferrer">@die.verson</a></div>
+            <div><strong>${t('contact.label.twitterDIEV')}</strong> <a href="https://x.com/DIE_VERSON" target="_blank" rel="noopener noreferrer">@die_verson</a></div>
+            <div><strong>${t('contact.label.emailBusiness')}</strong> <a href="mailto:die.versonbusiness@gmail.com">die.versonbusiness@gmail.com</a></div>
+            <div><strong>${t('contact.label.instagramBLISS')}</strong> <a href="https://www.instagram.com/blissworldweb/" target="_blank" rel="noopener noreferrer">@blissworldweb</a></div>
+          </div>
+        `,
         diev: () => `<h2>${t('diev.title')}</h2><p>${t('diev.p1')}</p>`,
         settings: () => `
           <h2 data-i18n="settings.title">Settings</h2>
@@ -3980,10 +4293,30 @@ Eu sou o buffalo branco extinto`
         renderStartMenu();
         tickClock();
       }
-      function showLogin(){
+      let logoffInProgress = false;
+
+      function showLogin(playBoot = false){
         $('#desktop').classList.add('hidden');
         $('#login').classList.remove('hidden');
         $('#username').focus();
+        if(playBoot && SFX.boot && !SFX.boot.played){
+          playSfxOnce('boot', { allowPending: true }).then((ok)=>{
+            if(!ok && !SFX.boot.played) armBootUnlock();
+          });
+        }
+      }
+
+      function doLogoff(){
+        if(logoffInProgress) return;
+        logoffInProgress = true;
+        closeStartMenu();
+        closeCtxMenu();
+        closeWindowMenu();
+        closeModal();
+        playSfxAndWait('logoff').finally(()=>{
+          showLogin(false);
+          logoffInProgress = false;
+        });
       }
 
       function renderIcons(){
@@ -4390,7 +4723,7 @@ Eu sou o buffalo branco extinto`
         const logout = document.createElement('div');
         logout.className = 'menu-item';
         logout.innerHTML = `<div style="width:18px;height:18px;display:flex;align-items:center;justify-content:center;"><img class="pixel" src="/assets/icons/logout.png" width="16" height="16" alt="" style="display:block;" /></div><div>${t('menu.logoff')}</div>`;
-        logout.addEventListener('click', ()=>{ closeStartMenu(); showLogin(); });
+        logout.addEventListener('click', ()=>{ closeStartMenu(); doLogoff(); });
         list.appendChild(logout);
       }
 
@@ -4579,6 +4912,7 @@ Eu sou o buffalo branco extinto`
 
         if(appId === 'mediaplayer') { setTimeout(mpInitInWindow, 0); }
         if(appId === 'trash') { updateTrashIconUI(); }
+        if(appId === 'clothes') { setTimeout(()=>initClothesWindow(el), 0); }
 
         $('#windows').appendChild(el);
         applyI18nTo(el);
@@ -5097,7 +5431,8 @@ Eu sou o buffalo branco extinto`
         applyScanlines();
         updateTrashIconUI();
 
-        showLogin();
+        initSfx();
+        showLogin(true);
         document.addEventListener('click', ()=>{ closeStartMenu(); closeCtxMenu(); });
         const cm = $('#ctxMenu');
         if(cm){
