@@ -221,6 +221,18 @@
         font-weight:700;
       }
       .start-list{ flex:1; padding:2px; }
+      .start-list .menu-item{
+        width:100%;
+        box-sizing:border-box;
+        overflow:hidden;
+      }
+      .start-list .menu-item > div:last-child{
+        flex:1;
+        min-width:0;
+        overflow:hidden;
+        text-overflow:ellipsis;
+        white-space:nowrap;
+      }
       .menu-item{
         display:flex;
         align-items:center;
@@ -413,6 +425,25 @@
         user-select:text;
         -webkit-user-select:text;
       }
+      .content.trash-empty{
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        text-align:center;
+      }
+      .trash-actions{
+        display:flex;
+        align-items:center;
+        gap:8px;
+        padding:2px 8px;
+        height:22px;
+        background:var(--task);
+        border-bottom:1px solid #9a9a9a;
+      }
+      .trash-actions .btn{
+        height:20px;
+        padding:0 8px;
+      }
       .content h2{margin:0 0 8px 0; font-size:16px;}
       .content p{margin:0 0 10px 0; line-height:1.35;}
       .content .card{ padding:10px; margin:10px 0; }
@@ -525,6 +556,9 @@
         line-height:1.1;
         max-width:86px;
         word-break:break-word;
+      }
+      .trash-empty-msg{
+        font-weight:700;
       }
       .mp-compact .content{padding:6px;}
       .mp-compact .card{padding:6px;}
@@ -1076,19 +1110,24 @@ function emptyTrash(){
   updateTrashIconUI();
 }
 
-function renderTrashWindow(){
-  const win = document.getElementById('win_trash');
-  if(!win) return;
-  const content = win.querySelector('.content');
-  if(!content) return;
-  content.innerHTML = CONTENT.trash();
-  applyI18nTo(win);
-  const items = win.querySelectorAll('[data-trash-id]');
-  items.forEach(item => {
-    const id = item.dataset.trashId;
-    item.classList.toggle('selected', state.trashSelection.has(id));
-  });
-}
+      function renderTrashWindow(){
+        const win = document.getElementById('win_trash');
+        if(!win) return;
+        const content = win.querySelector('.content');
+        if(!content) return;
+        content.innerHTML = CONTENT.trash();
+        applyI18nTo(win);
+        content.classList.toggle('trash-empty', state.trash.size === 0);
+        const items = win.querySelectorAll('[data-trash-id]');
+        items.forEach(item => {
+          const id = item.dataset.trashId;
+          item.classList.toggle('selected', state.trashSelection.has(id));
+        });
+        const restoreBtn = win.querySelector('[data-trash-action="restore"]');
+        const restoreAllBtn = win.querySelector('[data-trash-action="restoreAll"]');
+        if(restoreBtn) restoreBtn.disabled = state.trash.size === 0;
+        if(restoreAllBtn) restoreAllBtn.disabled = state.trash.size === 0;
+      }
 
 function arrangeIcons(){
   const next = getDefaultIconLayout();
@@ -1672,7 +1711,6 @@ function installLongPress(el, getTarget){
           'dialog.rename.desc': 'Enter a new name.',
           'dialog.rename.confirm': 'Rename',
           'dialog.trash.empty': 'Recycle Bin is empty.',
-          'dialog.trash.desc': 'Items here are not deleted yet.',
           'dialog.trash.restore': 'Restore',
           'dialog.trash.restoreAll': 'Restore All',
           'dialog.trash.emptyAction': 'Empty Recycle Bin',
@@ -1930,7 +1968,6 @@ function installLongPress(el, getTarget){
           'dialog.rename.desc': 'Digite um novo nome.',
           'dialog.rename.confirm': 'Renomear',
           'dialog.trash.empty': 'A lixeira está vazia.',
-          'dialog.trash.desc': 'Os itens aqui ainda não foram apagados.',
           'dialog.trash.restore': 'Restaurar',
           'dialog.trash.restoreAll': 'Restaurar tudo',
           'dialog.trash.emptyAction': 'Esvaziar Lixeira',
@@ -3015,34 +3052,26 @@ function installLongPress(el, getTarget){
         videos: () => `<h2>BLISS — ${t('app.videos')}</h2><p>${t('common.soon')}</p>`,
         trash: () => {
           const items = Array.from(state.trash);
-          const grid = items.length
-            ? items.map(id => {
-                const app = APPS.find(a => a.id === id);
-                const label = app ? getIconLabel(app) : id;
-                const iconHtml = app && app.iconFile
-                  ? `<img class="pixel" src="${app.iconFile}" width="32" height="32" alt="${label}" style="display:block;" />`
-                  : iconSVG(app ? app.icon : 'file');
-                return `
-                  <button class="trash-item bevel" type="button" data-trash-id="${id}">
-                    <div class="pixel" style="width:34px;height:34px;display:flex;align-items:center;justify-content:center;">${iconHtml}</div>
-                    <span>${label}</span>
-                  </button>
-                `;
-              }).join('')
-            : `<div class="tiny">${t('dialog.trash.empty')}</div>`;
-          return `
-            <h2>${t('app.trash')}</h2>
-            <p class="tiny">${t('dialog.trash.desc')}</p>
-            <div class="trash-grid">
-              ${grid}
-            </div>
-            <div class="hr98"></div>
-            <div style="display:flex; gap:8px; justify-content:flex-end;">
-              <button class="btn bevel" type="button" data-trash-action="restore">${t('dialog.trash.restore')}</button>
-              <button class="btn bevel" type="button" data-trash-action="restoreAll">${t('dialog.trash.restoreAll')}</button>
-              <button class="btn bevel" type="button" data-trash-action="empty">${t('dialog.trash.emptyAction')}</button>
-            </div>
-          `;
+          if(items.length === 0){
+            return `<div class="trash-empty-msg">${t('dialog.trash.empty')}</div>`;
+          }
+          const grid = items.map(id => {
+            const app = APPS.find(a => a.id === id);
+            const label = app ? getIconLabel(app) : id;
+            const iconFile = app && app.iconFile
+              ? (typeof app.iconFile === 'function' ? app.iconFile() : app.iconFile)
+              : null;
+            const iconHtml = iconFile
+              ? `<img class="pixel" src="${iconFile}" width="32" height="32" alt="${label}" style="display:block;" />`
+              : iconSVG(app ? app.icon : 'file');
+            return `
+              <button class="trash-item bevel" type="button" data-trash-id="${id}">
+                <div class="pixel" style="width:34px;height:34px;display:flex;align-items:center;justify-content:center;">${iconHtml}</div>
+                <span>${label}</span>
+              </button>
+            `;
+          }).join('');
+          return `<div class="trash-grid">${grid}</div>`;
         },
         contact: () => `<h2>${t('contact.title')}</h2><p>${t('common.soon')}</p>`,
         diev: () => `<h2>${t('diev.title')}</h2><p>${t('diev.p1')}</p>`,
@@ -3936,13 +3965,20 @@ function installLongPress(el, getTarget){
                 <div class="wctl bevel" title="${t('win.close')}" data-action="close">×</div>
               </div>
             </div>
-            <div class="menubar">
-              <span data-menu="file" data-i18n="menubar.file">${t('menubar.file')}</span>
-              <span data-menu="edit" data-i18n="menubar.edit">${t('menubar.edit')}</span>
-              <span data-menu="view" data-i18n="menubar.view">${t('menubar.view')}</span>
-              <span data-menu="help" data-i18n="menubar.help">${t('menubar.help')}</span>
-            </div>
-            <div class="menu-drop hidden"></div>
+            ${appId === 'trash'
+              ? `<div class="trash-actions">
+                  <button class="btn bevel" type="button" data-trash-action="restore">${t('dialog.trash.restore')}</button>
+                  <button class="btn bevel" type="button" data-trash-action="restoreAll">${t('dialog.trash.restoreAll')}</button>
+                  <button class="btn bevel" type="button" data-trash-action="empty">${t('dialog.trash.emptyAction')}</button>
+                  <button class="btn bevel" type="button" data-trash-action="help">${t('menu.help.controls')}</button>
+                </div>`
+              : `<div class="menubar">
+                  <span data-menu="file" data-i18n="menubar.file">${t('menubar.file')}</span>
+                  <span data-menu="edit" data-i18n="menubar.edit">${t('menubar.edit')}</span>
+                  <span data-menu="view" data-i18n="menubar.view">${t('menubar.view')}</span>
+                  <span data-menu="help" data-i18n="menubar.help">${t('menubar.help')}</span>
+                </div>
+                <div class="menu-drop hidden"></div>`}
             <div class="content">${bodyHTML}</div>
             <div class="statusbar">
               <span data-i18n="status.ready">${t('status.ready')}</span>
@@ -4332,6 +4368,10 @@ function installLongPress(el, getTarget){
         const trashBtn = e.target.closest && e.target.closest('[data-trash-action]');
         if(trashBtn && trashBtn.dataset){
           const action = trashBtn.dataset.trashAction;
+          if(action === 'help'){
+            showMessage('dialog.controls.title', 'dialog.controls.body');
+            return;
+          }
           if(action === 'restore'){
             const ids = state.trashSelection.size ? Array.from(state.trashSelection) : [];
             if(ids.length){
