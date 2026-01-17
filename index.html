@@ -436,13 +436,25 @@
         align-items:center;
         gap:8px;
         padding:2px 8px;
-        height:22px;
+        height:auto;
         background:var(--task);
         border-bottom:1px solid #9a9a9a;
+        flex-wrap:wrap;
       }
       .trash-actions .btn{
         height:20px;
         padding:0 8px;
+        white-space:nowrap;
+      }
+      @media (max-width: 420px){
+        .trash-actions .btn{
+          height:auto;
+          line-height:1.1;
+          white-space:normal;
+          padding:2px 6px;
+          flex:1 1 45%;
+          min-width:120px;
+        }
       }
       .content h2{margin:0 0 8px 0; font-size:16px;}
       .content p{margin:0 0 10px 0; line-height:1.35;}
@@ -534,16 +546,20 @@
       .music-hide-icons .music-icon{display:none;}
       .poetry-grid{
         display:grid;
-        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        grid-template-columns: repeat(auto-fill, 92px);
         gap:12px;
+        justify-items:start;
       }
       .poetry-item{
+        background:transparent;
+        border:1px solid transparent;
+        width:92px;
+        max-width:92px;
         display:flex;
         flex-direction:column;
         align-items:center;
         gap:6px;
         padding:6px 4px;
-        border:1px solid transparent;
         cursor:default;
       }
       .poetry-item.selected{
@@ -562,7 +578,7 @@
       }
       .trash-grid{
         display:grid;
-        grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+        grid-template-columns: repeat(auto-fill, 92px);
         gap:12px;
         align-items:start;
       }
@@ -571,8 +587,12 @@
         flex-direction:column;
         align-items:center;
         gap:6px;
+        width:92px;
+        max-width:92px;
         padding:6px 4px;
         border:1px solid transparent;
+        background:transparent;
+        appearance:none;
         cursor:default;
       }
       .trash-item.selected{
@@ -830,6 +850,7 @@
           view: 'list',
           selectedId: null,
           currentId: null,
+          readLang: 'en',
         },
         menuOpen: null,
         gridSnap: true,
@@ -1164,6 +1185,15 @@ function renderPoetryWindow(){
   });
 }
 
+function selectPoetryItem(id){
+  state.poetry.selectedId = id;
+  const win = document.getElementById('win_poetry');
+  if(!win) return;
+  win.querySelectorAll('[data-poem-id]').forEach(item => {
+    item.classList.toggle('selected', item.dataset.poemId === id);
+  });
+}
+
 function arrangeIcons(){
   const next = getDefaultIconLayout();
   saveIconPositions(next);
@@ -1331,9 +1361,10 @@ function getPoemById(id){
   return POEMS.find(p => p.id === id) || null;
 }
 
-function getPoemBody(poem){
+function getPoemBody(poem, lang){
   if(!poem) return '';
-  return state.lang === 'pt' ? poem.body_pt : poem.body_en;
+  if(lang === 'pt') return poem.body_pt || poem.body_en || '';
+  return poem.body_en || poem.body_pt || '';
 }
 
 // Context menu state
@@ -3045,7 +3076,7 @@ function installLongPress(el, getTarget){
 
       const VIDEO_CHANNEL_URL = 'https://www.youtube.com/@diev';
 
-      // Add new poems here.
+      // Add new poems here. Always provide body_en and body_pt.
       const POEMS = [
         {
           id: 'evolve',
@@ -3076,6 +3107,364 @@ Mas é diferente quando vem do templo
 E quando vem das ruas
 Porque a insanidade é um traço comum
 Associado à sabedoria não conquistada`
+        },
+        {
+          id: 'tedio',
+          title: 'Tedio',
+          body_en: `Boredom
+
+The walls bore me
+The floor bores me
+The blue sky with the bright sun bores me
+Sometimes I think I understand
+But the eternal boredom ends up taking me
+I think about having a beer
+Maybe that will cheer me up
+The idea excites more than the act
+After the first sip
+I feel only boredom
+They told me that growing old was good
+Knowledge
+Maturity
+All of that brought me boredom
+Now I sit doing nothing inside buildings
+Waiting for the invitation that changes
+The novelty that arrives
+While I carry a cigarette
+Around the boredom
+In the idea I am happy
+In the idea I am free and excited
+In the act I find myself dull
+In this eternal hell of boredom`,
+          body_pt: `Tedio
+
+As paredes me entediam
+O chão me entedia
+O céu azul com o sol brilhando me entedia
+As vezes acho que entendo
+Mas o tédio eterno acaba me tomando
+Penso em tomar uma cerveja
+Talvez isso me anime
+A ideia anima mais que o ato
+Depois do primeiro gole
+Sinto apenas o tédio
+Me disseram que envelhecer era bom
+Conhecimento
+Amadurecimento
+Tudo isso me trouxe tédio
+Agora fico sem fazer nada dentro de prédios
+Esperando o convite que mude
+A novidade que traga
+Enquanto trago um cigarro
+Em volta do tédio
+Na ideia sou feliz
+Na ideia sou livre e animado
+No ato me encontro chato
+Nesse inferno eterno tédio`
+        },
+        {
+          id: 'la-vai-ela',
+          title: 'La vai ela',
+          body_en: `There she goes
+
+There she goes to the phone
+There I go to the music and a distant stare
+There we go, arguing
+There we go, hating and loving each other
+She drinks from my sip
+We share the same visions
+We argue hard about the differences
+We fight
+We love
+We look at ourselves
+Who are we
+Two lost children
+Two angry children
+In the end we love each other
+As always, we love each other`,
+          body_pt: `La vai ela
+
+La vai ela pro celular
+La vai eu pra musica e olhar distante
+La vamos nos discutindo
+La vamos nos se odiando e se amando
+Ela bebe do meu gole
+Dividimos mesmas visões
+Discutimos forte as diferenças
+Brigamos
+Nos amamos
+No olhamos
+Quem somo nos
+Duas crianças perdidas
+Duas crianças bravas
+No fim nos amamos
+Como sempre nos amamos`
+        },
+        {
+          id: 'falta-de-palavras',
+          title: 'A falta de palavras',
+          body_en: `The lack of words
+Is the poet’s suicide
+And she wanted me to try harder
+To be with her
+Cooking dinner
+And I wanted to be far away`,
+          body_pt: `A falta de palavras
+É o suicido do poeta
+E ela queria que eu me esforçasse mais
+Pra estar com ela
+Cozinhando a janta
+E eu querendo estar longe`
+        },
+        {
+          id: 'no-fim-foi-isso',
+          title: 'No fim foi isso',
+          body_en: `In the end, that was it
+In the end, that was it
+A balancing of egos
+One had too much
+Another had too little
+But it is all right
+The scale goes up and down
+And in the end, maybe
+It levels`,
+          body_pt: `No fim foi isso
+No fim foi isso
+Um balanceamento de egos
+Um tinha demais
+Outro tinha de menos
+Mas esta tudo bem
+A balança sobe e desce
+E no fim talvez
+Nivele`
+        },
+        {
+          id: 'sua-interpretacao',
+          title: 'Sua interpretação',
+          body_en: `Your interpretation
+
+Why do I feel so much empathy
+For the mad?
+
+Me, who considers myself so sane
+
+Did you read this in a sarcastic tone
+Or not?`,
+          body_pt: `Sua interpretação
+
+Porque tenho tanta empatia
+Pelos loucos?
+
+Logo eu que me considero tão são
+
+Você leu isso em tom de sarcasmo
+Ou não?`
+        },
+        {
+          id: 'um-sanduiche',
+          title: 'Um sanduíche',
+          body_en: `A sandwich
+
+When I see lives at the edge of the limit
+I realize my life
+doesn’t have enough strength
+to drive me insane
+While I sit at the table
+to make a sandwich
+My father speaks arrogantly
+that no one does anything in this house
+except him
+So I get up
+I pour myself a glass of coke
+I observe things
+And as always
+they remain the same
+They seem to never change
+But I
+I did something
+A sandwich`,
+          body_pt: `Um sanduíche
+
+Quando vejo vidas a beira do limite
+Percebo que a minha vida
+não tem forças o suficiente
+Para me enlouquecer
+Enquanto me sento a mesa
+para fazer um sanduíche
+Meu pai fala com arrogância
+que ninguém faz nada nessa casa
+a não ser ele
+Ai então me levanto
+Me sirvo um copo de coca
+Observo as coisas
+E como sempre
+se mantém iguais
+Parecem nunca mudar
+Mas eu
+Eu fiz algo
+Um sanduíche`
+        },
+        {
+          id: 'conversas',
+          title: 'Conversas',
+          body_en: `Conversations
+
+Conversations are poems
+That we throw against the wind
+My life looks like yours
+I did that to have this
+I went through pains like yours
+I smiled in some moments
+I cried in others
+I wish I had made more of these poems`,
+          body_pt: `Conversas
+
+Conversas são poesias
+Que jogamos contra o vento
+Minha vida parece com a sua
+Eu fiz aquilo para ter isso
+Eu passei por dores como a suas
+Eu sorri em momentos
+Eu chorei em outros
+Queria ter feito mais dessas poesias`
+        },
+        {
+          id: 'a-surpresa-em-sentir-se-livre',
+          title: 'A surpresa em sentir-se livre',
+          body_en: `The surprise of feeling free
+
+That feeling that catches me by surprise
+In a trivial activity
+In the midst of total boredom
+That feeling of freedom
+That arrives between a deep sigh
+Arrives unexpectedly
+Like the visit
+Of an old friend`,
+          body_pt: `A surpresa em sentir-se livre
+
+Essa sensação que me pega de surpresa
+Em uma atividade banal
+Em meio ao tédio total
+Essa sensação de liberdade
+Que chega entre o suspiro profundo
+Chega de surpresa
+Como a visita
+De um velho amigo`
+        },
+        {
+          id: 'morte-e-compromisso',
+          title: 'Morte e compromisso',
+          body_en: `Death and commitment
+
+Sometimes I feel taken over
+By an idea
+An idea that I can die
+At any moment
+Maybe now...
+And that creates a fear
+At the same time it creates an excitement
+Because it is all so mysterious
+How will I die?
+What is death like?
+And what comes after?
+Then time passes
+And all of that goes away
+And I go back to worrying about life
+And about my living problems
+And I forget
+I forget that death
+Death doesn’t care about my commitments`,
+          body_pt: `Morte e compromisso
+
+As vezes me sinto tomado
+Por uma ideia
+Uma ideia de que posso morrer
+A qualquer momento
+Talvez agora...
+E isso gera um medo
+ao mesmo tempo que gera uma excitação
+Porque é tudo tão misterioso
+Como será que vou morrer?
+Como será que é a morte?
+E oque vem depois?
+Ai então o tempo passa
+E tudo isso vai embora
+E volto a me preocupar com a vida
+E com meus problemas de vivo
+E me esqueço
+Me esqueço de que a morte
+A morte não liga pro meus compromissos`
+        },
+        {
+          id: 'quieto',
+          title: 'Quieto',
+          body_en: `Quiet
+
+All my life I have always found myself
+Quiet
+In the middle of people always
+Quiet
+In the middle of family
+Quiet
+In the middle of friends
+Quiet
+In the middle of women
+Quiet
+All my life I have always been very quiet
+What should I say?
+What difference would it make?
+I don’t know
+Now I will be silent
+
+2019`,
+          body_pt: `Quieto
+
+Minha vida inteira eu sempre me encontrei
+Quieto
+No meio das pessoas sempre
+Quieto
+No meio da família
+Quieto
+No meio dos amigos
+Quieto
+No meio das mulheres
+Quieto
+Minha vida inteira eu sempre fui muito quieto
+Oque eu deveria dizer?
+Que diferença faria?
+Não sei
+Agora vou me calar
+
+2019`
+        },
+        {
+          id: 'buffalo-branco-extinto',
+          title: 'Buffalo branco extinto',
+          body_en: `Extinct white buffalo
+
+In the streets people look at me with strangeness
+People who spend their whole lives seeing their own reflection
+Wherever they go they always see the same
+And when something like this appears, they find it strange
+A figure so different
+So rare
+Strange
+And interesting
+Among the buffalo
+I am the extinct white buffalo`,
+          body_pt: `Buffalo branco extinto
+
+Nas ruas pessoas me olham com estranheza
+Pessoas que passam a vida toda vendo seu próprio reflexo
+Aonde quer que vão veem sempre o mesmo
+E quando algo assim aparece, estranham
+Uma figura tão diferente
+Tão rara
+Estranha
+E Interessante
+Em meio aos buffalos
+Eu sou o buffalo branco extinto`
         }
       ];
 
@@ -3154,16 +3543,16 @@ Associado à sabedoria não conquistada`
               return `
                 <div style="display:flex; gap:8px; align-items:center; margin-bottom:10px;">
                   <button class="btn bevel" type="button" data-poetry-action="back">${t('poetry.back')}</button>
-                  <span class="tag">${t('poetry.language')}</span>
-                  <span class="kbd">${state.lang.toUpperCase()}</span>
+                  <button class="btn bevel" type="button" data-poetry-action="toggleLang">${t('poetry.language')}</button>
+                  <span class="kbd">${state.poetry.readLang.toUpperCase()}</span>
                 </div>
                 <h2>${poem.title}</h2>
-                <div class="poem-body">${getPoemBody(poem)}</div>
+                <div class="poem-body">${getPoemBody(poem, state.poetry.readLang)}</div>
               `;
             }
           }
           const grid = POEMS.map(poem => `
-            <button class="poetry-item bevel" type="button" data-poem-id="${poem.id}">
+            <button class="poetry-item" type="button" data-poem-id="${poem.id}">
               <div class="pixel" style="width:34px;height:34px;display:flex;align-items:center;justify-content:center;">
                 <img class="pixel" src="/assets/icons/poetry2.png" width="32" height="32" alt="${poem.title}" style="display:block;" />
               </div>
@@ -3190,7 +3579,7 @@ Associado à sabedoria não conquistada`
               ? `<img class="pixel" src="${iconFile}" width="32" height="32" alt="${label}" style="display:block;" />`
               : iconSVG(app ? app.icon : 'file');
             return `
-              <button class="trash-item bevel" type="button" data-trash-id="${id}">
+                  <button class="trash-item" type="button" data-trash-id="${id}">
                 <div class="pixel" style="width:34px;height:34px;display:flex;align-items:center;justify-content:center;">${iconHtml}</div>
                 <span>${label}</span>
               </button>
@@ -3494,12 +3883,31 @@ Associado à sabedoria não conquistada`
           e.preventDefault();
           state.poetry.view = 'read';
           state.poetry.currentId = poemItem.dataset.poemId;
+          state.poetry.readLang = state.lang;
           renderPoetryWindow();
         }
         const trashItem = e.target.closest && e.target.closest('[data-trash-id]');
         if(trashItem && trashItem.dataset && trashItem.dataset.trashId){
           e.preventDefault();
           restoreFromTrash([trashItem.dataset.trashId]);
+        }
+      });
+
+      let lastPoetryTap = { id: null, time: 0 };
+      document.addEventListener('pointerdown', (e)=>{
+        if(e.pointerType !== 'touch') return;
+        const poemItem = e.target.closest && e.target.closest('[data-poem-id]');
+        if(!poemItem || !poemItem.dataset) return;
+        const id = poemItem.dataset.poemId;
+        const now = Date.now();
+        if(lastPoetryTap.id === id && (now - lastPoetryTap.time) < 320){
+          state.poetry.view = 'read';
+          state.poetry.currentId = id;
+          state.poetry.readLang = state.lang;
+          renderPoetryWindow();
+          lastPoetryTap = { id: null, time: 0 };
+        } else {
+          lastPoetryTap = { id, time: now };
         }
       });
 
@@ -4460,6 +4868,7 @@ Associado à sabedoria não conquistada`
         if(e.key === 'Enter' && state.activeWindowId === 'poetry' && state.poetry.view === 'list' && state.poetry.selectedId){
           state.poetry.view = 'read';
           state.poetry.currentId = state.poetry.selectedId;
+          state.poetry.readLang = state.lang;
           renderPoetryWindow();
         }
 
@@ -4492,8 +4901,8 @@ Associado à sabedoria não conquistada`
         const poemItem = e.target.closest && e.target.closest('[data-poem-id]');
         if(poemItem){
           const id = poemItem.dataset.poemId;
-          state.poetry.selectedId = id;
-          renderPoetryWindow();
+          if(e.detail > 1) return;
+          selectPoetryItem(id);
           return;
         }
         const poemAction = e.target.closest && e.target.closest('[data-poetry-action]');
@@ -4501,6 +4910,10 @@ Associado à sabedoria não conquistada`
           if(poemAction.dataset.poetryAction === 'back'){
             state.poetry.view = 'list';
             state.poetry.currentId = null;
+            renderPoetryWindow();
+          }
+          if(poemAction.dataset.poetryAction === 'toggleLang'){
+            state.poetry.readLang = (state.poetry.readLang === 'en') ? 'pt' : 'en';
             renderPoetryWindow();
           }
           return;
