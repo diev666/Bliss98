@@ -571,6 +571,85 @@
           text-align:left;
         }
       }
+      .settings-shell{
+        display:flex;
+        flex-direction:column;
+        gap:0;
+      }
+      .settings-tabs{
+        display:flex;
+        gap:4px;
+        padding:4px 6px 0;
+        overflow-x:auto;
+        -webkit-overflow-scrolling:touch;
+      }
+      .settings-tab{
+        padding:4px 10px;
+        background:#c0c0c0;
+        border:1px solid #808080;
+        border-bottom:none;
+        cursor:pointer;
+        white-space:nowrap;
+      }
+      .settings-tab[aria-selected="true"]{
+        background:#e9e9e9;
+        position:relative;
+        top:1px;
+        z-index:1;
+      }
+      .settings-panels{
+        padding:0 6px 6px;
+      }
+      .settings-panel{
+        display:none;
+        padding:12px;
+        background:#e9e9e9;
+        border:1px solid #808080;
+        box-shadow:inset 1px 1px #fff, inset -1px -1px #404040;
+        min-height:200px;
+      }
+      .settings-panel.active{display:block;}
+      .settings-general{
+        display:flex;
+        gap:14px;
+        flex-wrap:wrap;
+        align-items:flex-start;
+      }
+      .settings-logo{
+        width:96px;
+        height:72px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        border:2px solid #808080;
+        box-shadow:inset 1px 1px #fff, inset -1px -1px #404040;
+        background:#e9e9e9;
+      }
+      .settings-logo img{
+        width:48px;
+        height:48px;
+        object-fit:contain;
+        display:block;
+      }
+      .settings-summary{
+        display:flex;
+        flex-direction:column;
+        gap:6px;
+      }
+      .settings-block{
+        margin-top:8px;
+        padding-top:8px;
+        border-top:1px solid #b0b0b0;
+      }
+      .settings-actions{
+        display:flex;
+        gap:8px;
+        flex-wrap:wrap;
+      }
+      @media (max-width: 520px){
+        .settings-general{flex-direction:column;}
+        .settings-logo{width:100%; height:72px;}
+      }
       .clothes-grid{
         display:grid;
         grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
@@ -905,6 +984,7 @@
         },
         settings: {
           scanlines: false,
+          tab: 'general',
         },
         trash: new Set(),
         iconLabels: {},
@@ -1479,6 +1559,74 @@ function initClothesWindow(winEl){
   });
 }
 
+function initSettingsTabs(winEl){
+  const win = winEl || document.getElementById('win_settings');
+  if(!win) return;
+  const tabs = Array.from(win.querySelectorAll('.settings-tab'));
+  const panels = Array.from(win.querySelectorAll('.settings-panel'));
+  if(!tabs.length || !panels.length) return;
+  const panelMap = new Map(panels.map(p => [p.dataset.tab, p]));
+
+  const activate = (tabId)=>{
+    if(!panelMap.has(tabId)) return;
+    state.settings.tab = tabId;
+    tabs.forEach(tab => {
+      const active = tab.dataset.tab === tabId;
+      tab.setAttribute('aria-selected', active ? 'true' : 'false');
+      tab.tabIndex = active ? 0 : -1;
+    });
+    panels.forEach(panel => {
+      panel.classList.toggle('active', panel.dataset.tab === tabId);
+    });
+    updateWallpaperButtons(win);
+    updateAnimationButtons(win);
+    updateScanlinesButtons(win);
+  };
+
+  const current = (state.settings.tab && panelMap.has(state.settings.tab))
+    ? state.settings.tab
+    : tabs[0].dataset.tab;
+  activate(current);
+
+  tabs.forEach((tab, idx) => {
+    tab.addEventListener('click', ()=>{
+      activate(tab.dataset.tab);
+    });
+    tab.addEventListener('keydown', (e)=>{
+      const key = e.key;
+      if(key === 'Enter' || key === ' '){
+        e.preventDefault();
+        activate(tab.dataset.tab);
+        return;
+      }
+      if(key === 'ArrowRight' || key === 'ArrowLeft' || key === 'Home' || key === 'End'){
+        e.preventDefault();
+        let nextIdx = idx;
+        if(key === 'ArrowRight') nextIdx = (idx + 1) % tabs.length;
+        if(key === 'ArrowLeft') nextIdx = (idx - 1 + tabs.length) % tabs.length;
+        if(key === 'Home') nextIdx = 0;
+        if(key === 'End') nextIdx = tabs.length - 1;
+        tabs[nextIdx].focus();
+      }
+    });
+  });
+}
+
+function openSettingsAndTab(tabId, scrollId){
+  state.settings.tab = tabId || 'general';
+  openApp('settings');
+  setTimeout(()=>{
+    const winEl = document.getElementById('win_settings');
+    if(winEl) initSettingsTabs(winEl);
+    if(winEl && scrollId){
+      const target = winEl.querySelector(`#${scrollId}`);
+      if(target && target.scrollIntoView){
+        target.scrollIntoView({ block: 'nearest' });
+      }
+    }
+  }, 0);
+}
+
 function selectPoetryItem(id){
   state.poetry.selectedId = id;
   const win = document.getElementById('win_poetry');
@@ -1526,6 +1674,19 @@ function setAnimations(enabled){
   state.animations = !!enabled;
   saveAnimations();
   updateAnimationButtons();
+}
+
+function updateScanlinesButtons(root=document){
+  $$('[data-set-scanlines]', root).forEach(btn => {
+    const on = btn.dataset.setScanlines === 'on';
+    btn.classList.toggle('pressed', on === state.settings.scanlines);
+  });
+}
+
+function setScanlines(enabled){
+  state.settings.scanlines = !!enabled;
+  applyScanlines();
+  updateScanlinesButtons();
 }
 
 function loadScanlines(){
@@ -1642,6 +1803,7 @@ function applyArtState(winEl){
 function applyScanlines(){
   document.body.classList.toggle('scanlines', state.settings.scanlines);
   saveScanlines();
+  updateScanlinesButtons();
 }
 
 function applyWindowState(winEl, appId){
@@ -1805,14 +1967,7 @@ function handleCtxAction(action){
     renderCtxMenu();
   }
   if(action === 'wallpaper'){
-    openApp('settings');
-    setTimeout(()=>{
-      const winEl = document.getElementById('win_settings');
-      const target = winEl ? winEl.querySelector('#settingsWallpaper') : null;
-      if(target && target.scrollIntoView){
-        target.scrollIntoView({ block: 'nearest' });
-      }
-    }, 0);
+    openSettingsAndTab('appearance', 'settingsWallpaper');
   }
   if(action === 'settings') openApp('settings');
   if(action === 'language') toggleLang();
@@ -1924,16 +2079,34 @@ function installLongPress(el, getTarget){
           'ctx.logoff': 'Log off…',
 
           'settings.title': 'Settings',
+          'settings.tab.general': 'General',
+          'settings.tab.language': 'Language',
+          'settings.tab.appearance': 'Appearance',
+          'settings.tab.performance': 'Performance',
+          'settings.general.title': 'BLISS 98',
+          'settings.general.desc': 'System properties and preferences for BLISS 98.',
+          'settings.general.user': 'User:',
+          'settings.general.guest': 'Guest',
+          'settings.general.version': 'Version:',
+          'settings.general.registeredTo': 'Registered to:',
+          'settings.general.registeredName': 'A Bad Motherfucker',
+          'settings.general.registeredCode': '616-FTP-420-333',
           'settings.languageTab': 'Language',
           'settings.languageDesc': 'Choose your language for BLISS 98.',
           'settings.lang.en': 'English',
           'settings.lang.pt': 'Português (BR)',
+          'settings.appearanceTab': 'Appearance',
+          'settings.appearanceDesc': 'Customize how BLISS 98 looks.',
           'settings.animationsTab': 'Animations',
           'settings.animationsDesc': 'Toggle window animations.',
           'settings.animations.on': 'On',
           'settings.animations.off': 'Off',
           'settings.wallpaperTab': 'Wallpaper',
           'settings.wallpaperDesc': 'Choose a wallpaper for your desktop.',
+          'settings.scanlinesTab': 'Scanlines',
+          'settings.scanlinesDesc': 'Add scanline effect to the display.',
+          'settings.scanlines.on': 'On',
+          'settings.scanlines.off': 'Off',
           'poetry.title': 'Poetry Library',
           'poetry.back': 'Back',
           'poetry.language': 'Language',
@@ -2196,16 +2369,34 @@ function installLongPress(el, getTarget){
           'ctx.logoff': 'Sair…',
 
           'settings.title': 'Configurações',
+          'settings.tab.general': 'Geral',
+          'settings.tab.language': 'Idioma',
+          'settings.tab.appearance': 'Aparência',
+          'settings.tab.performance': 'Performance',
+          'settings.general.title': 'BLISS 98',
+          'settings.general.desc': 'Propriedades e ajustes do BLISS 98.',
+          'settings.general.user': 'Usuário:',
+          'settings.general.guest': 'Convidado',
+          'settings.general.version': 'Versão:',
+          'settings.general.registeredTo': 'Registrado para:',
+          'settings.general.registeredName': 'A Bad Motherfucker',
+          'settings.general.registeredCode': '616-FTP-420-333',
           'settings.languageTab': 'Idioma',
           'settings.languageDesc': 'Escolha o idioma do BLISS 98.',
           'settings.lang.en': 'English',
           'settings.lang.pt': 'Português (BR)',
+          'settings.appearanceTab': 'Aparência',
+          'settings.appearanceDesc': 'Personalize o visual do BLISS 98.',
           'settings.animationsTab': 'Animações',
           'settings.animationsDesc': 'Ative ou desative as animações das janelas.',
           'settings.animations.on': 'Ligado',
           'settings.animations.off': 'Desligado',
           'settings.wallpaperTab': 'Papel de parede',
           'settings.wallpaperDesc': 'Escolha um papel de parede para o desktop.',
+          'settings.scanlinesTab': 'Scanlines',
+          'settings.scanlinesDesc': 'Adicione efeito de scanlines na tela.',
+          'settings.scanlines.on': 'Ligado',
+          'settings.scanlines.off': 'Desligado',
           'poetry.title': 'Biblioteca de Poesias',
           'poetry.back': 'Voltar',
           'poetry.language': 'Idioma',
@@ -3150,14 +3341,7 @@ function installLongPress(el, getTarget){
           return;
         }
         if(action === 'settings:wallpaper'){
-          openApp('settings');
-          setTimeout(()=>{
-            const winEl = document.getElementById('win_settings');
-            const target = winEl ? winEl.querySelector('#settingsWallpaper') : null;
-            if(target && target.scrollIntoView){
-              target.scrollIntoView({ block: 'nearest' });
-            }
-          }, 0);
+          openSettingsAndTab('appearance', 'settingsWallpaper');
           return;
         }
         if(action === 'settings:what'){
@@ -3304,6 +3488,9 @@ function installLongPress(el, getTarget){
           }
           if(id === 'clothes'){
             initClothesWindow(winEl);
+          }
+          if(id === 'settings'){
+            initSettingsTabs(winEl);
           }
         }
       });
@@ -3931,42 +4118,88 @@ Eu sou o buffalo branco extinto`
         diev: () => `<h2>${t('diev.title')}</h2><p>${t('diev.p1')}</p>`,
         settings: () => `
           <h2 data-i18n="settings.title">Settings</h2>
-          <div class="card bevel">
-            <strong data-i18n="settings.languageTab">Language</strong>
-            <p style="margin:6px 0 10px 0;" data-i18n="settings.languageDesc">Choose your language for Bliss 98.</p>
-            <div style="display:flex; gap:8px; flex-wrap:wrap;">
-              <button class="btn bevel" type="button" data-set-lang="en"><span class="kbd" style="margin-right:6px;">EN</span><span data-i18n="settings.lang.en">English</span></button>
-              <button class="btn bevel" type="button" data-set-lang="pt"><span class="kbd" style="margin-right:6px;">PT</span><span data-i18n="settings.lang.pt">Português (BR)</span></button>
+          <div class="settings-shell">
+            <div class="settings-tabs" role="tablist" aria-label="Settings">
+              <button class="settings-tab" type="button" role="tab" data-tab="general" aria-controls="settingsPanel_general" data-i18n="settings.tab.general">General</button>
+              <button class="settings-tab" type="button" role="tab" data-tab="language" aria-controls="settingsPanel_language" data-i18n="settings.tab.language">Language</button>
+              <button class="settings-tab" type="button" role="tab" data-tab="appearance" aria-controls="settingsPanel_appearance" data-i18n="settings.tab.appearance">Appearance</button>
+              <button class="settings-tab" type="button" role="tab" data-tab="performance" aria-controls="settingsPanel_performance" data-i18n="settings.tab.performance">Performance</button>
             </div>
-          </div>
-          <div class="card bevel" style="margin-top:10px;">
-            <strong data-i18n="settings.animationsTab">Animations</strong>
-            <p style="margin:6px 0 10px 0;" data-i18n="settings.animationsDesc">Toggle window animations.</p>
-            <div style="display:flex; gap:8px; flex-wrap:wrap;">
-              <button class="btn bevel" type="button" data-set-animations="on"><span data-i18n="settings.animations.on">On</span></button>
-              <button class="btn bevel" type="button" data-set-animations="off"><span data-i18n="settings.animations.off">Off</span></button>
-            </div>
-          </div>
-          <div class="card bevel" id="settingsWallpaper" style="margin-top:10px;">
-            <strong data-i18n="settings.wallpaperTab">Wallpaper</strong>
-            <p style="margin:6px 0 10px 0;" data-i18n="settings.wallpaperDesc">Choose a wallpaper for your desktop.</p>
-            <div class="grid2">
-              <button class="btn bevel" type="button" data-set-wallpaper="classic">
-                <span class="wallpaper-swatch" style="background:#008080;"></span>
-                <span data-i18n="wallpaper.classic">Classic Teal</span>
-              </button>
-              <button class="btn bevel" type="button" data-set-wallpaper="bliss">
-                <span class="wallpaper-swatch" style="background:radial-gradient(circle at 20% 20%, #fff2c4 0%, #ffb77a 30%, #7fc7ff 65%, #1d5b9e 100%);"></span>
-                <span data-i18n="wallpaper.bliss">Sunrise</span>
-              </button>
-              <button class="btn bevel" type="button" data-set-wallpaper="clouds">
-                <span class="wallpaper-swatch" style="background:linear-gradient(180deg, #9ad0ff 0%, #cfe9ff 45%, #f7fbff 100%);"></span>
-                <span data-i18n="wallpaper.clouds">Clouds</span>
-              </button>
-              <button class="btn bevel" type="button" data-set-wallpaper="diev">
-                <span class="wallpaper-swatch" style="background:repeating-linear-gradient(0deg, rgba(255,255,255,0.08) 0 1px, transparent 1px 6px), repeating-linear-gradient(90deg, rgba(255,255,255,0.08) 0 1px, transparent 1px 6px), linear-gradient(135deg, #0a2333, #114b6a);"></span>
-                <span data-i18n="wallpaper.diev">Grid</span>
-              </button>
+            <div class="settings-panels">
+              <div class="settings-panel" role="tabpanel" data-tab="general" id="settingsPanel_general">
+                <div class="settings-general">
+                  <div class="settings-logo">
+                    <img class="pixel" src="/assets/icons/computer.png" width="48" height="48" alt="" />
+                  </div>
+                  <div class="settings-summary">
+                    <strong data-i18n="settings.general.title">BLISS 98</strong>
+                    <div class="tiny" data-i18n="settings.general.desc">System properties and preferences for BLISS 98.</div>
+                    <div class="settings-block tiny">
+                      <span data-i18n="settings.general.user">User:</span>
+                      <strong>${state.user ? state.user : t('settings.general.guest')}</strong>
+                    </div>
+                    <div class="tiny">
+                      <span data-i18n="settings.general.version">Version:</span>
+                      <span>BLISS 98 — Build 98.0</span>
+                    </div>
+                    <div class="settings-block tiny">
+                      <div data-i18n="settings.general.registeredTo">Registered to:</div>
+                      <strong data-i18n="settings.general.registeredName">A Bad Motherfucker</strong>
+                      <div data-i18n="settings.general.registeredCode">616-FTP-420-333</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="settings-panel" role="tabpanel" data-tab="language" id="settingsPanel_language">
+                <strong data-i18n="settings.languageTab">Language</strong>
+                <p style="margin:6px 0 10px 0;" data-i18n="settings.languageDesc">Choose your language for BLISS 98.</p>
+                <div class="settings-actions">
+                  <button class="btn bevel" type="button" data-set-lang="en"><span class="kbd" style="margin-right:6px;">EN</span><span data-i18n="settings.lang.en">English</span></button>
+                  <button class="btn bevel" type="button" data-set-lang="pt"><span class="kbd" style="margin-right:6px;">PT</span><span data-i18n="settings.lang.pt">Português (BR)</span></button>
+                </div>
+              </div>
+              <div class="settings-panel" role="tabpanel" data-tab="appearance" id="settingsPanel_appearance">
+                <strong data-i18n="settings.appearanceTab">Appearance</strong>
+                <p style="margin:6px 0 10px 0;" data-i18n="settings.appearanceDesc">Customize how BLISS 98 looks.</p>
+                <div class="settings-block" id="settingsWallpaper">
+                  <strong data-i18n="settings.wallpaperTab">Wallpaper</strong>
+                  <p style="margin:6px 0 10px 0;" data-i18n="settings.wallpaperDesc">Choose a wallpaper for your desktop.</p>
+                  <div class="grid2">
+                    <button class="btn bevel" type="button" data-set-wallpaper="classic">
+                      <span class="wallpaper-swatch" style="background:#008080;"></span>
+                      <span data-i18n="wallpaper.classic">Classic Teal</span>
+                    </button>
+                    <button class="btn bevel" type="button" data-set-wallpaper="bliss">
+                      <span class="wallpaper-swatch" style="background:radial-gradient(circle at 20% 20%, #fff2c4 0%, #ffb77a 30%, #7fc7ff 65%, #1d5b9e 100%);"></span>
+                      <span data-i18n="wallpaper.bliss">Sunrise</span>
+                    </button>
+                    <button class="btn bevel" type="button" data-set-wallpaper="clouds">
+                      <span class="wallpaper-swatch" style="background:linear-gradient(180deg, #9ad0ff 0%, #cfe9ff 45%, #f7fbff 100%);"></span>
+                      <span data-i18n="wallpaper.clouds">Clouds</span>
+                    </button>
+                    <button class="btn bevel" type="button" data-set-wallpaper="diev">
+                      <span class="wallpaper-swatch" style="background:repeating-linear-gradient(0deg, rgba(255,255,255,0.08) 0 1px, transparent 1px 6px), repeating-linear-gradient(90deg, rgba(255,255,255,0.08) 0 1px, transparent 1px 6px), linear-gradient(135deg, #0a2333, #114b6a);"></span>
+                      <span data-i18n="wallpaper.diev">Grid</span>
+                    </button>
+                  </div>
+                </div>
+                <div class="settings-block">
+                  <strong data-i18n="settings.scanlinesTab">Scanlines</strong>
+                  <p style="margin:6px 0 10px 0;" data-i18n="settings.scanlinesDesc">Add scanline effect to the display.</p>
+                  <div class="settings-actions">
+                    <button class="btn bevel" type="button" data-set-scanlines="on"><span data-i18n="settings.scanlines.on">On</span></button>
+                    <button class="btn bevel" type="button" data-set-scanlines="off"><span data-i18n="settings.scanlines.off">Off</span></button>
+                  </div>
+                </div>
+              </div>
+              <div class="settings-panel" role="tabpanel" data-tab="performance" id="settingsPanel_performance">
+                <strong data-i18n="settings.animationsTab">Animations</strong>
+                <p style="margin:6px 0 10px 0;" data-i18n="settings.animationsDesc">Toggle window animations.</p>
+                <div class="settings-actions">
+                  <button class="btn bevel" type="button" data-set-animations="on"><span data-i18n="settings.animations.on">On</span></button>
+                  <button class="btn bevel" type="button" data-set-animations="off"><span data-i18n="settings.animations.off">Off</span></button>
+                </div>
+              </div>
             </div>
           </div>
         `,
@@ -4913,6 +5146,7 @@ Eu sou o buffalo branco extinto`
         if(appId === 'mediaplayer') { setTimeout(mpInitInWindow, 0); }
         if(appId === 'trash') { updateTrashIconUI(); }
         if(appId === 'clothes') { setTimeout(()=>initClothesWindow(el), 0); }
+        if(appId === 'settings') { setTimeout(()=>initSettingsTabs(el), 0); }
 
         $('#windows').appendChild(el);
         applyI18nTo(el);
@@ -5381,6 +5615,10 @@ Eu sou o buffalo branco extinto`
         const animBtn = e.target.closest && e.target.closest('[data-set-animations]');
         if(animBtn && animBtn.dataset && animBtn.dataset.setAnimations){
           setAnimations(animBtn.dataset.setAnimations === 'on');
+        }
+        const scanBtn = e.target.closest && e.target.closest('[data-set-scanlines]');
+        if(scanBtn && scanBtn.dataset && scanBtn.dataset.setScanlines){
+          setScanlines(scanBtn.dataset.setScanlines === 'on');
         }
         const musicCard = e.target.closest && e.target.closest('[data-music-id]');
         if(musicCard){
