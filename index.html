@@ -713,8 +713,9 @@ function installLongPress(el, getTarget){
           'app.videos': 'Videos',
           'app.about': 'About',
           'app.contact': 'Contact',
-          'app.diev': 'DIEV',
+          'app.diev': 'Diev',
           'app.settings': 'Settings',
+          'app.mediaplayer': 'BLISS Media Player',
 
           'menu.logoff': 'Log off…',
 
@@ -726,24 +727,22 @@ function installLongPress(el, getTarget){
           'ctx.about': 'About',
           'ctx.logoff': 'Log off…',
 
-          'menubar.file': 'File',
-          'menubar.edit': 'Edit',
-          'menubar.view': 'View',
-          'menubar.help': 'Help',
-          'status.ready': 'Ready',
-          'window.minimize': 'Minimize',
-          'window.close': 'Close',
-          'window.resize': 'Resize',
-          'window.nocontent': 'No content.',
-          'music.header': 'BLISS — Music',
-          'music.subtitle': 'Listen everywhere:',
-          'music.tip': 'Music is a beautiful thing, innit?',
-
           'settings.title': 'Settings',
           'settings.languageTab': 'Language',
           'settings.languageDesc': 'Choose your language for Bliss 98.',
           'settings.lang.en': 'English',
-          'settings.lang.pt': 'Português (BR)'
+          'settings.lang.pt': 'Português (BR)',
+
+          'player.title': 'BLISS Media Player',
+          'player.now': 'Now playing:',
+          'player.play': 'Play',
+          'player.pause': 'Pause',
+          'player.prev': 'Prev',
+          'player.next': 'Next',
+          'player.vol': 'Vol',
+          'player.loading': 'Loading tracks…',
+          'player.notfound': 'No tracks found. Add MP3 files to /assets/audio/ and create /assets/audio/tracks.json.',
+          'player.autoplay': 'Autoplay may be blocked by your browser. If it does not start, press Play.'
         },
         pt: {
           'login.sub': 'Digite seu nome para entrar',
@@ -761,8 +760,9 @@ function installLongPress(el, getTarget){
           'app.videos': 'Vídeos',
           'app.about': 'Sobre',
           'app.contact': 'Contato',
-          'app.diev': 'DIEV',
+          'app.diev': 'Diev',
           'app.settings': 'Configurações',
+          'app.mediaplayer': 'BLISS Media Player',
 
           'menu.logoff': 'Sair…',
 
@@ -774,24 +774,22 @@ function installLongPress(el, getTarget){
           'ctx.about': 'Sobre',
           'ctx.logoff': 'Sair…',
 
-          'menubar.file': 'Arquivo',
-          'menubar.edit': 'Editar',
-          'menubar.view': 'Exibir',
-          'menubar.help': 'Ajuda',
-          'status.ready': 'Pronto',
-          'window.minimize': 'Minimizar',
-          'window.close': 'Fechar',
-          'window.resize': 'Redimensionar',
-          'window.nocontent': 'Sem conteúdo.',
-          'music.header': 'BLISS — Música',
-          'music.subtitle': 'Ouça em todas as plataformas:',
-          'music.tip': 'Musica é uma coisa linda, não é?',
-
           'settings.title': 'Configurações',
           'settings.languageTab': 'Idioma',
           'settings.languageDesc': 'Escolha o idioma do Bliss 98.',
           'settings.lang.en': 'English',
-          'settings.lang.pt': 'Português (BR)'
+          'settings.lang.pt': 'Português (BR)',
+
+          'player.title': 'BLISS Media Player',
+          'player.now': 'Tocando:',
+          'player.play': 'Play',
+          'player.pause': 'Pausar',
+          'player.prev': 'Anterior',
+          'player.next': 'Próxima',
+          'player.vol': 'Vol',
+          'player.loading': 'Carregando músicas…',
+          'player.notfound': 'Nenhuma música encontrada. Coloque MP3 em /assets/audio/ e crie /assets/audio/tracks.json.',
+          'player.autoplay': 'O autoplay pode ser bloqueado. Se não tocar, aperte Play.'
         }
       };
 
@@ -844,31 +842,10 @@ function installLongPress(el, getTarget){
             const titleEl = winEl.querySelector('.title-left strong');
             if(titleEl) titleEl.textContent = title;
 
-            const mb = winEl.querySelector('.menubar');
-            if(mb){
-              const spans = mb.querySelectorAll('span');
-              if(spans[0]) spans[0].textContent = t('menubar.file');
-              if(spans[1]) spans[1].textContent = t('menubar.edit');
-              if(spans[2]) spans[2].textContent = t('menubar.view');
-              if(spans[3]) spans[3].textContent = t('menubar.help');
-            }
-
-            const sb = winEl.querySelector('.statusbar');
-            if(sb){
-              const spans = sb.querySelectorAll('span');
-              if(spans[0]) spans[0].textContent = t('status.ready');
-            }
-
-            const minBtn = winEl.querySelector('[data-action="min"]');
-            if(minBtn) minBtn.setAttribute('title', t('window.minimize'));
-            const closeBtn = winEl.querySelector('[data-action="close"]');
-            if(closeBtn) closeBtn.setAttribute('title', t('window.close'));
-            const rz = winEl.querySelector('.resize');
-            if(rz) rz.setAttribute('title', t('window.resize'));
-
-            if(id === 'music'){
+            if(id === 'mediaplayer') {
               const c = winEl.querySelector('.content');
-              if(c) c.innerHTML = CONTENT.music();
+              if(c) c.innerHTML = CONTENT.mediaplayer();
+              setTimeout(mpInitInWindow, 0);
             }
           }
         });
@@ -901,15 +878,16 @@ function installLongPress(el, getTarget){
       }
 
       const APPS = [
-        { id:'clothes', titleKey:'app.clothes', icon:'folder' },
-        { id:'music', titleKey:'app.music', icon:'music' },
-        { id:'art', titleKey:'app.art', icon:'art' },
-        { id:'games', titleKey:'app.games', icon:'game' },
-        { id:'videos', titleKey:'app.videos', icon:'video' },
-        { id:'about', titleKey:'app.about', icon:'info' },
-        { id:'contact', titleKey:'app.contact', icon:'mail' },
-        { id:'diev', titleKey:'app.diev', icon:'user' },
-        { id:'settings', titleKey:'app.settings', icon:'settings' },
+        { id:'clothes', titleKey:'app.clothes', icon:'folder', iconFile:'/assets/icons/Clothes.png' },
+        { id:'music', titleKey:'app.music', icon:'music', iconFile:'/assets/icons/Music.png' },
+        { id:'mediaplayer', titleKey:'app.mediaplayer', icon:'music', iconFile:'/assets/icons/BLISS%20mediaplayer.png' },
+        { id:'art', titleKey:'app.art', icon:'art', iconFile:'/assets/icons/Art.png' },
+        { id:'games', titleKey:'app.games', icon:'game', iconFile:'/assets/icons/Games.png' },
+        { id:'videos', titleKey:'app.videos', icon:'video', iconFile:'/assets/icons/Videos.png' },
+        { id:'about', titleKey:'app.about', icon:'info', iconFile:'/assets/icons/About.png' },
+        { id:'contact', titleKey:'app.contact', icon:'mail', iconFile:'/assets/icons/Contact.png' },
+        { id:'diev', titleKey:'app.diev', icon:'user', iconFile:'/assets/icons/DIEV.png' },
+        { id:'settings', titleKey:'app.settings', icon:'settings', iconFile:'/assets/icons/Settings.png' },
       ];
 
       const CONTENT = {
@@ -928,8 +906,8 @@ function installLongPress(el, getTarget){
         `,
         clothes: () => `<h2>BLISS — Clothes</h2><p>Área de roupas (placeholder).</p>`,
         music: () => `
-  <h2>${t('music.header')}</h2>
-  <p style="margin:0 0 10px 0;">${t('music.subtitle')}</p>
+  <h2>BLISS — Music</h2>
+  <p style="margin:0 0 10px 0;">Listen everywhere:</p>
 
   <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:12px;">
     <a href="https://open.spotify.com/artist/6bjnHKF2yjUlKyYD15cNGq" target="_blank" rel="noreferrer" style="text-decoration:none; color:inherit;">
@@ -988,8 +966,39 @@ function installLongPress(el, getTarget){
   </div>
 
   <div class="hr98"></div>
-  <div class="tiny">${t('music.tip')}</div>
+  <div class="tiny">Tip: you can replace the squares with real pixel icons later.</div>
 `,
+
+        mediaplayer: () => `
+          <h2>${t('player.title')}</h2>
+          <div class="card bevel" style="display:flex; flex-direction:column; gap:10px;">
+            <div>
+              <strong>${t('player.now')}</strong>
+              <span id="mpNow" style="margin-left:6px;">—</span>
+            </div>
+
+            <audio id="mpAudio" preload="metadata"></audio>
+
+            <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
+              <button class="btn bevel" type="button" data-mp-action="prev">⏮ ${t('player.prev')}</button>
+              <button class="btn bevel" type="button" data-mp-action="toggle">▶ ${t('player.play')}</button>
+              <button class="btn bevel" type="button" data-mp-action="next">⏭ ${t('player.next')}</button>
+
+              <span style="margin-left:auto; display:flex; align-items:center; gap:6px;">
+                <span class="kbd">${t('player.vol')}</span>
+                <input id="mpVol" type="range" min="0" max="1" step="0.01" value="0.8" />
+              </span>
+            </div>
+
+            <div class="bevel-in" style="padding:8px;">
+              <div id="mpList" style="display:grid; gap:6px;"></div>
+              <div id="mpMsg" class="tiny" style="margin-top:8px;"></div>
+            </div>
+
+            <div class="tiny">${t('player.autoplay')}</div>
+          </div>
+        `,
+
         art: () => `<h2>BLISS — Art</h2><p>Galeria (placeholder).</p>`,
         games: () => `<h2>BLISS — Games</h2><p>Jogos (placeholder).</p>`,
         videos: () => `<h2>BLISS — Videos</h2><p>Vídeos (placeholder).</p>`,
@@ -1015,6 +1024,206 @@ function installLongPress(el, getTarget){
         return `${hh}:${mm}`;
       }
       function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
+
+
+      // --- BLISS Media Player ---
+      // NOTE: Browsers cannot scan/list a folder on static hosting (GitHub Pages). We use a manifest file.
+      // Create: /assets/audio/tracks.json  Example: ["WOW.mp3","People Change.mp3"]
+      const MP_MANIFEST_URL = '/assets/audio/tracks.json';
+      const MP_STATE_KEY = 'bliss98_mp_state';
+
+      let mp = { tracks: [], idx: 0, playing: false, vol: 0.8, loaded: false };
+
+      function mpSafeTitleFromFilename(name){
+        try{
+          const base = String(name).split('/').pop();
+          const noExt = base.replace(/\.[^/.]+$/,'');
+          return decodeURIComponent(noExt);
+        } catch {
+          return String(name).replace(/\.[^/.]+$/,'');
+        }
+      }
+
+      function mpLoadState(){
+        try{
+          const raw = localStorage.getItem(MP_STATE_KEY);
+          if(!raw) return;
+          const s = JSON.parse(raw);
+          if(typeof s.idx === 'number') mp.idx = s.idx;
+          if(typeof s.vol === 'number') mp.vol = clamp(s.vol, 0, 1);
+        } catch {}
+      }
+
+      function mpSaveState(){
+        try{ localStorage.setItem(MP_STATE_KEY, JSON.stringify({ idx: mp.idx, vol: mp.vol })); } catch {}
+      }
+
+      function mpEls(){
+        const win = document.getElementById('win_mediaplayer');
+        if(!win) return null;
+        return {
+          win,
+          audio: win.querySelector('#mpAudio'),
+          now: win.querySelector('#mpNow'),
+          list: win.querySelector('#mpList'),
+          msg: win.querySelector('#mpMsg'),
+          vol: win.querySelector('#mpVol'),
+          toggleBtn: win.querySelector('[data-mp-action="toggle"]'),
+        };
+      }
+
+      function mpRender(){
+        const els = mpEls();
+        if(!els) return;
+        const { now, list, msg, vol, toggleBtn, audio } = els;
+
+        vol.value = String(mp.vol);
+        audio.volume = mp.vol;
+
+        if(!mp.loaded){
+          msg.textContent = t('player.loading');
+        } else if(mp.tracks.length === 0){
+          msg.textContent = t('player.notfound');
+        } else {
+          msg.textContent = '';
+        }
+
+        list.innerHTML = mp.tracks.map((tr, i)=>{
+          const active = (i === mp.idx);
+          return `
+            <button class="btn bevel" type="button" data-mp-pick="${i}" style="justify-content:flex-start; width:100%; ${active ? 'font-weight:700;' : ''}">
+              ${active ? '▶ ' : ''}${tr.title}
+            </button>
+          `;
+        }).join('');
+
+        const cur = mp.tracks[mp.idx];
+        now.textContent = cur ? cur.title : '—';
+        toggleBtn.innerHTML = mp.playing ? `⏸ ${t('player.pause')}` : `▶ ${t('player.play')}`;
+      }
+
+      function mpSetTrack(i){
+        const els = mpEls();
+        if(!els) return;
+        const { audio } = els;
+        if(mp.tracks.length === 0) return;
+        mp.idx = clamp(i, 0, mp.tracks.length - 1);
+        const cur = mp.tracks[mp.idx];
+        audio.src = cur.src;
+        audio.volume = mp.vol;
+        mpSaveState();
+        mpRender();
+      }
+
+      async function mpPlay(){
+        const els = mpEls();
+        if(!els) return;
+        const { audio } = els;
+        if(mp.tracks.length === 0) return;
+        try{
+          await audio.play();
+          mp.playing = true;
+        } catch {
+          mp.playing = false;
+        }
+        mpRender();
+      }
+
+      function mpPause(){
+        const els = mpEls();
+        if(!els) return;
+        els.audio.pause();
+        mp.playing = false;
+        mpRender();
+      }
+
+      function mpNext(){
+        if(mp.tracks.length === 0) return;
+        mpSetTrack((mp.idx + 1) % mp.tracks.length);
+        mpPlay();
+      }
+
+      function mpPrev(){
+        if(mp.tracks.length === 0) return;
+        mpSetTrack((mp.idx - 1 + mp.tracks.length) % mp.tracks.length);
+        mpPlay();
+      }
+
+      async function mpLoadTracks(){
+        mp.loaded = false;
+        mp.tracks = [];
+        mpRender();
+
+        try{
+          const res = await fetch(MP_MANIFEST_URL, { cache: 'no-store' });
+          if(!res.ok) throw new Error('manifest not found');
+          const data = await res.json();
+
+          const files = Array.isArray(data) ? data : (Array.isArray(data.tracks) ? data.tracks : []);
+          const normalized = files
+            .map(x => (typeof x === 'string') ? x : (x && x.file) ? x.file : null)
+            .filter(Boolean);
+
+          mp.tracks = normalized
+            .filter(f => String(f).toLowerCase().endsWith('.mp3'))
+            .map(f => ({
+              src: '/assets/audio/' + String(f).split('/').pop(),
+              title: mpSafeTitleFromFilename(f)
+            }));
+
+        } catch {
+          mp.tracks = [];
+        }
+
+        mp.loaded = true;
+        mpLoadState();
+        if(mp.tracks.length > 0){
+          mp.idx = clamp(mp.idx, 0, mp.tracks.length - 1);
+          mpSetTrack(mp.idx);
+        }
+        mpRender();
+      }
+
+      function mpInitInWindow(){
+        const els = mpEls();
+        if(!els) return;
+        const { audio, vol } = els;
+
+        // Volume
+        vol.value = String(mp.vol);
+        audio.volume = mp.vol;
+        vol.addEventListener('input', ()=>{
+          mp.vol = Number(vol.value);
+          audio.volume = mp.vol;
+          mpSaveState();
+        });
+
+        // Ended -> next
+        audio.addEventListener('ended', ()=> mpNext());
+
+        // Load tracks each time window is (re)rendered
+        mpLoadTracks();
+      }
+
+      // Delegate Media Player button clicks
+      document.addEventListener('click', (e)=>{
+        const actBtn = e.target.closest && e.target.closest('[data-mp-action]');
+        if(actBtn){
+          const action = actBtn.dataset.mpAction;
+          if(action === 'toggle'){
+            if(mp.playing) mpPause(); else mpPlay();
+          }
+          if(action === 'next') mpNext();
+          if(action === 'prev') mpPrev();
+        }
+
+        const pickBtn = e.target.closest && e.target.closest('[data-mp-pick]');
+        if(pickBtn){
+          const idx = Number(pickBtn.dataset.mpPick);
+          mpSetTrack(idx);
+          mpPlay();
+        }
+      });
 
       // Prevent browser text selection on desktop drags (keep selection inside .content and inputs)
       document.addEventListener('selectstart', (e)=>{
@@ -1061,8 +1270,12 @@ function installLongPress(el, getTarget){
           el.style.left = clamped.x + 'px';
           el.style.top = clamped.y + 'px';
 
+          const iconHtml = app.iconFile
+            ? `<img class="pixel" src="${app.iconFile}" width="32" height="32" alt="${t(app.titleKey)}" style="display:block;" />`
+            : iconSVG(app.icon);
+
           el.innerHTML = `
-            <div class="pixel" style="width:34px;height:34px;display:flex;align-items:center;justify-content:center;">${iconSVG(app.icon)}</div>
+            <div class="pixel" style="width:34px;height:34px;display:flex;align-items:center;justify-content:center;">${iconHtml}</div>
             <span>${t(app.titleKey)}</span>
           `;
 
@@ -1396,7 +1609,7 @@ function installLongPress(el, getTarget){
           const item = document.createElement('div');
           item.className = 'menu-item';
           item.innerHTML = `
-            <div style="width:18px;height:18px;">${iconSVG(app.icon)}</div>
+            <div style="width:18px;height:18px;display:flex;align-items:center;justify-content:center;">${app.iconFile ? `<img class="pixel" src="${app.iconFile}" width="16" height="16" alt="" style="display:block;" />` : iconSVG(app.icon)}</div>
             <div>${t(app.titleKey)}</div>
           `;
           item.addEventListener('click', ()=>{ openApp(app.id); closeStartMenu(); });
@@ -1456,6 +1669,7 @@ function installLongPress(el, getTarget){
           title: t(app.titleKey),
           titleKey: app.titleKey,
           icon: app.icon,
+          iconFile: app.iconFile || null,
           minimized: false,
           left: rect.left,
           top: rect.top,
@@ -1514,25 +1728,25 @@ function installLongPress(el, getTarget){
         el.style.height = wstate.height + 'px';
         el.style.zIndex = String(wstate.z);
 
-        const bodyHTML = (CONTENT[appId] ? CONTENT[appId]() : `<h2>${wstate.title}</h2><p>${t('window.nocontent')}</p>`);
+        const bodyHTML = (CONTENT[appId] ? CONTENT[appId]() : `<h2>${wstate.title}</h2><p>Sem conteúdo.</p>`);
 
         el.innerHTML = `
           <div class="frame bevel">
             <div class="titlebar" data-drag="1">
               <div class="title-left">
-                <span style="width:16px;height:16px;display:inline-flex;">${iconSVG(wstate.icon)}</span>
+                <span style="width:16px;height:16px;display:inline-flex;">${wstate.iconFile ? `<img class="pixel" src="${wstate.iconFile}" width="16" height="16" alt="" style="display:block;" />` : iconSVG(wstate.icon)}</span>
                 <strong>${wstate.title}</strong>
               </div>
               <div class="title-controls">
-                <div class="wctl bevel" title="${t('window.minimize')}" data-action="min">_</div>
-                <div class="wctl bevel" title="${t('window.close')}" data-action="close">×</div>
+                <div class="wctl bevel" title="Minimizar" data-action="min">_</div>
+                <div class="wctl bevel" title="Fechar" data-action="close">×</div>
               </div>
             </div>
-            <div class="menubar"><span>${t('menubar.file')}</span><span>${t('menubar.edit')}</span><span>${t('menubar.view')}</span><span>${t('menubar.help')}</span></div>
+            <div class="menubar"><span>File</span><span>Edit</span><span>View</span><span>Help</span></div>
             <div class="content">${bodyHTML}</div>
-            <div class="statusbar"><span>${t('status.ready')}</span><span>BLISS 98</span></div>
+            <div class="statusbar"><span>Ready</span><span>BLISS 98</span></div>
           </div>
-          <div class="resize" title="${t('window.resize')}"></div>
+          <div class="resize" title="Resize"></div>
         `;
 
         el.addEventListener('mousedown', (e)=>{ e.stopPropagation(); focusWindow(appId); closeStartMenu(); });
@@ -1546,6 +1760,8 @@ function installLongPress(el, getTarget){
 
         makeDraggable(el, appId);
         makeResizable(el, appId);
+
+        if(appId === 'mediaplayer') { setTimeout(mpInitInWindow, 0); }
 
         $('#windows').appendChild(el);
       }
@@ -1790,7 +2006,7 @@ function installLongPress(el, getTarget){
           b.style.whiteSpace = 'nowrap';
           b.style.textOverflow = 'ellipsis';
           b.innerHTML = `
-            <span style="width:16px;height:16px;display:inline-flex;">${iconSVG(w.icon)}</span>
+            <span style="width:16px;height:16px;display:inline-flex;">${w.iconFile ? `<img class="pixel" src="${w.iconFile}" width="16" height="16" alt="" style="display:block;" />` : iconSVG(w.icon)}</span>
             <span>${w.title}</span>
           `;
           b.addEventListener('click', (e)=>{
@@ -1822,6 +2038,8 @@ function installLongPress(el, getTarget){
         setUser(name);
         showDesktop();
         if(!state.windows.has('music')) openApp('music');
+        if(!state.windows.has('mediaplayer')) openApp('mediaplayer');
+        setTimeout(()=>{ mpPlay(); }, 0);
       }
 
       $('#enter').addEventListener('click', enter);
