@@ -158,6 +158,9 @@
         background:rgba(0,0,128,0.9);
         outline:1px dotted #fff;
       }
+      .icon.trashed{
+        opacity:0.65;
+      }
       .wallpaper-swatch{
         width:18px;
         height:18px;
@@ -286,6 +289,14 @@
         animation:winClose 140ms ease-in forwards;
         transform-origin:top left;
         pointer-events:none;
+      }
+      .window.anim-minimize{
+        animation:winMinimize 220ms cubic-bezier(.2,.7,.2,1) forwards;
+        transform-origin:top left;
+      }
+      .window.anim-restore{
+        animation:winRestore 220ms cubic-bezier(.2,.7,.2,1) forwards;
+        transform-origin:top left;
       }
       .window .frame{height:100%; display:flex; flex-direction:column;}
       .titlebar{
@@ -490,6 +501,31 @@
       .music-small .music-card{padding:6px; gap:6px;}
       .music-small .music-card .music-label{font-size:12px;}
       .music-hide-icons .music-icon{display:none;}
+      .trash-grid{
+        display:grid;
+        grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+        gap:12px;
+        align-items:start;
+      }
+      .trash-item{
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        gap:6px;
+        padding:6px 4px;
+        border:1px solid transparent;
+        cursor:default;
+      }
+      .trash-item.selected{
+        border:1px dotted #000080;
+        background:#d6e6ff;
+      }
+      .trash-item span{
+        text-align:center;
+        line-height:1.1;
+        max-width:86px;
+        word-break:break-word;
+      }
       .mp-compact .content{padding:6px;}
       .mp-compact .card{padding:6px;}
       .mp-hide-list #mpList,
@@ -530,11 +566,18 @@
         justify-content:center;
         background:rgba(0,0,0,0.25);
         z-index:9998;
+        padding:12px;
+        box-sizing:border-box;
+        overflow:auto;
       }
       .modal.hidden{display:none;}
       .modal-box{
         min-width:280px;
-        max-width:min(520px, calc(100% - 24px));
+        max-width:520px;
+        width:100%;
+        max-height:calc(100% - 12px);
+        display:flex;
+        flex-direction:column;
       }
       .modal-titlebar{
         height:22px;
@@ -545,7 +588,18 @@
         background:linear-gradient(90deg, var(--title), var(--title2));
         color:#fff;
       }
-      .modal-body{padding:10px; background:#fff; color:#000;}
+      .modal-body{
+        padding:10px;
+        background:#fff;
+        color:#000;
+        overflow:auto;
+        max-height:calc(100% - 72px);
+      }
+      .modal-body input,
+      .modal-body select{
+        max-width:100%;
+        box-sizing:border-box;
+      }
       .modal-actions{
         display:flex;
         justify-content:flex-end;
@@ -561,6 +615,14 @@
       @keyframes winClose{
         from{opacity:1; transform:scale(1);}
         to{opacity:0; transform:scale(0.96);}
+      }
+      @keyframes winMinimize{
+        0%{opacity:1; transform:translate(0,0) scale(1);}
+        100%{opacity:0.1; transform:translate(var(--min-x, 0px), var(--min-y, 0px)) scale(0.2, 0.15);}
+      }
+      @keyframes winRestore{
+        0%{opacity:0.1; transform:translate(var(--min-x, 0px), var(--min-y, 0px)) scale(0.2, 0.15);}
+        100%{opacity:1; transform:translate(0,0) scale(1);}
       }
 
       @media (max-width: 720px){
@@ -711,6 +773,9 @@
         settings: {
           scanlines: false,
         },
+        trash: new Set(),
+        iconLabels: {},
+        trashSelection: new Set(),
         menuOpen: null,
         gridSnap: true,
       };
@@ -721,6 +786,8 @@
       const WALLPAPER_KEY = 'bliss98_wallpaper';
       const ANIMATIONS_KEY = 'bliss98_animations';
       const SCANLINES_KEY = 'bliss98_scanlines';
+      const TRASH_KEY = 'bliss98_trash';
+      const ICON_LABELS_KEY = 'bliss98_icon_labels';
       const WALLPAPERS = [
         {
           id: 'classic',
@@ -872,6 +939,73 @@ function placeOnFreeCell(x, y, occupied, metrics){
   };
 }
 
+function getIconLabel(app){
+  return state.iconLabels[app.id] || t(app.titleKey);
+}
+
+function buildOccupied(excludeIds, metrics){
+  const occupied = new Map();
+  const exclude = new Set(excludeIds || []);
+  $$('.icon').forEach(el => {
+    const id = el.dataset.appId;
+    if(exclude.has(id)) return;
+    const x = parseInt(el.style.left || '0', 10);
+    const y = parseInt(el.style.top || '0', 10);
+    const cell = gridCellFromPos(x, y, metrics);
+    occupied.set(`${cell.col},${cell.row}`, true);
+  });
+  return occupied;
+}
+
+function isOverTrash(x, y){
+  const trashEl = document.querySelector('.icon[data-app-id="trash"]');
+  if(!trashEl) return false;
+  const r = trashEl.getBoundingClientRect();
+  return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
+}
+
+function moveIconsToTrash(ids){
+  const filtered = ids.filter(id => id && id !== 'trash');
+  if(filtered.length === 0) return;
+  filtered.forEach(id => state.trash.add(id));
+  state.trashSelection = new Set();
+  saveTrash();
+  renderIcons();
+  renderTrashWindow();
+}
+
+function restoreFromTrash(ids){
+  const filtered = ids.filter(id => id && id !== 'trash');
+  if(filtered.length === 0) return;
+  filtered.forEach(id => state.trash.delete(id));
+  state.trashSelection = new Set();
+  saveTrash();
+  renderIcons();
+  renderTrashWindow();
+}
+
+function emptyTrash(){
+  state.trash = new Set();
+  state.trashSelection = new Set();
+  saveTrash();
+  renderIcons();
+  renderTrashWindow();
+}
+
+function renderTrashWindow(){
+  const win = document.getElementById('win_trash');
+  if(!win) return;
+  const content = win.querySelector('.content');
+  if(!content) return;
+  content.innerHTML = CONTENT.trash();
+  applyI18nTo(win);
+  const items = win.querySelectorAll('[data-trash-id]');
+  items.forEach(item => {
+    const id = item.dataset.trashId;
+    item.classList.toggle('selected', state.trashSelection.has(id));
+  });
+}
+
 function arrangeIcons(){
   const next = {};
   APPS.forEach((app, idx) => {
@@ -928,6 +1062,36 @@ function loadScanlines(){
 function saveScanlines(){
   try{
     localStorage.setItem(SCANLINES_KEY, state.settings.scanlines ? '1' : '0');
+  } catch {}
+}
+
+function loadTrash(){
+  try{
+    const raw = localStorage.getItem(TRASH_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveTrash(){
+  try{
+    localStorage.setItem(TRASH_KEY, JSON.stringify(Array.from(state.trash)));
+  } catch {}
+}
+
+function loadIconLabels(){
+  try{
+    const raw = localStorage.getItem(ICON_LABELS_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveIconLabels(){
+  try{
+    localStorage.setItem(ICON_LABELS_KEY, JSON.stringify(state.iconLabels));
   } catch {}
 }
 
@@ -1022,17 +1186,30 @@ function renderCtxMenu(){
   if(isIcon){
     items.push({ action:'open', label:t('ctx.open') });
     items.push({ sep:true });
+    if(ctxState.appId === 'trash'){
+      items.push({ action:'emptyTrash', label:t('ctx.emptyTrash') });
+      items.push({ sep:true });
+    } else {
+      items.push({ action:'rename', label:t('ctx.rename') });
+      items.push({ action:'crop', label:t('ctx.crop') });
+      items.push({ action:'copy', label:t('ctx.copy') });
+      items.push({ sep:true });
+      items.push({ action:'moveTrash', label:t('ctx.moveTrash') });
+      items.push({ sep:true });
+    }
   }
 
-  items.push({ action:'arrange', label:t('ctx.arrange') });
-  items.push({ action:'grid', label:t('ctx.grid'), check:gridMark });
-  items.push({ action:'wallpaper', label:t('ctx.wallpaper') });
-  items.push({ sep:true });
-  items.push({ action:'settings', label:t('ctx.settings') });
-  items.push({ action:'language', label:t('ctx.language'), right: state.lang.toUpperCase() });
-  items.push({ action:'about', label:t('ctx.about') });
-  items.push({ sep:true });
-  items.push({ action:'logoff', label:t('ctx.logoff') });
+  if(!isIcon){
+    items.push({ action:'arrange', label:t('ctx.arrange') });
+    items.push({ action:'grid', label:t('ctx.grid'), check:gridMark });
+    items.push({ action:'wallpaper', label:t('ctx.wallpaper') });
+    items.push({ sep:true });
+    items.push({ action:'settings', label:t('ctx.settings') });
+    items.push({ action:'language', label:t('ctx.language'), right: state.lang.toUpperCase() });
+    items.push({ action:'about', label:t('ctx.about') });
+    items.push({ sep:true });
+    items.push({ action:'logoff', label:t('ctx.logoff') });
+  }
 
   menu.innerHTML = items.map(it => {
     if(it.sep) return `<div class="ctx-sep"></div>`;
@@ -1093,6 +1270,45 @@ function handleCtxAction(action){
   if(action === 'open' && ctxState.target === 'icon' && ctxState.appId){
     openApp(ctxState.appId);
   }
+  if(action === 'rename' && ctxState.target === 'icon' && ctxState.appId && ctxState.appId !== 'trash'){
+    const app = APPS.find(a => a.id === ctxState.appId);
+    if(!app) return;
+    const current = state.iconLabels[app.id] || t(app.titleKey);
+    showInputDialog({
+      titleKey: 'dialog.rename.title',
+      descKey: 'dialog.rename.desc',
+      value: current,
+      confirmKey: 'dialog.rename.confirm',
+      onConfirm: (val)=>{
+        const next = String(val || '').trim();
+        if(next){
+          state.iconLabels[app.id] = next;
+        } else {
+          delete state.iconLabels[app.id];
+        }
+        saveIconLabels();
+        renderIcons();
+      }
+    });
+  }
+  if(action === 'crop' && ctxState.target === 'icon' && ctxState.appId){
+    showMessage('dialog.notAvailable.title', 'dialog.notAvailable.body');
+  }
+  if(action === 'copy' && ctxState.target === 'icon' && ctxState.appId){
+    const app = APPS.find(a => a.id === ctxState.appId);
+    const label = app ? getIconLabel(app) : '';
+    if(label){
+      copyText(label).then(ok => ok && showMessage('dialog.copied.title', 'dialog.copied.body'));
+    } else {
+      showMessage('dialog.selectItem.title', 'dialog.selectItem.body');
+    }
+  }
+  if(action === 'moveTrash' && ctxState.target === 'icon' && ctxState.appId){
+    moveIconsToTrash([ctxState.appId]);
+  }
+  if(action === 'emptyTrash' && ctxState.target === 'icon' && ctxState.appId === 'trash'){
+    emptyTrash();
+  }
   if(action === 'arrange') arrangeIcons();
   if(action === 'grid'){
     state.gridSnap = !state.gridSnap;
@@ -1132,7 +1348,7 @@ function installLongPress(el, getTarget){
   };
 
   el.addEventListener('pointerdown', (e)=>{
-    if(e.pointerType === 'mouse' && e.button !== 0) return;
+    if(e.pointerType !== 'touch') return;
     start = { x:e.clientX, y:e.clientY };
     timer = setTimeout(()=>{
       const tgt = getTarget ? getTarget() : { target:'desktop', appId:null };
@@ -1198,11 +1414,17 @@ function installLongPress(el, getTarget){
           'app.contact': 'Contact',
           'app.diev': 'DIEV',
           'app.settings': 'Settings',
+          'app.trash': 'Recycle Bin',
           'app.mediaplayer': 'BLISS Media Player',
 
           'menu.logoff': 'Log off…',
 
           'ctx.open': 'Open',
+          'ctx.rename': 'Rename',
+          'ctx.crop': 'Crop',
+          'ctx.copy': 'Copy',
+          'ctx.moveTrash': 'Move to Recycle Bin',
+          'ctx.emptyTrash': 'Empty Recycle Bin',
           'ctx.arrange': 'Arrange icons',
           'ctx.grid': 'Grid (snap)',
           'ctx.wallpaper': 'Wallpaper',
@@ -1365,6 +1587,14 @@ function installLongPress(el, getTarget){
           'dialog.noUndo.body': 'Nothing to undo.',
           'dialog.noRedo.title': 'Redo',
           'dialog.noRedo.body': 'Nothing to redo.',
+          'dialog.rename.title': 'Rename',
+          'dialog.rename.desc': 'Enter a new name.',
+          'dialog.rename.confirm': 'Rename',
+          'dialog.trash.empty': 'Recycle Bin is empty.',
+          'dialog.trash.desc': 'Items here are not deleted yet.',
+          'dialog.trash.restore': 'Restore',
+          'dialog.trash.restoreAll': 'Restore All',
+          'dialog.trash.emptyAction': 'Empty Recycle Bin',
 
           'wallpaper.classic': 'Classic Teal',
           'wallpaper.bliss': 'Sunrise',
@@ -1442,11 +1672,17 @@ function installLongPress(el, getTarget){
           'app.contact': 'Contato',
           'app.diev': 'DIEV',
           'app.settings': 'Configurações',
+          'app.trash': 'Lixeira',
           'app.mediaplayer': 'BLISS Media Player',
 
           'menu.logoff': 'Sair…',
 
           'ctx.open': 'Abrir',
+          'ctx.rename': 'Renomear',
+          'ctx.crop': 'Recortar',
+          'ctx.copy': 'Copiar',
+          'ctx.moveTrash': 'Mover para a Lixeira',
+          'ctx.emptyTrash': 'Esvaziar Lixeira',
           'ctx.arrange': 'Organizar ícones',
           'ctx.grid': 'Grade (snap)',
           'ctx.wallpaper': 'Plano de Fundo',
@@ -1609,6 +1845,14 @@ function installLongPress(el, getTarget){
           'dialog.noUndo.body': 'Nada para desfazer.',
           'dialog.noRedo.title': 'Refazer',
           'dialog.noRedo.body': 'Nada para refazer.',
+          'dialog.rename.title': 'Renomear',
+          'dialog.rename.desc': 'Digite um novo nome.',
+          'dialog.rename.confirm': 'Renomear',
+          'dialog.trash.empty': 'A lixeira está vazia.',
+          'dialog.trash.desc': 'Os itens aqui ainda não foram apagados.',
+          'dialog.trash.restore': 'Restaurar',
+          'dialog.trash.restoreAll': 'Restaurar tudo',
+          'dialog.trash.emptyAction': 'Esvaziar Lixeira',
 
           'wallpaper.classic': 'Teal clássico',
           'wallpaper.bliss': 'Nascer do Sol',
@@ -2039,6 +2283,23 @@ function installLongPress(el, getTarget){
         });
       }
 
+      function showInputDialog({ titleKey, descKey, value, confirmKey, onConfirm }){
+        const safeValue = value ? String(value).replace(/"/g, '&quot;') : '';
+        const body = `
+          <p style="margin:0 0 8px 0;">${t(descKey)}</p>
+          <input id="modalInput" class="bevel-in" type="text" value="${safeValue}" style="width:100%; height:26px;" />
+        `;
+        modalState.onConfirm = onConfirm || null;
+        showModal({
+          title: t(titleKey),
+          body,
+          actions: [
+            { label: t(confirmKey), action: 'confirm', primary: true },
+            { label: t('common.cancel'), action: 'close' }
+          ]
+        });
+      }
+
       async function copyText(text){
         if(!text) return false;
         try{
@@ -2105,7 +2366,7 @@ function installLongPress(el, getTarget){
         if(!action) return;
 
         if(action === 'global:newWindow'){
-          const options = APPS.map(a => ({ value: a.id, label: t(a.titleKey) }));
+          const options = APPS.filter(a => a.showInStart !== false).map(a => ({ value: a.id, label: t(a.titleKey) }));
           showSelectDialog({
             titleKey: 'dialog.newWindow.title',
             descKey: 'dialog.newWindow.desc',
@@ -2543,12 +2804,15 @@ function installLongPress(el, getTarget){
             return `<svg ${common}><rect x="1" y="1" width="14" height="14" fill="#fff" stroke="#000"/><circle cx="8" cy="6" r="2" fill="#000080"/><path d="M4 13c1-2 7-2 8 0" stroke="#000080" fill="none"/></svg>`;
           case 'settings':
             return `<svg ${common}><rect x="1" y="1" width="14" height="14" fill="#fff" stroke="#000"/><circle cx="8" cy="8" r="3" fill="#c0c0c0" stroke="#000"/><path d="M8 2v2M8 12v2M2 8h2M12 8h2M3.5 3.5l1.4 1.4M11.1 11.1l1.4 1.4M12.5 3.5l-1.4 1.4M4.9 11.1l-1.4 1.4" stroke="#000080"/></svg>`;
+          case 'trash':
+            return `<svg ${common}><rect x="1" y="3" width="14" height="12" fill="#fff" stroke="#000"/><rect x="4" y="1" width="8" height="2" fill="#c0c0c0" stroke="#000"/><path d="M5 5v8M8 5v8M11 5v8" stroke="#000080"/></svg>`;
           default:
             return `<svg ${common}><rect x="1" y="1" width="14" height="14" fill="#fff" stroke="#000"/><rect x="4" y="4" width="8" height="8" fill="#000080"/></svg>`;
         }
       }
 
       const APPS = [
+        { id:'trash', titleKey:'app.trash', icon:'trash', showInStart:false },
         { id:'clothes', titleKey:'app.clothes', icon:'folder', iconFile:'/assets/icons/Clothes.png' },
         { id:'music', titleKey:'app.music', icon:'music', iconFile:'/assets/icons/Music.png' },
         { id:'mediaplayer', titleKey:'app.mediaplayer', icon:'music', iconFile:'/assets/icons/BLISS%20mediaplayer.png' },
@@ -2665,6 +2929,37 @@ function installLongPress(el, getTarget){
         art: () => `<h2>BLISS — ${t('app.art')}</h2><p>${t('common.soon')}</p>`,
         games: () => `<h2>BLISS — ${t('app.games')}</h2><p>${t('common.soon')}</p>`,
         videos: () => `<h2>BLISS — ${t('app.videos')}</h2><p>${t('common.soon')}</p>`,
+        trash: () => {
+          const items = Array.from(state.trash);
+          const grid = items.length
+            ? items.map(id => {
+                const app = APPS.find(a => a.id === id);
+                const label = app ? getIconLabel(app) : id;
+                const iconHtml = app && app.iconFile
+                  ? `<img class="pixel" src="${app.iconFile}" width="32" height="32" alt="${label}" style="display:block;" />`
+                  : iconSVG(app ? app.icon : 'file');
+                return `
+                  <button class="trash-item bevel" type="button" data-trash-id="${id}">
+                    <div class="pixel" style="width:34px;height:34px;display:flex;align-items:center;justify-content:center;">${iconHtml}</div>
+                    <span>${label}</span>
+                  </button>
+                `;
+              }).join('')
+            : `<div class="tiny">${t('dialog.trash.empty')}</div>`;
+          return `
+            <h2>${t('app.trash')}</h2>
+            <p class="tiny">${t('dialog.trash.desc')}</p>
+            <div class="trash-grid">
+              ${grid}
+            </div>
+            <div class="hr98"></div>
+            <div style="display:flex; gap:8px; justify-content:flex-end;">
+              <button class="btn bevel" type="button" data-trash-action="restore">${t('dialog.trash.restore')}</button>
+              <button class="btn bevel" type="button" data-trash-action="restoreAll">${t('dialog.trash.restoreAll')}</button>
+              <button class="btn bevel" type="button" data-trash-action="empty">${t('dialog.trash.emptyAction')}</button>
+            </div>
+          `;
+        },
         contact: () => `<h2>${t('contact.title')}</h2><p>${t('common.soon')}</p>`,
         diev: () => `<h2>${t('diev.title')}</h2><p>${t('diev.p1')}</p>`,
         settings: () => `
@@ -2956,6 +3251,11 @@ function installLongPress(el, getTarget){
           e.preventDefault();
           openLink(card.dataset.musicLink, 'music');
         }
+        const trashItem = e.target.closest && e.target.closest('[data-trash-id]');
+        if(trashItem && trashItem.dataset && trashItem.dataset.trashId){
+          e.preventDefault();
+          restoreFromTrash([trashItem.dataset.trashId]);
+        }
       });
 
       document.addEventListener('mouseover', (e)=>{
@@ -3006,7 +3306,8 @@ function installLongPress(el, getTarget){
         const occupied = new Map();
         let needsSave = false;
 
-        APPS.forEach((app, idx) => {
+        APPS.filter(app => app.showOnDesktop !== false).forEach((app, idx) => {
+          if(app.id !== 'trash' && state.trash.has(app.id)) return;
           const el = document.createElement('div');
           el.className = 'icon';
           el.dataset.appId = app.id;
@@ -3021,14 +3322,16 @@ function installLongPress(el, getTarget){
             needsSave = true;
           }
 
+          const label = getIconLabel(app);
           const iconHtml = app.iconFile
-            ? `<img class="pixel" src="${app.iconFile}" width="32" height="32" alt="${t(app.titleKey)}" style="display:block;" />`
+            ? `<img class="pixel" src="${app.iconFile}" width="32" height="32" alt="${label}" style="display:block;" />`
             : iconSVG(app.icon);
 
           el.innerHTML = `
             <div class="pixel" style="width:34px;height:34px;display:flex;align-items:center;justify-content:center;">${iconHtml}</div>
-            <span>${t(app.titleKey)}</span>
+            <span>${label}</span>
           `;
+          if(state.trash.has(app.id)) el.classList.add('trashed');
 
           // Click select
           el.addEventListener('click', (e)=>{
@@ -3050,6 +3353,7 @@ function installLongPress(el, getTarget){
           makeIconDraggable(el);
           el.addEventListener('contextmenu', (ev)=>{
             ev.preventDefault();
+            ev.stopPropagation();
             openCtxMenu(ev.clientX, ev.clientY, 'icon', app.id);
           });
           installLongPress(el, ()=>({ target:'icon', appId: app.id }));
@@ -3209,6 +3513,10 @@ function installLongPress(el, getTarget){
             saveIconPositions(saved);
           }
 
+        if(dragging && isOverTrash(e.clientX, e.clientY)){
+          moveIconsToTrash(startPositions.map(p => p.id));
+        }
+
           dragging = false;
           pointerId = null;
         };
@@ -3232,6 +3540,7 @@ function installLongPress(el, getTarget){
       // Right-click / two-finger click on desktop
       $('#desktopArea').addEventListener('contextmenu', (e)=>{
         if($('#desktop').classList.contains('hidden')) return;
+        if(e.target && e.target.closest && e.target.closest('.icon')) return;
         e.preventDefault();
         openCtxMenu(e.clientX, e.clientY, 'desktop', null);
       });
@@ -3371,7 +3680,7 @@ function installLongPress(el, getTarget){
       function renderStartMenu(){
         const list = $('#startList');
         list.innerHTML = '';
-        APPS.forEach(app => {
+        APPS.filter(app => app.showInStart !== false).forEach(app => {
           const item = document.createElement('div');
           item.className = 'menu-item';
           item.innerHTML = `
@@ -3470,7 +3779,28 @@ function installLongPress(el, getTarget){
         if(!w) return;
         w.minimized = true;
         const el = document.getElementById(`win_${appId}`);
-        if(el) el.classList.add('hidden');
+        if(el){
+          if(state.animations){
+            const winRect = el.getBoundingClientRect();
+            const taskbar = document.getElementById('taskbar');
+            const targetRect = taskbar ? taskbar.getBoundingClientRect() : null;
+            const targetX = targetRect ? (targetRect.left + 20) : winRect.left;
+            const targetY = targetRect ? (targetRect.top + 8) : (winRect.top + winRect.height);
+            const dx = targetX - winRect.left;
+            const dy = targetY - winRect.top;
+            el.style.setProperty('--min-x', `${dx}px`);
+            el.style.setProperty('--min-y', `${dy}px`);
+            el.classList.add('anim-minimize');
+            el.addEventListener('animationend', ()=>{
+              el.classList.remove('anim-minimize');
+              el.classList.add('hidden');
+              el.style.removeProperty('--min-x');
+              el.style.removeProperty('--min-y');
+            }, { once:true });
+          } else {
+            el.classList.add('hidden');
+          }
+        }
         if(state.activeWindowId === appId) state.activeWindowId = null;
         renderTaskButtons();
       }
@@ -3806,7 +4136,26 @@ function installLongPress(el, getTarget){
             if(w.minimized){
               w.minimized = false;
               const el = document.getElementById(`win_${w.id}`);
-              if(el) el.classList.remove('hidden');
+              if(el){
+                el.classList.remove('hidden');
+                if(state.animations){
+                  const winRect = el.getBoundingClientRect();
+                  const taskbar = document.getElementById('taskbar');
+                  const targetRect = taskbar ? taskbar.getBoundingClientRect() : null;
+                  const targetX = targetRect ? (targetRect.left + 20) : winRect.left;
+                  const targetY = targetRect ? (targetRect.top + 8) : (winRect.top + winRect.height);
+                  const dx = targetX - winRect.left;
+                  const dy = targetY - winRect.top;
+                  el.style.setProperty('--min-x', `${dx}px`);
+                  el.style.setProperty('--min-y', `${dy}px`);
+                  el.classList.add('anim-restore');
+                  el.addEventListener('animationend', ()=>{
+                    el.classList.remove('anim-restore');
+                    el.style.removeProperty('--min-x');
+                    el.style.removeProperty('--min-y');
+                  }, { once:true });
+                }
+              }
               focusWindow(w.id);
             } else if(state.activeWindowId === w.id){
               minimizeApp(w.id);
@@ -3877,12 +4226,47 @@ function installLongPress(el, getTarget){
         }
       });
       document.addEventListener('click', (e)=>{
+        const trashItem = e.target.closest && e.target.closest('[data-trash-id]');
+        if(trashItem){
+          const id = trashItem.dataset.trashId;
+          if(e.ctrlKey || e.metaKey){
+            if(state.trashSelection.has(id)) state.trashSelection.delete(id);
+            else state.trashSelection.add(id);
+          } else {
+            state.trashSelection = new Set([id]);
+          }
+          renderTrashWindow();
+          return;
+        }
+
+        const trashBtn = e.target.closest && e.target.closest('[data-trash-action]');
+        if(trashBtn && trashBtn.dataset){
+          const action = trashBtn.dataset.trashAction;
+          if(action === 'restore'){
+            const ids = state.trashSelection.size ? Array.from(state.trashSelection) : [];
+            if(ids.length){
+              restoreFromTrash(ids);
+              state.trashSelection = new Set();
+            }
+          }
+          if(action === 'restoreAll'){
+            restoreFromTrash(Array.from(state.trash));
+            state.trashSelection = new Set();
+          }
+          if(action === 'empty'){
+            emptyTrash();
+            state.trashSelection = new Set();
+          }
+          return;
+        }
+
         const modalAction = e.target.closest && e.target.closest('[data-modal-action]');
         if(modalAction && modalAction.dataset && modalAction.dataset.modalAction){
           const act = modalAction.dataset.modalAction;
           if(act === 'confirm' && typeof modalState.onConfirm === 'function'){
             const select = $('#modalSelect');
-            const value = select ? select.value : null;
+            const input = $('#modalInput');
+            const value = input ? input.value : (select ? select.value : null);
             modalState.onConfirm(value);
           }
           closeModal();
@@ -3967,6 +4351,9 @@ function installLongPress(el, getTarget){
         state.wallpaper = loadWallpaper();
         state.animations = loadAnimations();
         state.settings.scanlines = loadScanlines();
+        state.trash = new Set(loadTrash());
+        state.iconLabels = loadIconLabels();
+        state.trashSelection = new Set();
 
         // Apply translations immediately (default is English)
         applyI18n();
