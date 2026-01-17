@@ -117,7 +117,7 @@
       .tiny{font-size:12px; opacity:.85; user-select:text;}
       .kbd{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:12px; background:#fff; padding:1px 5px; border:1px solid #999;}
 
-      #desktop{ position:absolute; inset:0; }
+      #desktop{ position:absolute; inset:0; background:var(--bg); }
       .desktop-area{
         position:absolute; inset:0 0 30px 0;
         padding:10px;
@@ -157,6 +157,12 @@
       .icon.selected span{
         background:rgba(0,0,128,0.9);
         outline:1px dotted #fff;
+      }
+      .wallpaper-swatch{
+        width:18px;
+        height:18px;
+        border:1px solid #000;
+        box-shadow: inset 1px 1px 0 rgba(255,255,255,0.35);
       }
 
       .taskbar{
@@ -272,6 +278,15 @@
 }
 
       .window{ position:absolute; min-width:320px; min-height:220px; }
+      .window.anim-open{
+        animation:winOpen 160ms ease-out;
+        transform-origin:top left;
+      }
+      .window.anim-close{
+        animation:winClose 140ms ease-in forwards;
+        transform-origin:top left;
+        pointer-events:none;
+      }
       .window .frame{height:100%; display:flex; flex-direction:column;}
       .titlebar{
         height:22px;
@@ -304,7 +319,80 @@
         border-bottom:1px solid #9a9a9a;
         user-select:none;
       }
-      .menubar span{cursor:default;}
+      .menubar span{
+        cursor:default;
+        padding:0 6px;
+      }
+      .menubar span.active{
+        background:#000080;
+        color:#fff;
+      }
+      .menu-drop{
+        position:absolute;
+        min-width:190px;
+        padding:2px;
+        background:var(--menu);
+        border:2px solid var(--shadow-dark);
+        box-shadow: -2px -2px 0 0 var(--shadow-white) inset, 2px 2px 0 0 var(--shadow-mid) inset;
+        z-index:5;
+      }
+      .menu-drop.hidden{display:none;}
+      .menu-item{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:8px;
+        width:100%;
+        padding:4px 8px;
+        background:transparent;
+        border:0;
+        text-align:left;
+        font:inherit;
+        cursor:default;
+        position:relative;
+      }
+      .menu-item:hover,
+      .menu-item:focus{
+        background:#000080;
+        color:#fff;
+        outline:none;
+      }
+      .menu-left{
+        display:flex;
+        align-items:center;
+        gap:8px;
+      }
+      .menu-check{
+        width:16px;
+        display:inline-flex;
+        justify-content:center;
+      }
+      .menu-right{
+        min-width:16px;
+        text-align:right;
+      }
+      .menu-sep{
+        height:1px;
+        background:#9a9a9a;
+        margin:2px 0;
+      }
+      .menu-item.has-sub:hover > .menu-sub,
+      .menu-item.has-sub:focus-within > .menu-sub{
+        display:block;
+      }
+      .menu-sub{
+        position:absolute;
+        top:-4px;
+        left:100%;
+        margin-left:2px;
+        display:none;
+        min-width:180px;
+        padding:2px;
+        background:var(--menu);
+        border:2px solid var(--shadow-dark);
+        box-shadow: -2px -2px 0 0 var(--shadow-white) inset, 2px 2px 0 0 var(--shadow-mid) inset;
+        z-index:6;
+      }
       .content{
         flex:1;
         padding:10px;
@@ -327,6 +415,13 @@
         background:var(--task);
         border-top:1px solid #9a9a9a;
         font-size:12px;
+        position:relative;
+      }
+      .status-center{
+        position:absolute;
+        left:50%;
+        transform:translateX(-50%);
+        pointer-events:none;
       }
 
       .resize{
@@ -374,6 +469,98 @@
         background:#f2f2f2;
         margin-right:6px;
         font-size:12px;
+      }
+      .music-grid{
+        display:grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap:12px;
+      }
+      .music-card{
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        gap:8px;
+        padding:10px;
+        cursor:default;
+      }
+      .music-card.selected{
+        outline:1px dotted #000080;
+        background:#d6e6ff;
+      }
+      .music-small .music-card{padding:6px; gap:6px;}
+      .music-small .music-card .music-label{font-size:12px;}
+      .music-hide-icons .music-icon{display:none;}
+      .mp-compact .content{padding:6px;}
+      .mp-compact .card{padding:6px;}
+      .mp-hide-list #mpList,
+      .mp-hide-list #mpMsg{display:none;}
+      .mp-item.selected{
+        outline:1px dotted #000080;
+        background:#d6e6ff;
+      }
+      .diev-small .content{font-size:12px;}
+      .diev-large .content{font-size:15px;}
+      .diev-contrast .content{
+        background:#000;
+        color:#fff;
+      }
+      .diev-contrast .content a{color:#9ad0ff;}
+      .art-zoom-50 .content{font-size:12px;}
+      .art-zoom-100 .content{font-size:13px;}
+      .art-zoom-200 .content{font-size:16px;}
+      body.scanlines::before{
+        content:"";
+        position:fixed;
+        inset:0;
+        background:repeating-linear-gradient(
+          0deg,
+          rgba(0,0,0,0.15) 0,
+          rgba(0,0,0,0.15) 1px,
+          rgba(255,255,255,0) 2px,
+          rgba(255,255,255,0) 3px
+        );
+        pointer-events:none;
+        z-index:9999;
+      }
+      .modal{
+        position:fixed;
+        inset:0;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        background:rgba(0,0,0,0.25);
+        z-index:9998;
+      }
+      .modal.hidden{display:none;}
+      .modal-box{
+        min-width:280px;
+        max-width:min(520px, calc(100% - 24px));
+      }
+      .modal-titlebar{
+        height:22px;
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        padding:2px 4px;
+        background:linear-gradient(90deg, var(--title), var(--title2));
+        color:#fff;
+      }
+      .modal-body{padding:10px; background:#fff; color:#000;}
+      .modal-actions{
+        display:flex;
+        justify-content:flex-end;
+        gap:8px;
+        padding:10px;
+        background:var(--task);
+        border-top:1px solid #9a9a9a;
+      }
+      @keyframes winOpen{
+        from{opacity:0; transform:scale(0.98);}
+        to{opacity:1; transform:scale(1);}
+      }
+      @keyframes winClose{
+        from{opacity:1; transform:scale(1);}
+        to{opacity:0; transform:scale(0.96);}
       }
 
       @media (max-width: 720px){
@@ -466,6 +653,21 @@
         <div id="ctxMenu" class="ctx-menu bevel hidden" role="menu" aria-label="Context menu" data-i18n-aria="aria.contextMenu">
           <!-- items injected by JS -->
         </div>
+
+        <div id="modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+          <div class="modal-box bevel">
+            <div class="modal-titlebar">
+              <div class="title-left">
+                <strong id="modalTitle"></strong>
+              </div>
+              <div class="title-controls">
+                <div class="wctl bevel" id="modalClose" aria-label="Close" data-i18n-aria="aria.close">×</div>
+              </div>
+            </div>
+            <div class="modal-body" id="modalBody"></div>
+            <div class="modal-actions" id="modalActions"></div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -480,12 +682,75 @@
         activeWindowId: null,
         selectedIconId: null,
         lang: 'en',
+        wallpaper: 'classic',
+        animations: true,
+        music: {
+          selected: new Set(),
+          tileSize: 'large',
+          openNewTab: true,
+          showIcons: true,
+        },
+        mediaplayer: {
+          selected: new Set(),
+          shuffle: false,
+          repeat: 'off',
+          showPlaylist: true,
+          compact: false,
+        },
+        diev: {
+          textSize: 'normal',
+          highContrast: false,
+        },
+        videos: {
+          openNewTab: true,
+          thumbSize: 'large',
+        },
+        art: {
+          zoom: 100,
+        },
+        settings: {
+          scanlines: false,
+        },
+        menuOpen: null,
         gridSnap: true,
       };
 
       const ICON_POS_KEY = 'bliss98_icon_positions';
       const ICON_SIZE = { w: 92, h: 88 };
       const ICON_GAP = { x: 12, y: 8 };
+      const WALLPAPER_KEY = 'bliss98_wallpaper';
+      const ANIMATIONS_KEY = 'bliss98_animations';
+      const SCANLINES_KEY = 'bliss98_scanlines';
+      const WALLPAPERS = [
+        {
+          id: 'classic',
+          labelKey: 'wallpaper.classic',
+          background: '#008080',
+          size: 'auto',
+          repeat: 'repeat'
+        },
+        {
+          id: 'bliss',
+          labelKey: 'wallpaper.bliss',
+          background: 'radial-gradient(circle at 20% 20%, #fff2c4 0%, #ffb77a 30%, #7fc7ff 65%, #1d5b9e 100%)',
+          size: 'cover',
+          repeat: 'no-repeat'
+        },
+        {
+          id: 'clouds',
+          labelKey: 'wallpaper.clouds',
+          background: 'linear-gradient(180deg, #9ad0ff 0%, #cfe9ff 45%, #f7fbff 100%)',
+          size: 'cover',
+          repeat: 'no-repeat'
+        },
+        {
+          id: 'diev',
+          labelKey: 'wallpaper.diev',
+          background: 'repeating-linear-gradient(0deg, rgba(255,255,255,0.08) 0 1px, transparent 1px 24px), repeating-linear-gradient(90deg, rgba(255,255,255,0.08) 0 1px, transparent 1px 24px), linear-gradient(135deg, #0a2333, #114b6a)',
+          size: 'auto',
+          repeat: 'repeat'
+        },
+      ];
 
       function loadIconPositions(){
         try{
@@ -621,6 +886,128 @@ function resetIconPositions(){
   renderIcons();
 }
 
+function loadAnimations(){
+  try{
+    const raw = localStorage.getItem(ANIMATIONS_KEY);
+    if(raw === null) return true;
+    return raw === '1';
+  } catch {
+    return true;
+  }
+}
+
+function saveAnimations(){
+  try{
+    localStorage.setItem(ANIMATIONS_KEY, state.animations ? '1' : '0');
+  } catch {}
+}
+
+function updateAnimationButtons(root=document){
+  $$('[data-set-animations]', root).forEach(btn => {
+    const on = btn.dataset.setAnimations === 'on';
+    btn.classList.toggle('pressed', on === state.animations);
+  });
+}
+
+function setAnimations(enabled){
+  state.animations = !!enabled;
+  saveAnimations();
+  updateAnimationButtons();
+}
+
+function loadScanlines(){
+  try{
+    const raw = localStorage.getItem(SCANLINES_KEY);
+    if(raw === null) return false;
+    return raw === '1';
+  } catch {
+    return false;
+  }
+}
+
+function saveScanlines(){
+  try{
+    localStorage.setItem(SCANLINES_KEY, state.settings.scanlines ? '1' : '0');
+  } catch {}
+}
+
+function loadWallpaper(){
+  try{
+    const saved = localStorage.getItem(WALLPAPER_KEY);
+    return saved || WALLPAPERS[0].id;
+  } catch {
+    return WALLPAPERS[0].id;
+  }
+}
+
+function updateWallpaperButtons(root=document){
+  $$('[data-set-wallpaper]', root).forEach(btn => {
+    btn.classList.toggle('pressed', btn.dataset.setWallpaper === state.wallpaper);
+  });
+}
+
+function applyWallpaper(id){
+  const wp = WALLPAPERS.find(w => w.id === id) || WALLPAPERS[0];
+  state.wallpaper = wp.id;
+  const desktop = $('#desktop');
+  if(desktop){
+    desktop.style.background = wp.background;
+    desktop.style.backgroundSize = wp.size || 'auto';
+    desktop.style.backgroundRepeat = wp.repeat || 'repeat';
+  }
+  try{ localStorage.setItem(WALLPAPER_KEY, wp.id); } catch {}
+  updateWallpaperButtons();
+  renderCtxMenu();
+}
+
+function applyMusicState(winEl){
+  const win = winEl || document.getElementById('win_music');
+  if(!win) return;
+  const grid = win.querySelector('.music-grid');
+  if(!grid) return;
+  grid.classList.toggle('music-small', state.music.tileSize === 'small');
+  win.classList.toggle('music-hide-icons', !state.music.showIcons);
+  grid.querySelectorAll('[data-music-id]').forEach(card => {
+    const id = card.dataset.musicId;
+    card.classList.toggle('selected', state.music.selected.has(id));
+  });
+}
+
+function applyMediaplayerState(winEl){
+  const win = winEl || document.getElementById('win_mediaplayer');
+  if(!win) return;
+  win.classList.toggle('mp-hide-list', !state.mediaplayer.showPlaylist);
+  win.classList.toggle('mp-compact', state.mediaplayer.compact);
+}
+
+function applyDievState(winEl){
+  const win = winEl || document.getElementById('win_diev');
+  if(!win) return;
+  win.classList.toggle('diev-small', state.diev.textSize === 'small');
+  win.classList.toggle('diev-large', state.diev.textSize === 'large');
+  win.classList.toggle('diev-contrast', state.diev.highContrast);
+}
+
+function applyArtState(winEl){
+  const win = winEl || document.getElementById('win_art');
+  if(!win) return;
+  win.classList.toggle('art-zoom-50', state.art.zoom === 50);
+  win.classList.toggle('art-zoom-100', state.art.zoom === 100);
+  win.classList.toggle('art-zoom-200', state.art.zoom === 200);
+}
+
+function applyScanlines(){
+  document.body.classList.toggle('scanlines', state.settings.scanlines);
+  saveScanlines();
+}
+
+function applyWindowState(winEl, appId){
+  if(appId === 'music') applyMusicState(winEl);
+  if(appId === 'mediaplayer') applyMediaplayerState(winEl);
+  if(appId === 'diev') applyDievState(winEl);
+  if(appId === 'art') applyArtState(winEl);
+}
+
 // Context menu state
 let ctxState = { open:false, target:'desktop', appId:null };
 
@@ -639,6 +1026,7 @@ function renderCtxMenu(){
 
   items.push({ action:'arrange', label:t('ctx.arrange') });
   items.push({ action:'grid', label:t('ctx.grid'), check:gridMark });
+  items.push({ action:'wallpaper', label:t('ctx.wallpaper') });
   items.push({ sep:true });
   items.push({ action:'settings', label:t('ctx.settings') });
   items.push({ action:'language', label:t('ctx.language'), right: state.lang.toUpperCase() });
@@ -683,6 +1071,7 @@ function openCtxMenu(x, y, target='desktop', appId=null){
   if($('#desktop').classList.contains('hidden')) return;
   ctxState = { open:true, target, appId };
   closeStartMenu();
+  closeWindowMenu();
   renderCtxMenu();
   positionCtxMenu(x, y);
   const menu = $('#ctxMenu');
@@ -709,6 +1098,16 @@ function handleCtxAction(action){
     state.gridSnap = !state.gridSnap;
     saveGridSnap();
     renderCtxMenu();
+  }
+  if(action === 'wallpaper'){
+    openApp('settings');
+    setTimeout(()=>{
+      const winEl = document.getElementById('win_settings');
+      const target = winEl ? winEl.querySelector('#settingsWallpaper') : null;
+      if(target && target.scrollIntoView){
+        target.scrollIntoView({ block: 'nearest' });
+      }
+    }, 0);
   }
   if(action === 'settings') openApp('settings');
   if(action === 'language') toggleLang();
@@ -766,10 +1165,15 @@ function installLongPress(el, getTarget){
           'login.copyright': '© BLISS / DIEV — Bliss 98 OS',
 
           'common.soon': 'Soon.',
+          'common.ok': 'OK',
+          'common.cancel': 'Cancel',
+          'common.open': 'Open',
+          'common.copy': 'Copy',
 
           'aria.language': 'Language',
           'aria.startMenu': 'BLISS Menu',
           'aria.contextMenu': 'Context menu',
+          'aria.close': 'Close',
           'start.menu': 'Menu',
 
           'menubar.file': 'File',
@@ -801,6 +1205,7 @@ function installLongPress(el, getTarget){
           'ctx.open': 'Open',
           'ctx.arrange': 'Arrange icons',
           'ctx.grid': 'Grid (snap)',
+          'ctx.wallpaper': 'Wallpaper',
           'ctx.settings': 'Settings',
           'ctx.language': 'Language',
           'ctx.about': 'About',
@@ -811,14 +1216,173 @@ function installLongPress(el, getTarget){
           'settings.languageDesc': 'Choose your language for BLISS 98.',
           'settings.lang.en': 'English',
           'settings.lang.pt': 'Português (BR)',
+          'settings.animationsTab': 'Animations',
+          'settings.animationsDesc': 'Toggle window animations.',
+          'settings.animations.on': 'On',
+          'settings.animations.off': 'Off',
+          'settings.wallpaperTab': 'Wallpaper',
+          'settings.wallpaperDesc': 'Choose a wallpaper for your desktop.',
+
+          'menu.file.newWindow': 'New Window…',
+          'menu.file.close': 'Close',
+          'menu.file.logoff': 'Log off…',
+          'menu.help.controls': 'Controls',
+          'menu.help.about': 'About BLISS 98',
+
+          'menu.music.openLink': 'Open Link…',
+          'menu.music.copyLink': 'Copy Link',
+          'menu.music.selectAll': 'Select All',
+          'menu.music.clearSelection': 'Clear Selection',
+          'menu.music.tileSize': 'Tile size',
+          'menu.music.tileSize.small': 'Small',
+          'menu.music.tileSize.large': 'Large',
+          'menu.music.openNewTab': 'Open in new tab (default)',
+          'menu.music.showIcons': 'Show platform icons',
+          'menu.music.where': 'Where to listen',
+
+          'menu.player.openTrack': 'Open Track…',
+          'menu.player.reload': 'Reload Library',
+          'menu.player.selectAll': 'Select All',
+          'menu.player.copyName': 'Copy Track Name',
+          'menu.player.clearSelection': 'Clear Selection',
+          'menu.player.shuffle': 'Shuffle',
+          'menu.player.repeat': 'Repeat',
+          'menu.player.repeat.off': 'Off',
+          'menu.player.repeat.one': 'One',
+          'menu.player.repeat.all': 'All',
+          'menu.player.showPlaylist': 'Show Playlist',
+          'menu.player.compact': 'Compact mode',
+          'menu.player.tips': 'Playback tips',
+
+          'menu.clothes.openLookbook': 'Open Lookbook',
+          'menu.clothes.shop': 'Shop…',
+          'menu.clothes.copy': 'Copy',
+          'menu.clothes.selectAll': 'Select All',
+          'menu.clothes.viewGrid': 'Grid',
+          'menu.clothes.sort': 'Sort by',
+          'menu.clothes.sort.new': 'New',
+          'menu.clothes.sort.popular': 'Popular',
+          'menu.clothes.preview': 'Preview images',
+          'menu.clothes.sizing': 'Sizing',
+
+          'menu.diev.openPress': 'Open Press Kit',
+          'menu.diev.copyBio': 'Copy Bio',
+          'menu.diev.copy': 'Copy',
+          'menu.diev.selectAll': 'Select All',
+          'menu.diev.textSize': 'Text size',
+          'menu.diev.textSize.small': 'Small',
+          'menu.diev.textSize.normal': 'Normal',
+          'menu.diev.textSize.large': 'Large',
+          'menu.diev.highContrast': 'High contrast',
+          'menu.diev.links': 'Links',
+
+          'menu.contact.copyEmail': 'Copy Email',
+          'menu.contact.openInstagram': 'Open Instagram',
+          'menu.contact.copy': 'Copy',
+          'menu.contact.selectAll': 'Select All',
+          'menu.contact.showQr': 'Show QR',
+          'menu.contact.compact': 'Compact',
+          'menu.contact.support': 'Support',
+
+          'menu.settings.apply': 'Apply',
+          'menu.settings.reset': 'Reset to default',
+          'menu.settings.undo': 'Undo',
+          'menu.settings.redo': 'Redo',
+          'menu.settings.fullscreen': 'Fullscreen',
+          'menu.settings.scanlines': 'Scanlines',
+          'menu.settings.wallpaper': 'Wallpaper…',
+          'menu.settings.what': 'What is this?',
+
+          'menu.art.openGallery': 'Open Gallery',
+          'menu.art.saveImage': 'Save Image…',
+          'menu.art.copy': 'Copy',
+          'menu.art.selectAll': 'Select All',
+          'menu.art.zoom': 'Zoom',
+          'menu.art.zoom.50': '50%',
+          'menu.art.zoom.100': '100%',
+          'menu.art.zoom.200': '200%',
+          'menu.art.slideshow': 'Slideshow',
+          'menu.art.credits': 'Credits',
+
+          'menu.games.openFolder': 'Open Games Folder',
+          'menu.games.download': 'Download…',
+          'menu.games.copy': 'Copy',
+          'menu.games.selectAll': 'Select All',
+          'menu.games.grid': 'Grid',
+          'menu.games.sort': 'Sort by',
+          'menu.games.sort.new': 'New',
+          'menu.games.sort.favorite': 'Favorite',
+          'menu.games.requirements': 'Requirements',
+
+          'menu.videos.openChannel': 'Open Channel',
+          'menu.videos.copyLink': 'Copy Link',
+          'menu.videos.copy': 'Copy',
+          'menu.videos.selectAll': 'Select All',
+          'menu.videos.thumbSize': 'Thumbnail size',
+          'menu.videos.thumbSize.small': 'Small',
+          'menu.videos.thumbSize.large': 'Large',
+          'menu.videos.openNewTab': 'Open in new tab',
+          'menu.videos.tips': 'Playback tips',
+
+          'menu.about.copy': 'Copy',
+          'menu.about.selectAll': 'Select All',
+          'menu.about.version': 'Version info',
+          'menu.about.credits': 'Credits',
+          'menu.about.controls': 'Controls',
+
+          'dialog.newWindow.title': 'New Window',
+          'dialog.newWindow.desc': 'Choose an app to open.',
+          'dialog.newWindow.open': 'Open',
+          'dialog.openLink.title': 'Open Link',
+          'dialog.openLink.desc': 'Choose a platform.',
+          'dialog.openLink.open': 'Open',
+          'dialog.openTrack.title': 'Open Track',
+          'dialog.openTrack.desc': 'Choose a track from the playlist.',
+          'dialog.openTrack.open': 'Open',
+          'dialog.controls.title': 'Controls',
+          'dialog.controls.body': 'Drag windows by the title bar. Resize from the corner. Right-click or long-press the desktop for options.',
+          'dialog.where.title': 'Where to listen',
+          'dialog.where.body': 'These are official BLISS links. Pick a platform to open or copy the link.',
+          'dialog.playerTips.title': 'Playback tips',
+          'dialog.playerTips.body': 'Autoplay may be blocked. If it does not start, press Play once.',
+          'dialog.support.title': 'Support',
+          'dialog.support.body': 'Report issues through the Contact window when available. We will keep the system updated.',
+          'dialog.settingsWhat.title': 'Settings',
+          'dialog.settingsWhat.body': 'Adjust language, wallpaper, and window animations for BLISS 98.',
+          'dialog.version.title': 'Version info',
+          'dialog.version.body': 'BLISS 98 — Build 98.0',
+          'dialog.credits.title': 'Credits',
+          'dialog.credits.body': 'Created by DIEV.',
+          'dialog.notAvailable.title': 'Coming soon',
+          'dialog.notAvailable.body': 'This feature is not available yet.',
+          'dialog.selectItem.title': 'Select an item',
+          'dialog.selectItem.body': 'Select an item first to continue.',
+          'dialog.copied.title': 'Copied',
+          'dialog.copied.body': 'Copied to clipboard.',
+          'dialog.settingsApplied.title': 'Settings',
+          'dialog.settingsApplied.body': 'Settings applied.',
+          'dialog.noUndo.title': 'Undo',
+          'dialog.noUndo.body': 'Nothing to undo.',
+          'dialog.noRedo.title': 'Redo',
+          'dialog.noRedo.body': 'Nothing to redo.',
+
+          'wallpaper.classic': 'Classic Teal',
+          'wallpaper.bliss': 'Sunrise',
+          'wallpaper.clouds': 'Clouds',
+          'wallpaper.diev': 'Grid',
 
           'music.title': 'BLISS — Music',
           'music.subtitle': 'Listen everywhere:',
           'music.tip': 'Music is a beautiful thing, innit?',
 
-          'about.title': 'About — BLISS 98',
-          'about.p1': 'BLISS 98 is a playful Windows 98–style desktop built for BLISS.',
-          'about.p2': 'Explore the apps, open windows, and make yourself at home.',
+          'about.title': 'About',
+          'about.p1': 'BLISS is a project that aims to bring together independent, weird, and unique artists,',
+          'about.p2': 'supporting every form of art and self-expression.',
+          'about.p3': 'Against the system and the dogmas created by humans,',
+          'about.p4': 'we are our own GODS.',
+          'about.p5': 'There are no rules.',
+          'about.p6': 'We create our own world from the inside out.',
+          'about.footer': 'BLISS 98 Desing by DIEV',
 
           'contact.title': 'Contact',
           'diev.title': 'DIEV',
@@ -845,10 +1409,15 @@ function installLongPress(el, getTarget){
           'login.copyright': '© BLISS / DIEV — Bliss 98 OS',
 
           'common.soon': 'Em breve.',
+          'common.ok': 'OK',
+          'common.cancel': 'Cancelar',
+          'common.open': 'Abrir',
+          'common.copy': 'Copiar',
 
           'aria.language': 'Idioma',
           'aria.startMenu': 'Menu BLISS',
           'aria.contextMenu': 'Menu de contexto',
+          'aria.close': 'Fechar',
           'start.menu': 'Menu',
 
           'menubar.file': 'Arquivo',
@@ -880,6 +1449,7 @@ function installLongPress(el, getTarget){
           'ctx.open': 'Abrir',
           'ctx.arrange': 'Organizar ícones',
           'ctx.grid': 'Grade (snap)',
+          'ctx.wallpaper': 'Plano de Fundo',
           'ctx.settings': 'Configurações',
           'ctx.language': 'Idioma',
           'ctx.about': 'Sobre',
@@ -890,14 +1460,173 @@ function installLongPress(el, getTarget){
           'settings.languageDesc': 'Escolha o idioma do BLISS 98.',
           'settings.lang.en': 'English',
           'settings.lang.pt': 'Português (BR)',
+          'settings.animationsTab': 'Animações',
+          'settings.animationsDesc': 'Ative ou desative as animações das janelas.',
+          'settings.animations.on': 'Ligado',
+          'settings.animations.off': 'Desligado',
+          'settings.wallpaperTab': 'Papel de parede',
+          'settings.wallpaperDesc': 'Escolha um papel de parede para o desktop.',
+
+          'menu.file.newWindow': 'Nova janela…',
+          'menu.file.close': 'Fechar',
+          'menu.file.logoff': 'Sair…',
+          'menu.help.controls': 'Controles',
+          'menu.help.about': 'Sobre BLISS 98',
+
+          'menu.music.openLink': 'Abrir link…',
+          'menu.music.copyLink': 'Copiar link',
+          'menu.music.selectAll': 'Selecionar tudo',
+          'menu.music.clearSelection': 'Limpar seleção',
+          'menu.music.tileSize': 'Tamanho dos cards',
+          'menu.music.tileSize.small': 'Pequeno',
+          'menu.music.tileSize.large': 'Grande',
+          'menu.music.openNewTab': 'Abrir em nova aba (padrão)',
+          'menu.music.showIcons': 'Mostrar ícones',
+          'menu.music.where': 'Onde ouvir',
+
+          'menu.player.openTrack': 'Abrir faixa…',
+          'menu.player.reload': 'Recarregar biblioteca',
+          'menu.player.selectAll': 'Selecionar tudo',
+          'menu.player.copyName': 'Copiar nome da faixa',
+          'menu.player.clearSelection': 'Limpar seleção',
+          'menu.player.shuffle': 'Aleatório',
+          'menu.player.repeat': 'Repetir',
+          'menu.player.repeat.off': 'Desligado',
+          'menu.player.repeat.one': 'Uma',
+          'menu.player.repeat.all': 'Todas',
+          'menu.player.showPlaylist': 'Mostrar playlist',
+          'menu.player.compact': 'Modo compacto',
+          'menu.player.tips': 'Dicas de reprodução',
+
+          'menu.clothes.openLookbook': 'Abrir lookbook',
+          'menu.clothes.shop': 'Loja…',
+          'menu.clothes.copy': 'Copiar',
+          'menu.clothes.selectAll': 'Selecionar tudo',
+          'menu.clothes.viewGrid': 'Grade',
+          'menu.clothes.sort': 'Ordenar por',
+          'menu.clothes.sort.new': 'Novidades',
+          'menu.clothes.sort.popular': 'Popular',
+          'menu.clothes.preview': 'Pré-visualizar',
+          'menu.clothes.sizing': 'Tamanhos',
+
+          'menu.diev.openPress': 'Abrir press kit',
+          'menu.diev.copyBio': 'Copiar bio',
+          'menu.diev.copy': 'Copiar',
+          'menu.diev.selectAll': 'Selecionar tudo',
+          'menu.diev.textSize': 'Tamanho do texto',
+          'menu.diev.textSize.small': 'Pequeno',
+          'menu.diev.textSize.normal': 'Normal',
+          'menu.diev.textSize.large': 'Grande',
+          'menu.diev.highContrast': 'Alto contraste',
+          'menu.diev.links': 'Links oficiais',
+
+          'menu.contact.copyEmail': 'Copiar e-mail',
+          'menu.contact.openInstagram': 'Abrir Instagram',
+          'menu.contact.copy': 'Copiar',
+          'menu.contact.selectAll': 'Selecionar tudo',
+          'menu.contact.showQr': 'Mostrar QR',
+          'menu.contact.compact': 'Compacto',
+          'menu.contact.support': 'Suporte',
+
+          'menu.settings.apply': 'Aplicar',
+          'menu.settings.reset': 'Restaurar padrão',
+          'menu.settings.undo': 'Desfazer',
+          'menu.settings.redo': 'Refazer',
+          'menu.settings.fullscreen': 'Tela cheia',
+          'menu.settings.scanlines': 'Scanlines',
+          'menu.settings.wallpaper': 'Papel de parede…',
+          'menu.settings.what': 'O que é isso?',
+
+          'menu.art.openGallery': 'Abrir galeria',
+          'menu.art.saveImage': 'Salvar imagem…',
+          'menu.art.copy': 'Copiar',
+          'menu.art.selectAll': 'Selecionar tudo',
+          'menu.art.zoom': 'Zoom',
+          'menu.art.zoom.50': '50%',
+          'menu.art.zoom.100': '100%',
+          'menu.art.zoom.200': '200%',
+          'menu.art.slideshow': 'Apresentação',
+          'menu.art.credits': 'Créditos',
+
+          'menu.games.openFolder': 'Abrir pasta de jogos',
+          'menu.games.download': 'Download…',
+          'menu.games.copy': 'Copiar',
+          'menu.games.selectAll': 'Selecionar tudo',
+          'menu.games.grid': 'Grade',
+          'menu.games.sort': 'Ordenar por',
+          'menu.games.sort.new': 'Novidades',
+          'menu.games.sort.favorite': 'Favorito',
+          'menu.games.requirements': 'Requisitos',
+
+          'menu.videos.openChannel': 'Abrir canal',
+          'menu.videos.copyLink': 'Copiar link',
+          'menu.videos.copy': 'Copiar',
+          'menu.videos.selectAll': 'Selecionar tudo',
+          'menu.videos.thumbSize': 'Tamanho das miniaturas',
+          'menu.videos.thumbSize.small': 'Pequeno',
+          'menu.videos.thumbSize.large': 'Grande',
+          'menu.videos.openNewTab': 'Abrir em nova aba',
+          'menu.videos.tips': 'Dicas',
+
+          'menu.about.copy': 'Copiar',
+          'menu.about.selectAll': 'Selecionar tudo',
+          'menu.about.version': 'Informações da versão',
+          'menu.about.credits': 'Créditos',
+          'menu.about.controls': 'Controles',
+
+          'dialog.newWindow.title': 'Nova janela',
+          'dialog.newWindow.desc': 'Escolha um app para abrir.',
+          'dialog.newWindow.open': 'Abrir',
+          'dialog.openLink.title': 'Abrir link',
+          'dialog.openLink.desc': 'Escolha uma plataforma.',
+          'dialog.openLink.open': 'Abrir',
+          'dialog.openTrack.title': 'Abrir faixa',
+          'dialog.openTrack.desc': 'Escolha uma faixa da playlist.',
+          'dialog.openTrack.open': 'Abrir',
+          'dialog.controls.title': 'Controles',
+          'dialog.controls.body': 'Arraste a janela pela barra de título. Redimensione pelo canto. Clique com o botão direito ou pressione e segure no desktop para opções.',
+          'dialog.where.title': 'Onde ouvir',
+          'dialog.where.body': 'Estes são links oficiais da BLISS. Escolha uma plataforma para abrir ou copiar.',
+          'dialog.playerTips.title': 'Dicas de reprodução',
+          'dialog.playerTips.body': 'O autoplay pode ser bloqueado. Se não tocar, aperte Play uma vez.',
+          'dialog.support.title': 'Suporte',
+          'dialog.support.body': 'Reporte problemas pela janela de Contato quando estiver disponível. Vamos manter o sistema atualizado.',
+          'dialog.settingsWhat.title': 'Configurações',
+          'dialog.settingsWhat.body': 'Ajuste idioma, papel de parede e animações das janelas do BLISS 98.',
+          'dialog.version.title': 'Informações da versão',
+          'dialog.version.body': 'BLISS 98 — Build 98.0',
+          'dialog.credits.title': 'Créditos',
+          'dialog.credits.body': 'Criado por DIEV.',
+          'dialog.notAvailable.title': 'Em breve',
+          'dialog.notAvailable.body': 'Este recurso ainda não está disponível.',
+          'dialog.selectItem.title': 'Selecione um item',
+          'dialog.selectItem.body': 'Selecione um item para continuar.',
+          'dialog.copied.title': 'Copiado',
+          'dialog.copied.body': 'Copiado para a área de transferência.',
+          'dialog.settingsApplied.title': 'Configurações',
+          'dialog.settingsApplied.body': 'Configurações aplicadas.',
+          'dialog.noUndo.title': 'Desfazer',
+          'dialog.noUndo.body': 'Nada para desfazer.',
+          'dialog.noRedo.title': 'Refazer',
+          'dialog.noRedo.body': 'Nada para refazer.',
+
+          'wallpaper.classic': 'Teal clássico',
+          'wallpaper.bliss': 'Nascer do Sol',
+          'wallpaper.clouds': 'Nuvens',
+          'wallpaper.diev': 'Grid',
 
           'music.title': 'BLISS — Música',
           'music.subtitle': 'Ouça em todas as plataformas:',
           'music.tip': 'Música é uma coisa linda, não é?',
 
-          'about.title': 'Sobre — BLISS 98',
-          'about.p1': 'BLISS 98 é um desktop estilo Windows 98 feito para a BLISS.',
-          'about.p2': 'Explore os apps, abra janelas e fique à vontade.',
+          'about.title': 'Sobre',
+          'about.p1': 'BLISS é um projeto que visa unir artistas independentes, estranhos e únicos,',
+          'about.p2': 'apoiando toda forma de arte e autoexpressão.',
+          'about.p3': 'Contra o sistema e os dogmas criados por humanos,',
+          'about.p4': 'nós somos nossos próprios DEUSES.',
+          'about.p5': 'Não existem regras.',
+          'about.p6': 'Nós criamos o nosso próprio mundo de dentro para fora.',
+          'about.footer': 'BLISS 98 Desing by DIEV',
 
           'contact.title': 'Contato',
           'diev.title': 'DIEV',
@@ -941,6 +1670,8 @@ function installLongPress(el, getTarget){
           const key = el.getAttribute('data-i18n-placeholder');
           if(key) el.setAttribute('placeholder', t(key));
         });
+        updateWallpaperButtons(root);
+        updateAnimationButtons(root);
       }
 
       function applyI18n(){
@@ -968,6 +1699,786 @@ function installLongPress(el, getTarget){
         setLang(state.lang === 'en' ? 'pt' : 'en');
       }
 
+      function getWindowId(winEl){
+        if(!winEl || !winEl.id) return null;
+        return winEl.id.replace('win_', '');
+      }
+
+      function renderMenuItems(items){
+        return items.map(item => {
+          if(item.type === 'sep') return '<div class="menu-sep"></div>';
+          const label = t(item.labelKey);
+          const checkMark = item.type === 'radio' ? '•' : '✓';
+          const check = item.checked ? checkMark : '';
+          const left = `<span class="menu-left"><span class="menu-check">${check}</span><span>${label}</span></span>`;
+          if(item.type === 'submenu'){
+            return `
+              <div class="menu-item has-sub" tabindex="0">
+                ${left}
+                <span class="menu-right">▶</span>
+                <div class="menu-sub">
+                  ${renderMenuItems(item.items)}
+                </div>
+              </div>
+            `;
+          }
+          const actionAttr = item.action ? `data-menu-action="${item.action}"` : '';
+          const right = item.right ? `<span class="menu-right">${item.right}</span>` : '<span class="menu-right"></span>';
+          return `
+            <button class="menu-item" type="button" ${actionAttr}>
+              ${left}
+              ${right}
+            </button>
+          `;
+        }).join('');
+      }
+
+      function getMenuItems(appId, menuKey){
+        const items = [];
+        const addSep = () => { if(items.length && items[items.length-1].type !== 'sep') items.push({ type:'sep' }); };
+
+        if(menuKey === 'file'){
+          items.push({ labelKey:'menu.file.newWindow', action:'global:newWindow' });
+          addSep();
+          if(appId === 'music'){
+            items.push({ labelKey:'menu.music.openLink', action:'music:openLink' });
+            items.push({ labelKey:'menu.music.copyLink', action:'music:copyLink' });
+          }
+          if(appId === 'mediaplayer'){
+            items.push({ labelKey:'menu.player.openTrack', action:'player:openTrack' });
+            items.push({ labelKey:'menu.player.reload', action:'player:reload' });
+          }
+          if(appId === 'clothes'){
+            items.push({ labelKey:'menu.clothes.openLookbook', action:'clothes:openLookbook' });
+            items.push({ labelKey:'menu.clothes.shop', action:'clothes:shop' });
+          }
+          if(appId === 'diev'){
+            items.push({ labelKey:'menu.diev.openPress', action:'diev:openPress' });
+            items.push({ labelKey:'menu.diev.copyBio', action:'diev:copyBio' });
+          }
+          if(appId === 'contact'){
+            items.push({ labelKey:'menu.contact.copyEmail', action:'contact:copyEmail' });
+            items.push({ labelKey:'menu.contact.openInstagram', action:'contact:openInstagram' });
+          }
+          if(appId === 'settings'){
+            items.push({ labelKey:'menu.settings.apply', action:'settings:apply' });
+            items.push({ labelKey:'menu.settings.reset', action:'settings:reset' });
+          }
+          if(appId === 'art'){
+            items.push({ labelKey:'menu.art.openGallery', action:'art:openGallery' });
+            items.push({ labelKey:'menu.art.saveImage', action:'art:saveImage' });
+          }
+          if(appId === 'games'){
+            items.push({ labelKey:'menu.games.openFolder', action:'games:openFolder' });
+            items.push({ labelKey:'menu.games.download', action:'games:download' });
+          }
+          if(appId === 'videos'){
+            items.push({ labelKey:'menu.videos.openChannel', action:'videos:openChannel' });
+            items.push({ labelKey:'menu.videos.copyLink', action:'videos:copyLink' });
+          }
+          addSep();
+          items.push({ labelKey:'menu.file.close', action:'global:close' });
+          items.push({ labelKey:'menu.file.logoff', action:'global:logoff' });
+        }
+
+        if(menuKey === 'edit'){
+          if(appId === 'music'){
+            items.push({ labelKey:'menu.music.selectAll', action:'music:selectAll' });
+            items.push({ labelKey:'menu.music.copyLink', action:'music:copyLink' });
+            items.push({ labelKey:'menu.music.clearSelection', action:'music:clearSelection' });
+          }
+          if(appId === 'mediaplayer'){
+            items.push({ labelKey:'menu.player.selectAll', action:'player:selectAll' });
+            items.push({ labelKey:'menu.player.copyName', action:'player:copyName' });
+            items.push({ labelKey:'menu.player.clearSelection', action:'player:clearSelection' });
+          }
+          if(appId === 'clothes'){
+            items.push({ labelKey:'menu.clothes.copy', action:'clothes:copy' });
+            items.push({ labelKey:'menu.clothes.selectAll', action:'clothes:selectAll' });
+          }
+          if(appId === 'diev'){
+            items.push({ labelKey:'menu.diev.copy', action:'diev:copy' });
+            items.push({ labelKey:'menu.diev.selectAll', action:'diev:selectAll' });
+          }
+          if(appId === 'contact'){
+            items.push({ labelKey:'menu.contact.copy', action:'contact:copy' });
+            items.push({ labelKey:'menu.contact.selectAll', action:'contact:selectAll' });
+          }
+          if(appId === 'settings'){
+            items.push({ labelKey:'menu.settings.undo', action:'settings:undo' });
+            items.push({ labelKey:'menu.settings.redo', action:'settings:redo' });
+          }
+          if(appId === 'art'){
+            items.push({ labelKey:'menu.art.copy', action:'art:copy' });
+            items.push({ labelKey:'menu.art.selectAll', action:'art:selectAll' });
+          }
+          if(appId === 'games'){
+            items.push({ labelKey:'menu.games.copy', action:'games:copy' });
+            items.push({ labelKey:'menu.games.selectAll', action:'games:selectAll' });
+          }
+          if(appId === 'videos'){
+            items.push({ labelKey:'menu.videos.copy', action:'videos:copy' });
+            items.push({ labelKey:'menu.videos.selectAll', action:'videos:selectAll' });
+          }
+          if(appId === 'about'){
+            items.push({ labelKey:'menu.about.copy', action:'about:copy' });
+            items.push({ labelKey:'menu.about.selectAll', action:'about:selectAll' });
+          }
+        }
+
+        if(menuKey === 'view'){
+          if(appId === 'music'){
+            items.push({
+              type:'submenu',
+              labelKey:'menu.music.tileSize',
+              items:[
+                { labelKey:'menu.music.tileSize.small', action:'music:tileSmall', type:'radio', checked: state.music.tileSize === 'small' },
+                { labelKey:'menu.music.tileSize.large', action:'music:tileLarge', type:'radio', checked: state.music.tileSize === 'large' }
+              ]
+            });
+            items.push({ labelKey:'menu.music.openNewTab', action:'music:toggleNewTab', type:'checkbox', checked: state.music.openNewTab });
+            items.push({ labelKey:'menu.music.showIcons', action:'music:toggleIcons', type:'checkbox', checked: state.music.showIcons });
+          }
+          if(appId === 'mediaplayer'){
+            items.push({ labelKey:'menu.player.shuffle', action:'player:toggleShuffle', type:'checkbox', checked: state.mediaplayer.shuffle });
+            items.push({
+              type:'submenu',
+              labelKey:'menu.player.repeat',
+              items:[
+                { labelKey:'menu.player.repeat.off', action:'player:repeatOff', type:'radio', checked: state.mediaplayer.repeat === 'off' },
+                { labelKey:'menu.player.repeat.one', action:'player:repeatOne', type:'radio', checked: state.mediaplayer.repeat === 'one' },
+                { labelKey:'menu.player.repeat.all', action:'player:repeatAll', type:'radio', checked: state.mediaplayer.repeat === 'all' }
+              ]
+            });
+            items.push({ labelKey:'menu.player.showPlaylist', action:'player:togglePlaylist', type:'checkbox', checked: state.mediaplayer.showPlaylist });
+            items.push({ labelKey:'menu.player.compact', action:'player:toggleCompact', type:'checkbox', checked: state.mediaplayer.compact });
+          }
+          if(appId === 'clothes'){
+            items.push({ labelKey:'menu.clothes.viewGrid', action:'clothes:viewGrid' });
+            items.push({
+              type:'submenu',
+              labelKey:'menu.clothes.sort',
+              items:[
+                { labelKey:'menu.clothes.sort.new', action:'clothes:sortNew' },
+                { labelKey:'menu.clothes.sort.popular', action:'clothes:sortPopular' }
+              ]
+            });
+            items.push({ labelKey:'menu.clothes.preview', action:'clothes:togglePreview', type:'checkbox', checked: false });
+          }
+          if(appId === 'diev'){
+            items.push({
+              type:'submenu',
+              labelKey:'menu.diev.textSize',
+              items:[
+                { labelKey:'menu.diev.textSize.small', action:'diev:textSmall', type:'radio', checked: state.diev.textSize === 'small' },
+                { labelKey:'menu.diev.textSize.normal', action:'diev:textNormal', type:'radio', checked: state.diev.textSize === 'normal' },
+                { labelKey:'menu.diev.textSize.large', action:'diev:textLarge', type:'radio', checked: state.diev.textSize === 'large' }
+              ]
+            });
+            items.push({ labelKey:'menu.diev.highContrast', action:'diev:toggleContrast', type:'checkbox', checked: state.diev.highContrast });
+          }
+          if(appId === 'contact'){
+            items.push({ labelKey:'menu.contact.showQr', action:'contact:showQr' });
+            items.push({ labelKey:'menu.contact.compact', action:'contact:compact' });
+          }
+          if(appId === 'settings'){
+            items.push({ labelKey:'menu.settings.fullscreen', action:'settings:fullscreen', type:'checkbox', checked: !!document.fullscreenElement });
+            items.push({ labelKey:'menu.settings.scanlines', action:'settings:scanlines', type:'checkbox', checked: state.settings.scanlines });
+            items.push({ labelKey:'menu.settings.wallpaper', action:'settings:wallpaper' });
+          }
+          if(appId === 'art'){
+            items.push({
+              type:'submenu',
+              labelKey:'menu.art.zoom',
+              items:[
+                { labelKey:'menu.art.zoom.50', action:'art:zoom50', type:'radio', checked: state.art.zoom === 50 },
+                { labelKey:'menu.art.zoom.100', action:'art:zoom100', type:'radio', checked: state.art.zoom === 100 },
+                { labelKey:'menu.art.zoom.200', action:'art:zoom200', type:'radio', checked: state.art.zoom === 200 }
+              ]
+            });
+            items.push({ labelKey:'menu.art.slideshow', action:'art:slideshow' });
+          }
+          if(appId === 'games'){
+            items.push({ labelKey:'menu.games.grid', action:'games:grid' });
+            items.push({
+              type:'submenu',
+              labelKey:'menu.games.sort',
+              items:[
+                { labelKey:'menu.games.sort.new', action:'games:sortNew' },
+                { labelKey:'menu.games.sort.favorite', action:'games:sortFavorite' }
+              ]
+            });
+          }
+          if(appId === 'videos'){
+            items.push({
+              type:'submenu',
+              labelKey:'menu.videos.thumbSize',
+              items:[
+                { labelKey:'menu.videos.thumbSize.small', action:'videos:thumbSmall', type:'radio', checked: state.videos.thumbSize === 'small' },
+                { labelKey:'menu.videos.thumbSize.large', action:'videos:thumbLarge', type:'radio', checked: state.videos.thumbSize === 'large' }
+              ]
+            });
+            items.push({ labelKey:'menu.videos.openNewTab', action:'videos:toggleNewTab', type:'checkbox', checked: state.videos.openNewTab });
+          }
+          if(appId === 'about'){
+            items.push({ labelKey:'menu.about.version', action:'about:version' });
+            items.push({ labelKey:'menu.about.credits', action:'about:credits' });
+          }
+        }
+
+        if(menuKey === 'help'){
+          if(appId === 'music') items.push({ labelKey:'menu.music.where', action:'music:where' });
+          if(appId === 'mediaplayer') items.push({ labelKey:'menu.player.tips', action:'player:tips' });
+          if(appId === 'clothes') items.push({ labelKey:'menu.clothes.sizing', action:'clothes:sizing' });
+          if(appId === 'diev') items.push({ labelKey:'menu.diev.links', action:'diev:links' });
+          if(appId === 'contact') items.push({ labelKey:'menu.contact.support', action:'contact:support' });
+          if(appId === 'settings') items.push({ labelKey:'menu.settings.what', action:'settings:what' });
+          if(appId === 'art') items.push({ labelKey:'menu.art.credits', action:'art:credits' });
+          if(appId === 'games') items.push({ labelKey:'menu.games.requirements', action:'games:requirements' });
+          if(appId === 'videos') items.push({ labelKey:'menu.videos.tips', action:'videos:tips' });
+          if(appId === 'about') items.push({ labelKey:'menu.about.controls', action:'about:controls' });
+
+          addSep();
+          items.push({ labelKey:'menu.help.controls', action:'global:controls' });
+          items.push({ labelKey:'menu.help.about', action:'global:about' });
+        }
+
+        return items;
+      }
+
+      function openWindowMenu(winEl, menuKey, anchorEl){
+        if(!winEl) return;
+        const drop = winEl.querySelector('.menu-drop');
+        const appId = getWindowId(winEl);
+        if(!drop || !appId) return;
+
+        if(state.menuOpen && state.menuOpen.winId !== appId){
+          closeWindowMenu();
+        }
+        const items = getMenuItems(appId, menuKey);
+        if(items.length === 0){
+          closeWindowMenu();
+          return;
+        }
+        drop.innerHTML = renderMenuItems(items);
+        drop.classList.remove('hidden');
+
+        const winRect = winEl.getBoundingClientRect();
+        const anchorRect = anchorEl.getBoundingClientRect();
+        drop.style.top = (anchorRect.bottom - winRect.top) + 'px';
+        drop.style.left = (anchorRect.left - winRect.left) + 'px';
+
+        winEl.querySelectorAll('.menubar span').forEach(span => {
+          span.classList.toggle('active', span.dataset.menu === menuKey);
+        });
+
+        state.menuOpen = { winId: appId, menuKey };
+      }
+
+      function closeWindowMenu(){
+        if(!state.menuOpen) return;
+        const winEl = document.getElementById(`win_${state.menuOpen.winId}`);
+        if(winEl){
+          const drop = winEl.querySelector('.menu-drop');
+          if(drop) drop.classList.add('hidden');
+          winEl.querySelectorAll('.menubar span').forEach(span => span.classList.remove('active'));
+        }
+        state.menuOpen = null;
+      }
+
+      const modalState = { onConfirm: null };
+
+      function showModal({ title, body, actions }){
+        const modal = $('#modal');
+        if(!modal) return;
+        $('#modalTitle').textContent = title || '';
+        $('#modalBody').innerHTML = body || '';
+        const actionsEl = $('#modalActions');
+        actionsEl.innerHTML = (actions || []).map((a, idx) => `
+          <button class="btn bevel" type="button" data-modal-action="${a.action}" style="${a.primary ? 'font-weight:700;' : ''}">${a.label}</button>
+        `).join('');
+        modal.classList.remove('hidden');
+        const firstBtn = actionsEl.querySelector('button');
+        if(firstBtn) firstBtn.focus();
+      }
+
+      function closeModal(){
+        const modal = $('#modal');
+        if(!modal) return;
+        modal.classList.add('hidden');
+        $('#modalBody').innerHTML = '';
+        $('#modalActions').innerHTML = '';
+        modalState.onConfirm = null;
+      }
+
+      function showMessage(titleKey, bodyKey){
+        showModal({
+          title: t(titleKey),
+          body: `<p style="margin:0;">${t(bodyKey)}</p>`,
+          actions: [{ label: t('common.ok'), action: 'close', primary: true }]
+        });
+      }
+
+      function showSelectDialog({ titleKey, descKey, options, confirmKey, onConfirm, selected }){
+        const opts = options.map(o => {
+          const sel = (selected !== undefined && String(selected) === String(o.value)) ? ' selected' : '';
+          return `<option value="${o.value}"${sel}>${o.label}</option>`;
+        }).join('');
+        const body = `
+          <p style="margin:0 0 8px 0;">${t(descKey)}</p>
+          <select id="modalSelect" class="bevel-in" style="width:100%; height:26px;">${opts}</select>
+        `;
+        modalState.onConfirm = onConfirm || null;
+        showModal({
+          title: t(titleKey),
+          body,
+          actions: [
+            { label: t(confirmKey), action: 'confirm', primary: true },
+            { label: t('common.cancel'), action: 'close' }
+          ]
+        });
+      }
+
+      async function copyText(text){
+        if(!text) return false;
+        try{
+          await navigator.clipboard.writeText(text);
+          return true;
+        } catch {
+          const ta = document.createElement('textarea');
+          ta.value = text;
+          ta.style.position = 'fixed';
+          ta.style.left = '-9999px';
+          document.body.appendChild(ta);
+          ta.select();
+          const ok = document.execCommand('copy');
+          ta.remove();
+          return ok;
+        }
+      }
+
+      function selectAllInWindow(winId){
+        const winEl = document.getElementById(`win_${winId}`);
+        if(!winEl) return;
+        const content = winEl.querySelector('.content');
+        if(!content) return;
+        const range = document.createRange();
+        range.selectNodeContents(content);
+        const sel = window.getSelection();
+        if(sel){
+          sel.removeAllRanges();
+          sel.addRange(range);
+        }
+      }
+
+      function getSelectedText(){
+        const sel = window.getSelection();
+        return sel ? String(sel.toString()) : '';
+      }
+
+      function copySelectedTextOrWarn(){
+        const text = getSelectedText();
+        if(!text){
+          showMessage('dialog.selectItem.title', 'dialog.selectItem.body');
+          return;
+        }
+        copyText(text).then(ok => ok && showMessage('dialog.copied.title', 'dialog.copied.body'));
+      }
+
+      function openLink(url, appId){
+        if(!url) return;
+        if(appId === 'music'){
+          if(state.music.openNewTab) window.open(url, '_blank', 'noreferrer');
+          else window.location.href = url;
+          return;
+        }
+        if(appId === 'videos'){
+          if(state.videos.openNewTab) window.open(url, '_blank', 'noreferrer');
+          else window.location.href = url;
+          return;
+        }
+        window.open(url, '_blank', 'noreferrer');
+      }
+
+      function handleMenuAction(action){
+        const winId = state.menuOpen ? state.menuOpen.winId : null;
+        if(!action) return;
+
+        if(action === 'global:newWindow'){
+          const options = APPS.map(a => ({ value: a.id, label: t(a.titleKey) }));
+          showSelectDialog({
+            titleKey: 'dialog.newWindow.title',
+            descKey: 'dialog.newWindow.desc',
+            options,
+            confirmKey: 'dialog.newWindow.open',
+            onConfirm: (val)=>{ openApp(val); }
+          });
+          return;
+        }
+        if(action === 'global:close' && winId){
+          closeApp(winId);
+          return;
+        }
+        if(action === 'global:logoff'){
+          showLogin();
+          return;
+        }
+        if(action === 'global:controls'){
+          showMessage('dialog.controls.title', 'dialog.controls.body');
+          return;
+        }
+        if(action === 'global:about'){
+          openApp('about');
+          return;
+        }
+
+        if(action === 'music:openLink'){
+          const options = MUSIC_LINKS.map(l => ({ value: l.id, label: l.label }));
+          const selectedId = Array.from(state.music.selected)[0];
+          showSelectDialog({
+            titleKey: 'dialog.openLink.title',
+            descKey: 'dialog.openLink.desc',
+            options,
+            confirmKey: 'dialog.openLink.open',
+            selected: selectedId,
+            onConfirm: (val)=>{
+              const link = MUSIC_LINKS.find(l => l.id === val);
+              if(link) openLink(link.url, 'music');
+            }
+          });
+          return;
+        }
+        if(action === 'music:copyLink'){
+          const ids = Array.from(state.music.selected);
+          const selected = ids.length ? ids : [];
+          if(selected.length === 0){
+            showMessage('dialog.selectItem.title', 'dialog.selectItem.body');
+            return;
+          }
+          const urls = selected.map(id => (MUSIC_LINKS.find(l => l.id === id) || {}).url).filter(Boolean);
+          copyText(urls.join('\n')).then(ok => {
+            if(ok) showMessage('dialog.copied.title', 'dialog.copied.body');
+          });
+          return;
+        }
+        if(action === 'music:selectAll'){
+          state.music.selected = new Set(MUSIC_LINKS.map(l => l.id));
+          applyMusicState();
+          return;
+        }
+        if(action === 'music:clearSelection'){
+          state.music.selected = new Set();
+          applyMusicState();
+          return;
+        }
+        if(action === 'music:tileSmall'){
+          state.music.tileSize = 'small';
+          applyMusicState();
+          return;
+        }
+        if(action === 'music:tileLarge'){
+          state.music.tileSize = 'large';
+          applyMusicState();
+          return;
+        }
+        if(action === 'music:toggleNewTab'){
+          state.music.openNewTab = !state.music.openNewTab;
+          return;
+        }
+        if(action === 'music:toggleIcons'){
+          state.music.showIcons = !state.music.showIcons;
+          applyMusicState();
+          return;
+        }
+        if(action === 'music:where'){
+          showMessage('dialog.where.title', 'dialog.where.body');
+          return;
+        }
+
+        if(action === 'player:openTrack'){
+          const options = mp.tracks.map((tr, i) => ({ value: String(i), label: tr.title }));
+          if(options.length === 0){
+            showMessage('dialog.selectItem.title', 'dialog.selectItem.body');
+            return;
+          }
+          showSelectDialog({
+            titleKey: 'dialog.openTrack.title',
+            descKey: 'dialog.openTrack.desc',
+            options,
+            confirmKey: 'dialog.openTrack.open',
+            selected: mp.idx,
+            onConfirm: (val)=>{
+              const idx = Number(val);
+              state.mediaplayer.selected = new Set([idx]);
+              mpSetTrack(idx);
+              mpPlay();
+            }
+          });
+          return;
+        }
+        if(action === 'player:reload'){
+          mpLoadTracks();
+          return;
+        }
+        if(action === 'player:selectAll'){
+          state.mediaplayer.selected = new Set(mp.tracks.map((_, i) => i));
+          mpRender();
+          return;
+        }
+        if(action === 'player:copyName'){
+          const ids = Array.from(state.mediaplayer.selected);
+          if(ids.length === 0){
+            showMessage('dialog.selectItem.title', 'dialog.selectItem.body');
+            return;
+          }
+          const names = ids.map(i => (mp.tracks[i] ? mp.tracks[i].title : '')).filter(Boolean);
+          copyText(names.join('\n')).then(ok => {
+            if(ok) showMessage('dialog.copied.title', 'dialog.copied.body');
+          });
+          return;
+        }
+        if(action === 'player:clearSelection'){
+          state.mediaplayer.selected = new Set();
+          mpRender();
+          return;
+        }
+        if(action === 'player:toggleShuffle'){
+          state.mediaplayer.shuffle = !state.mediaplayer.shuffle;
+          return;
+        }
+        if(action === 'player:repeatOff'){
+          state.mediaplayer.repeat = 'off';
+          return;
+        }
+        if(action === 'player:repeatOne'){
+          state.mediaplayer.repeat = 'one';
+          return;
+        }
+        if(action === 'player:repeatAll'){
+          state.mediaplayer.repeat = 'all';
+          return;
+        }
+        if(action === 'player:togglePlaylist'){
+          state.mediaplayer.showPlaylist = !state.mediaplayer.showPlaylist;
+          applyMediaplayerState();
+          return;
+        }
+        if(action === 'player:toggleCompact'){
+          state.mediaplayer.compact = !state.mediaplayer.compact;
+          applyMediaplayerState();
+          return;
+        }
+        if(action === 'player:tips'){
+          showMessage('dialog.playerTips.title', 'dialog.playerTips.body');
+          return;
+        }
+
+        if(action === 'clothes:openLookbook' || action === 'clothes:shop' || action === 'clothes:sizing' || action === 'clothes:viewGrid' || action === 'clothes:sortNew' || action === 'clothes:sortPopular' || action === 'clothes:togglePreview'){
+          showMessage('dialog.notAvailable.title', 'dialog.notAvailable.body');
+          return;
+        }
+        if(action === 'clothes:copy' || action === 'clothes:selectAll'){
+          if(action === 'clothes:selectAll' && winId) selectAllInWindow(winId);
+          if(action === 'clothes:copy'){
+            copySelectedTextOrWarn();
+          }
+          return;
+        }
+
+        if(action === 'diev:openPress' || action === 'diev:copyBio'){
+          showMessage('dialog.notAvailable.title', 'dialog.notAvailable.body');
+          return;
+        }
+        if(action === 'diev:copy' || action === 'diev:selectAll'){
+          if(action === 'diev:selectAll' && winId) selectAllInWindow(winId);
+          if(action === 'diev:copy'){
+            copySelectedTextOrWarn();
+          }
+          return;
+        }
+        if(action === 'diev:textSmall'){
+          state.diev.textSize = 'small';
+          applyDievState();
+          return;
+        }
+        if(action === 'diev:textNormal'){
+          state.diev.textSize = 'normal';
+          applyDievState();
+          return;
+        }
+        if(action === 'diev:textLarge'){
+          state.diev.textSize = 'large';
+          applyDievState();
+          return;
+        }
+        if(action === 'diev:toggleContrast'){
+          state.diev.highContrast = !state.diev.highContrast;
+          applyDievState();
+          return;
+        }
+        if(action === 'diev:links'){
+          showMessage('dialog.where.title', 'dialog.where.body');
+          return;
+        }
+
+        if(action === 'contact:support'){
+          showMessage('dialog.support.title', 'dialog.support.body');
+          return;
+        }
+        if(action === 'contact:copyEmail' || action === 'contact:openInstagram' || action === 'contact:showQr' || action === 'contact:compact'){
+          showMessage('dialog.notAvailable.title', 'dialog.notAvailable.body');
+          return;
+        }
+        if(action === 'contact:copy' || action === 'contact:selectAll'){
+          if(action === 'contact:selectAll' && winId) selectAllInWindow(winId);
+          if(action === 'contact:copy'){
+            copySelectedTextOrWarn();
+          }
+          return;
+        }
+
+        if(action === 'settings:apply'){
+          showMessage('dialog.settingsApplied.title', 'dialog.settingsApplied.body');
+          return;
+        }
+        if(action === 'settings:reset'){
+          setLang('en');
+          applyWallpaper('classic');
+          setAnimations(true);
+          state.settings.scanlines = false;
+          applyScanlines();
+          showMessage('dialog.settingsApplied.title', 'dialog.settingsApplied.body');
+          return;
+        }
+        if(action === 'settings:undo'){
+          showMessage('dialog.noUndo.title', 'dialog.noUndo.body');
+          return;
+        }
+        if(action === 'settings:redo'){
+          showMessage('dialog.noRedo.title', 'dialog.noRedo.body');
+          return;
+        }
+        if(action === 'settings:fullscreen'){
+          if(!document.fullscreenElement){
+            document.documentElement.requestFullscreen().catch(()=>{});
+          } else {
+            document.exitFullscreen().catch(()=>{});
+          }
+          return;
+        }
+        if(action === 'settings:scanlines'){
+          state.settings.scanlines = !state.settings.scanlines;
+          applyScanlines();
+          return;
+        }
+        if(action === 'settings:wallpaper'){
+          openApp('settings');
+          setTimeout(()=>{
+            const winEl = document.getElementById('win_settings');
+            const target = winEl ? winEl.querySelector('#settingsWallpaper') : null;
+            if(target && target.scrollIntoView){
+              target.scrollIntoView({ block: 'nearest' });
+            }
+          }, 0);
+          return;
+        }
+        if(action === 'settings:what'){
+          showMessage('dialog.settingsWhat.title', 'dialog.settingsWhat.body');
+          return;
+        }
+
+        if(action === 'art:openGallery' || action === 'art:saveImage' || action === 'art:slideshow' || action === 'art:credits'){
+          showMessage('dialog.notAvailable.title', 'dialog.notAvailable.body');
+          return;
+        }
+        if(action === 'art:copy' || action === 'art:selectAll'){
+          if(action === 'art:selectAll' && winId) selectAllInWindow(winId);
+          if(action === 'art:copy'){
+            copySelectedTextOrWarn();
+          }
+          return;
+        }
+        if(action === 'art:zoom50'){
+          state.art.zoom = 50;
+          applyArtState();
+          return;
+        }
+        if(action === 'art:zoom100'){
+          state.art.zoom = 100;
+          applyArtState();
+          return;
+        }
+        if(action === 'art:zoom200'){
+          state.art.zoom = 200;
+          applyArtState();
+          return;
+        }
+
+        if(action === 'games:openFolder' || action === 'games:download' || action === 'games:grid' || action === 'games:sortNew' || action === 'games:sortFavorite' || action === 'games:requirements'){
+          showMessage('dialog.notAvailable.title', 'dialog.notAvailable.body');
+          return;
+        }
+        if(action === 'games:copy' || action === 'games:selectAll'){
+          if(action === 'games:selectAll' && winId) selectAllInWindow(winId);
+          if(action === 'games:copy'){
+            copySelectedTextOrWarn();
+          }
+          return;
+        }
+
+        if(action === 'videos:openChannel'){
+          openLink(VIDEO_CHANNEL_URL, 'videos');
+          return;
+        }
+        if(action === 'videos:copyLink'){
+          copyText(VIDEO_CHANNEL_URL).then(ok => ok && showMessage('dialog.copied.title', 'dialog.copied.body'));
+          return;
+        }
+        if(action === 'videos:copy' || action === 'videos:selectAll'){
+          if(action === 'videos:selectAll' && winId) selectAllInWindow(winId);
+          if(action === 'videos:copy'){
+            copySelectedTextOrWarn();
+          }
+          return;
+        }
+        if(action === 'videos:thumbSmall'){
+          state.videos.thumbSize = 'small';
+          return;
+        }
+        if(action === 'videos:thumbLarge'){
+          state.videos.thumbSize = 'large';
+          return;
+        }
+        if(action === 'videos:toggleNewTab'){
+          state.videos.openNewTab = !state.videos.openNewTab;
+          return;
+        }
+        if(action === 'videos:tips'){
+          showMessage('dialog.playerTips.title', 'dialog.playerTips.body');
+          return;
+        }
+
+        if(action === 'about:version'){
+          showMessage('dialog.version.title', 'dialog.version.body');
+          return;
+        }
+        if(action === 'about:credits'){
+          showMessage('dialog.credits.title', 'dialog.credits.body');
+          return;
+        }
+        if(action === 'about:controls'){
+          showMessage('dialog.controls.title', 'dialog.controls.body');
+          return;
+        }
+        if(action === 'about:copy' || action === 'about:selectAll'){
+          if(action === 'about:selectAll' && winId) selectAllInWindow(winId);
+          if(action === 'about:copy'){
+            copySelectedTextOrWarn();
+          }
+          return;
+        }
+      }
+
       function updateOpenWindowTitles(){
         // Update stored titles and the DOM titlebars
         state.windows.forEach((w, id) => {
@@ -984,6 +2495,7 @@ function installLongPress(el, getTarget){
               c.innerHTML = CONTENT[id]();
             }
             applyI18nTo(winEl);
+            applyWindowState(winEl, id);
 
             const minCtl = winEl.querySelector('[data-action="min"]');
             const closeCtl = winEl.querySelector('[data-action="close"]');
@@ -991,6 +2503,17 @@ function installLongPress(el, getTarget){
             if(minCtl) minCtl.title = t('win.minimize');
             if(closeCtl) closeCtl.title = t('win.close');
             if(resizeCtl) resizeCtl.title = t('win.resize');
+            const status = winEl.querySelector('.statusbar');
+            if(status){
+              let center = status.querySelector('.status-center');
+              if(!center){
+                center = document.createElement('span');
+                center.className = 'status-center';
+                center.setAttribute('data-i18n', 'about.footer');
+                status.insertBefore(center, status.lastElementChild);
+              }
+              center.textContent = t('about.footer');
+            }
 
             if(id === 'mediaplayer') {
               setTimeout(mpInitInWindow, 0);
@@ -1038,71 +2561,71 @@ function installLongPress(el, getTarget){
         { id:'settings', titleKey:'app.settings', icon:'settings', iconFile:'/assets/icons/Settings.png' },
       ];
 
+      const MUSIC_LINKS = [
+        {
+          id: 'spotify',
+          label: 'Spotify',
+          url: 'https://open.spotify.com/artist/6bjnHKF2yjUlKyYD15cNGq',
+          icon: '/assets/icons/spotify.png'
+        },
+        {
+          id: 'youtubemusic',
+          label: 'YouTube Music',
+          url: 'https://music.youtube.com/channel/UCSjAU7hceaYUQPZml7HUFgA',
+          icon: '/assets/icons/youtubemusic.png'
+        },
+        {
+          id: 'applemusic',
+          label: 'Apple Music',
+          url: 'https://music.apple.com/us/artist/diev/1586153318',
+          icon: '/assets/icons/applemusic.png'
+        },
+        {
+          id: 'amazonmusic',
+          label: 'Amazon Music',
+          url: 'https://music.amazon.com.br/artists/B00F5I7CC6/diev',
+          icon: '/assets/icons/amazonmusic.png'
+        },
+        {
+          id: 'soundcloud',
+          label: 'SoundCloud',
+          url: 'https://soundcloud.com/die_v/tracks',
+          icon: '/assets/icons/soundcloud.png'
+        },
+        {
+          id: 'deezer',
+          label: 'Deezer',
+          url: 'https://www.deezer.com/en/artist/5170963',
+          icon: '/assets/icons/deezer.png'
+        }
+      ];
+
+      const VIDEO_CHANNEL_URL = 'https://www.youtube.com/@diev';
+
       const CONTENT = {
         about: () => `
           <h2>${t('about.title')}</h2>
           <p>${t('about.p1')}</p>
-          <p class="tiny">${t('about.p2')}</p>
+          <p>${t('about.p2')}</p>
+          <p>${t('about.p3')}</p>
+          <p>${t('about.p4')}</p>
+          <p>${t('about.p5')}</p>
+          <p>${t('about.p6')}</p>
         `,
         clothes: () => `<h2>BLISS — ${t('app.clothes')}</h2><p>${t('common.soon')}</p>`,
         music: () => `
   <h2>${t('music.title')}</h2>
   <p style="margin:0 0 10px 0;">${t('music.subtitle')}</p>
 
-  <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:12px;">
-    <a href="https://open.spotify.com/artist/6bjnHKF2yjUlKyYD15cNGq" target="_blank" rel="noreferrer" style="text-decoration:none; color:inherit;">
-      <div class="bevel" style="padding:10px; display:flex; flex-direction:column; align-items:center; gap:8px;">
-        <div class="bevel-in" style="width:44px; height:44px; display:flex; align-items:center; justify-content:center; padding:2px;">
-          <img class="pixel" src="/assets/icons/spotify.png" width="32" height="32" alt="Spotify" style="display:block;" />
+  <div class="music-grid">
+    ${MUSIC_LINKS.map(link => `
+      <button class="music-card bevel" type="button" data-music-id="${link.id}" data-music-link="${link.url}">
+        <div class="bevel-in music-icon" style="width:44px; height:44px; display:flex; align-items:center; justify-content:center; padding:2px;">
+          <img class="pixel" src="${link.icon}" width="32" height="32" alt="${link.label}" style="display:block;" />
         </div>
-        <div style="font-weight:700; text-align:center;">Spotify</div>
-      </div>
-    </a>
-
-    <a href="https://music.youtube.com/channel/UCSjAU7hceaYUQPZml7HUFgA" target="_blank" rel="noreferrer" style="text-decoration:none; color:inherit;">
-      <div class="bevel" style="padding:10px; display:flex; flex-direction:column; align-items:center; gap:8px;">
-        <div class="bevel-in" style="width:44px; height:44px; display:flex; align-items:center; justify-content:center; padding:2px;">
-          <img class="pixel" src="/assets/icons/youtubemusic.png" width="32" height="32" alt="YouTube Music" style="display:block;" />
-        </div>
-        <div style="font-weight:700; text-align:center;">YouTube Music</div>
-      </div>
-    </a>
-
-    <a href="https://music.apple.com/us/artist/diev/1586153318" target="_blank" rel="noreferrer" style="text-decoration:none; color:inherit;">
-      <div class="bevel" style="padding:10px; display:flex; flex-direction:column; align-items:center; gap:8px;">
-        <div class="bevel-in" style="width:44px; height:44px; display:flex; align-items:center; justify-content:center; padding:2px;">
-          <img class="pixel" src="/assets/icons/applemusic.png" width="32" height="32" alt="Apple Music" style="display:block;" />
-        </div>
-        <div style="font-weight:700; text-align:center;">Apple Music</div>
-      </div>
-    </a>
-
-    <a href="https://music.amazon.com.br/artists/B00F5I7CC6/diev" target="_blank" rel="noreferrer" style="text-decoration:none; color:inherit;">
-      <div class="bevel" style="padding:10px; display:flex; flex-direction:column; align-items:center; gap:8px;">
-        <div class="bevel-in" style="width:44px; height:44px; display:flex; align-items:center; justify-content:center; padding:2px;">
-          <img class="pixel" src="/assets/icons/amazonmusic.png" width="32" height="32" alt="Amazon Music" style="display:block;" />
-        </div>
-        <div style="font-weight:700; text-align:center;">Amazon Music</div>
-      </div>
-    </a>
-
-    <a href="https://soundcloud.com/die_v/tracks" target="_blank" rel="noreferrer" style="text-decoration:none; color:inherit;">
-      <div class="bevel" style="padding:10px; display:flex; flex-direction:column; align-items:center; gap:8px;">
-        <div class="bevel-in" style="width:44px; height:44px; display:flex; align-items:center; justify-content:center; padding:2px;">
-          <img class="pixel" src="/assets/icons/soundcloud.png" width="32" height="32" alt="SoundCloud" style="display:block;" />
-        </div>
-        <div style="font-weight:700; text-align:center;">SoundCloud</div>
-      </div>
-    </a>
-
-    <a href="https://www.deezer.com/en/artist/5170963" target="_blank" rel="noreferrer" style="text-decoration:none; color:inherit;">
-      <div class="bevel" style="padding:10px; display:flex; flex-direction:column; align-items:center; gap:8px;">
-        <div class="bevel-in" style="width:44px; height:44px; display:flex; align-items:center; justify-content:center; padding:2px;">
-          <img class="pixel" src="/assets/icons/deezer.png" width="32" height="32" alt="Deezer" style="display:block;" />
-        </div>
-        <div style="font-weight:700; text-align:center;">Deezer</div>
-      </div>
-    </a>
+        <div class="music-label" style="font-weight:700; text-align:center;">${link.label}</div>
+      </button>
+    `).join('')}
   </div>
 
   <div class="hr98"></div>
@@ -1152,6 +2675,36 @@ function installLongPress(el, getTarget){
             <div style="display:flex; gap:8px; flex-wrap:wrap;">
               <button class="btn bevel" type="button" data-set-lang="en"><span class="kbd" style="margin-right:6px;">EN</span><span data-i18n="settings.lang.en">English</span></button>
               <button class="btn bevel" type="button" data-set-lang="pt"><span class="kbd" style="margin-right:6px;">PT</span><span data-i18n="settings.lang.pt">Português (BR)</span></button>
+            </div>
+          </div>
+          <div class="card bevel" style="margin-top:10px;">
+            <strong data-i18n="settings.animationsTab">Animations</strong>
+            <p style="margin:6px 0 10px 0;" data-i18n="settings.animationsDesc">Toggle window animations.</p>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <button class="btn bevel" type="button" data-set-animations="on"><span data-i18n="settings.animations.on">On</span></button>
+              <button class="btn bevel" type="button" data-set-animations="off"><span data-i18n="settings.animations.off">Off</span></button>
+            </div>
+          </div>
+          <div class="card bevel" id="settingsWallpaper" style="margin-top:10px;">
+            <strong data-i18n="settings.wallpaperTab">Wallpaper</strong>
+            <p style="margin:6px 0 10px 0;" data-i18n="settings.wallpaperDesc">Choose a wallpaper for your desktop.</p>
+            <div class="grid2">
+              <button class="btn bevel" type="button" data-set-wallpaper="classic">
+                <span class="wallpaper-swatch" style="background:#008080;"></span>
+                <span data-i18n="wallpaper.classic">Classic Teal</span>
+              </button>
+              <button class="btn bevel" type="button" data-set-wallpaper="bliss">
+                <span class="wallpaper-swatch" style="background:radial-gradient(circle at 20% 20%, #fff2c4 0%, #ffb77a 30%, #7fc7ff 65%, #1d5b9e 100%);"></span>
+                <span data-i18n="wallpaper.bliss">Sunrise</span>
+              </button>
+              <button class="btn bevel" type="button" data-set-wallpaper="clouds">
+                <span class="wallpaper-swatch" style="background:linear-gradient(180deg, #9ad0ff 0%, #cfe9ff 45%, #f7fbff 100%);"></span>
+                <span data-i18n="wallpaper.clouds">Clouds</span>
+              </button>
+              <button class="btn bevel" type="button" data-set-wallpaper="diev">
+                <span class="wallpaper-swatch" style="background:repeating-linear-gradient(0deg, rgba(255,255,255,0.08) 0 1px, transparent 1px 6px), repeating-linear-gradient(90deg, rgba(255,255,255,0.08) 0 1px, transparent 1px 6px), linear-gradient(135deg, #0a2333, #114b6a);"></span>
+                <span data-i18n="wallpaper.diev">Grid</span>
+              </button>
             </div>
           </div>
         `,
@@ -1230,8 +2783,9 @@ function installLongPress(el, getTarget){
 
         list.innerHTML = mp.tracks.map((tr, i)=>{
           const active = (i === mp.idx);
+          const selected = state.mediaplayer.selected.has(i);
           return `
-            <button class="btn bevel" type="button" data-mp-pick="${i}" style="justify-content:flex-start; width:100%; ${active ? 'font-weight:700;' : ''}">
+            <button class="btn bevel mp-item ${selected ? 'selected' : ''}" type="button" data-mp-pick="${i}" data-mp-item="${i}" style="justify-content:flex-start; width:100%; ${active ? 'font-weight:700;' : ''}">
               ${active ? '▶ ' : ''}${tr.title}
             </button>
           `;
@@ -1277,15 +2831,45 @@ function installLongPress(el, getTarget){
         mpRender();
       }
 
-      function mpNext(){
+      function mpNext(manual=false){
         if(mp.tracks.length === 0) return;
-        mpSetTrack((mp.idx + 1) % mp.tracks.length);
+        if(state.mediaplayer.shuffle){
+          let next = Math.floor(Math.random() * mp.tracks.length);
+          if(mp.tracks.length > 1 && next === mp.idx){
+            next = (next + 1) % mp.tracks.length;
+          }
+          mpSetTrack(next);
+          mpPlay();
+          return;
+        }
+        if(!manual && state.mediaplayer.repeat === 'one'){
+          mpSetTrack(mp.idx);
+          mpPlay();
+          return;
+        }
+        const atEnd = (mp.idx === mp.tracks.length - 1);
+        if(atEnd && !manual && state.mediaplayer.repeat === 'off'){
+          mpPause();
+          return;
+        }
+        const nextIdx = atEnd ? 0 : mp.idx + 1;
+        mpSetTrack(nextIdx);
         mpPlay();
       }
 
-      function mpPrev(){
+      function mpPrev(manual=false){
         if(mp.tracks.length === 0) return;
-        mpSetTrack((mp.idx - 1 + mp.tracks.length) % mp.tracks.length);
+        if(state.mediaplayer.shuffle && !manual){
+          let prev = Math.floor(Math.random() * mp.tracks.length);
+          if(mp.tracks.length > 1 && prev === mp.idx){
+            prev = (prev + 1) % mp.tracks.length;
+          }
+          mpSetTrack(prev);
+          mpPlay();
+          return;
+        }
+        const prevIdx = (mp.idx - 1 + mp.tracks.length) % mp.tracks.length;
+        mpSetTrack(prevIdx);
         mpPlay();
       }
 
@@ -1353,15 +2937,34 @@ function installLongPress(el, getTarget){
           if(action === 'toggle'){
             if(mp.playing) mpPause(); else mpPlay();
           }
-          if(action === 'next') mpNext();
-          if(action === 'prev') mpPrev();
+          if(action === 'next') mpNext(true);
+          if(action === 'prev') mpPrev(true);
         }
 
         const pickBtn = e.target.closest && e.target.closest('[data-mp-pick]');
         if(pickBtn){
           const idx = Number(pickBtn.dataset.mpPick);
+          state.mediaplayer.selected = new Set([idx]);
           mpSetTrack(idx);
           mpPlay();
+        }
+      });
+
+      document.addEventListener('dblclick', (e)=>{
+        const card = e.target.closest && e.target.closest('[data-music-id]');
+        if(card && card.dataset && card.dataset.musicLink){
+          e.preventDefault();
+          openLink(card.dataset.musicLink, 'music');
+        }
+      });
+
+      document.addEventListener('mouseover', (e)=>{
+        if(!state.menuOpen) return;
+        const menuToggle = e.target.closest && e.target.closest('.menubar span[data-menu]');
+        if(menuToggle){
+          const winEl = menuToggle.closest('.window');
+          const menuKey = menuToggle.dataset.menu;
+          openWindowMenu(winEl, menuKey, menuToggle);
         }
       });
 
@@ -1383,6 +2986,7 @@ function installLongPress(el, getTarget){
         $('#login').classList.add('hidden');
         $('#desktop').classList.remove('hidden');
         $('#username').blur();
+        applyWallpaper(state.wallpaper);
         renderIcons();
         renderStartMenu();
         tickClock();
@@ -1846,11 +3450,20 @@ function installLongPress(el, getTarget){
       }
 
       function closeApp(appId){
+        const w = state.windows.get(appId);
+        if(!w) return;
         state.windows.delete(appId);
         const el = document.getElementById(`win_${appId}`);
-        if(el) el.remove();
         if(state.activeWindowId === appId) state.activeWindowId = null;
         renderTaskButtons();
+        if(el){
+          if(state.animations){
+            el.classList.add('anim-close');
+            el.addEventListener('animationend', ()=>{ el.remove(); }, { once:true });
+          } else {
+            el.remove();
+          }
+        }
       }
       function minimizeApp(appId){
         const w = state.windows.get(appId);
@@ -1889,6 +3502,7 @@ function installLongPress(el, getTarget){
         el.style.width = wstate.width + 'px';
         el.style.height = wstate.height + 'px';
         el.style.zIndex = String(wstate.z);
+        if(state.animations) el.classList.add('anim-open');
 
         const bodyHTML = (CONTENT[appId] ? CONTENT[appId]() : `<h2>${wstate.title}</h2><p>Sem conteúdo.</p>`);
 
@@ -1905,13 +3519,18 @@ function installLongPress(el, getTarget){
               </div>
             </div>
             <div class="menubar">
-              <span data-i18n="menubar.file">${t('menubar.file')}</span>
-              <span data-i18n="menubar.edit">${t('menubar.edit')}</span>
-              <span data-i18n="menubar.view">${t('menubar.view')}</span>
-              <span data-i18n="menubar.help">${t('menubar.help')}</span>
+              <span data-menu="file" data-i18n="menubar.file">${t('menubar.file')}</span>
+              <span data-menu="edit" data-i18n="menubar.edit">${t('menubar.edit')}</span>
+              <span data-menu="view" data-i18n="menubar.view">${t('menubar.view')}</span>
+              <span data-menu="help" data-i18n="menubar.help">${t('menubar.help')}</span>
             </div>
+            <div class="menu-drop hidden"></div>
             <div class="content">${bodyHTML}</div>
-            <div class="statusbar"><span data-i18n="status.ready">${t('status.ready')}</span><span>BLISS 98</span></div>
+            <div class="statusbar">
+              <span data-i18n="status.ready">${t('status.ready')}</span>
+              <span class="status-center" data-i18n="about.footer">${t('about.footer')}</span>
+              <span>BLISS 98</span>
+            </div>
           </div>
           <div class="resize" title="${t('win.resize')}"></div>
         `;
@@ -1931,6 +3550,11 @@ function installLongPress(el, getTarget){
         if(appId === 'mediaplayer') { setTimeout(mpInitInWindow, 0); }
 
         $('#windows').appendChild(el);
+        applyI18nTo(el);
+        applyWindowState(el, appId);
+        if(state.animations){
+          el.addEventListener('animationend', ()=>{ el.classList.remove('anim-open'); }, { once:true });
+        }
       }
 
       function makeDraggable(winEl, appId){
@@ -2223,6 +3847,8 @@ function installLongPress(el, getTarget){
         if(e.key==='Escape'){
           closeStartMenu();
           closeCtxMenu();
+          closeWindowMenu();
+          closeModal();
         }
 
         // Keyboard context menu (Shift+F10)
@@ -2251,9 +3877,71 @@ function installLongPress(el, getTarget){
         }
       });
       document.addEventListener('click', (e)=>{
+        const modalAction = e.target.closest && e.target.closest('[data-modal-action]');
+        if(modalAction && modalAction.dataset && modalAction.dataset.modalAction){
+          const act = modalAction.dataset.modalAction;
+          if(act === 'confirm' && typeof modalState.onConfirm === 'function'){
+            const select = $('#modalSelect');
+            const value = select ? select.value : null;
+            modalState.onConfirm(value);
+          }
+          closeModal();
+          return;
+        }
+        if(e.target && e.target.id === 'modal'){
+          closeModal();
+          return;
+        }
+        if(e.target && e.target.id === 'modalClose'){
+          closeModal();
+          return;
+        }
+
+        const menuItem = e.target.closest && e.target.closest('[data-menu-action]');
+        if(menuItem && menuItem.dataset && menuItem.dataset.menuAction){
+          e.preventDefault();
+          e.stopPropagation();
+          handleMenuAction(menuItem.dataset.menuAction);
+          closeWindowMenu();
+          return;
+        }
+        const menuToggle = e.target.closest && e.target.closest('.menubar span[data-menu]');
+        if(menuToggle){
+          e.preventDefault();
+          e.stopPropagation();
+          const winEl = menuToggle.closest('.window');
+          const menuKey = menuToggle.dataset.menu;
+          if(state.menuOpen && state.menuOpen.winId === getWindowId(winEl) && state.menuOpen.menuKey === menuKey){
+            closeWindowMenu();
+          } else {
+            openWindowMenu(winEl, menuKey, menuToggle);
+          }
+          return;
+        }
+
         const btn = e.target.closest && e.target.closest('[data-set-lang]');
         if(btn && btn.dataset && btn.dataset.setLang){
           setLang(btn.dataset.setLang);
+        }
+        const wpBtn = e.target.closest && e.target.closest('[data-set-wallpaper]');
+        if(wpBtn && wpBtn.dataset && wpBtn.dataset.setWallpaper){
+          applyWallpaper(wpBtn.dataset.setWallpaper);
+        }
+        const animBtn = e.target.closest && e.target.closest('[data-set-animations]');
+        if(animBtn && animBtn.dataset && animBtn.dataset.setAnimations){
+          setAnimations(animBtn.dataset.setAnimations === 'on');
+        }
+        const musicCard = e.target.closest && e.target.closest('[data-music-id]');
+        if(musicCard){
+          const id = musicCard.dataset.musicId;
+          if(e.ctrlKey || e.metaKey){
+            if(state.music.selected.has(id)) state.music.selected.delete(id);
+            else state.music.selected.add(id);
+          } else {
+            state.music.selected = new Set([id]);
+          }
+          applyMusicState();
+          return;
         }
 
         const ctxBtn = e.target.closest && e.target.closest('[data-ctx-action]');
@@ -2262,6 +3950,9 @@ function installLongPress(el, getTarget){
           e.stopPropagation();
           handleCtxAction(ctxBtn.dataset.ctxAction);
           closeCtxMenu();
+        }
+        if(!e.target.closest || (!e.target.closest('.menu-drop') && !e.target.closest('.menubar'))){
+          closeWindowMenu();
         }
       });
 
@@ -2273,9 +3964,13 @@ function installLongPress(el, getTarget){
         if(saved){ setUser(saved); $('#username').value = saved; }
 
         state.gridSnap = loadGridSnap();
+        state.wallpaper = loadWallpaper();
+        state.animations = loadAnimations();
+        state.settings.scanlines = loadScanlines();
 
         // Apply translations immediately (default is English)
         applyI18n();
+        applyScanlines();
 
         showLogin();
         document.addEventListener('click', ()=>{ closeStartMenu(); closeCtxMenu(); });
