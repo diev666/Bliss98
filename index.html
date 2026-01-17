@@ -532,6 +532,34 @@
       .music-small .music-card{padding:6px; gap:6px;}
       .music-small .music-card .music-label{font-size:12px;}
       .music-hide-icons .music-icon{display:none;}
+      .poetry-grid{
+        display:grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap:12px;
+      }
+      .poetry-item{
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        gap:6px;
+        padding:6px 4px;
+        border:1px solid transparent;
+        cursor:default;
+      }
+      .poetry-item.selected{
+        border:1px dotted #000080;
+        background:#d6e6ff;
+      }
+      .poetry-item span{
+        text-align:center;
+        line-height:1.1;
+        max-width:110px;
+        word-break:break-word;
+      }
+      .poem-body{
+        white-space:pre-line;
+        line-height:1.4;
+      }
       .trash-grid{
         display:grid;
         grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
@@ -798,6 +826,11 @@
         trash: new Set(),
         iconLabels: {},
         trashSelection: new Set(),
+        poetry: {
+          view: 'list',
+          selectedId: null,
+          currentId: null,
+        },
         menuOpen: null,
         gridSnap: true,
       };
@@ -1008,7 +1041,7 @@ function getDefaultIconLayout(){
   const area = $('#desktopArea').getBoundingClientRect();
   const metrics = getGridMetrics();
   const isMobile = area.width <= 520;
-  const order = ['settings','games','about','videos','mediaplayer','diev','art','contact','music','clothes'];
+  const order = ['settings','games','about','videos','mediaplayer','diev','art','contact','poetry','music','clothes'];
   const available = APPS.filter(app => app.showOnDesktop !== false && app.id !== 'trash' && !state.trash.has(app.id));
   const availableIds = new Set(available.map(app => app.id));
   const ordered = order.filter(id => availableIds.has(id)).concat(
@@ -1098,24 +1131,38 @@ function emptyTrash(){
   updateTrashIconUI();
 }
 
-      function renderTrashWindow(){
-        const win = document.getElementById('win_trash');
-        if(!win) return;
-        const content = win.querySelector('.content');
-        if(!content) return;
-        content.innerHTML = CONTENT.trash();
-        applyI18nTo(win);
-        content.classList.toggle('trash-empty', state.trash.size === 0);
-        const items = win.querySelectorAll('[data-trash-id]');
-        items.forEach(item => {
-          const id = item.dataset.trashId;
-          item.classList.toggle('selected', state.trashSelection.has(id));
-        });
-        const restoreBtn = win.querySelector('[data-trash-action="restore"]');
-        const restoreAllBtn = win.querySelector('[data-trash-action="restoreAll"]');
-        if(restoreBtn) restoreBtn.disabled = state.trash.size === 0;
-        if(restoreAllBtn) restoreAllBtn.disabled = state.trash.size === 0;
-      }
+function renderTrashWindow(){
+  const win = document.getElementById('win_trash');
+  if(!win) return;
+  const content = win.querySelector('.content');
+  if(!content) return;
+  content.innerHTML = CONTENT.trash();
+  applyI18nTo(win);
+  content.classList.toggle('trash-empty', state.trash.size === 0);
+  const items = win.querySelectorAll('[data-trash-id]');
+  items.forEach(item => {
+    const id = item.dataset.trashId;
+    item.classList.toggle('selected', state.trashSelection.has(id));
+  });
+  const restoreBtn = win.querySelector('[data-trash-action="restore"]');
+  const restoreAllBtn = win.querySelector('[data-trash-action="restoreAll"]');
+  if(restoreBtn) restoreBtn.disabled = state.trash.size === 0;
+  if(restoreAllBtn) restoreAllBtn.disabled = state.trash.size === 0;
+}
+
+function renderPoetryWindow(){
+  const win = document.getElementById('win_poetry');
+  if(!win) return;
+  const content = win.querySelector('.content');
+  if(!content) return;
+  content.innerHTML = CONTENT.poetry();
+  applyI18nTo(win);
+  const items = win.querySelectorAll('[data-poem-id]');
+  items.forEach(item => {
+    const id = item.dataset.poemId;
+    item.classList.toggle('selected', state.poetry.selectedId === id);
+  });
+}
 
 function arrangeIcons(){
   const next = getDefaultIconLayout();
@@ -1278,6 +1325,15 @@ function applyWindowState(winEl, appId){
   if(appId === 'mediaplayer') applyMediaplayerState(winEl);
   if(appId === 'diev') applyDievState(winEl);
   if(appId === 'art') applyArtState(winEl);
+}
+
+function getPoemById(id){
+  return POEMS.find(p => p.id === id) || null;
+}
+
+function getPoemBody(poem){
+  if(!poem) return '';
+  return state.lang === 'pt' ? poem.body_pt : poem.body_en;
 }
 
 // Context menu state
@@ -1522,6 +1578,7 @@ function installLongPress(el, getTarget){
           'app.contact': 'Contact',
           'app.diev': 'DIEV',
           'app.settings': 'Settings',
+          'app.poetry': 'Poetry',
           'app.trash': 'Recycle Bin',
           'app.mediaplayer': 'BLISS Media Player',
 
@@ -1552,6 +1609,10 @@ function installLongPress(el, getTarget){
           'settings.animations.off': 'Off',
           'settings.wallpaperTab': 'Wallpaper',
           'settings.wallpaperDesc': 'Choose a wallpaper for your desktop.',
+          'poetry.title': 'Poetry Library',
+          'poetry.back': 'Back',
+          'poetry.language': 'Language',
+          'poetry.empty': 'No poems yet.',
 
           'menu.file.newWindow': 'New Window…',
           'menu.file.close': 'Close',
@@ -1779,6 +1840,7 @@ function installLongPress(el, getTarget){
           'app.contact': 'Contato',
           'app.diev': 'DIEV',
           'app.settings': 'Configurações',
+          'app.poetry': 'Poesias',
           'app.trash': 'Lixeira',
           'app.mediaplayer': 'BLISS Media Player',
 
@@ -1809,6 +1871,10 @@ function installLongPress(el, getTarget){
           'settings.animations.off': 'Desligado',
           'settings.wallpaperTab': 'Papel de parede',
           'settings.wallpaperDesc': 'Escolha um papel de parede para o desktop.',
+          'poetry.title': 'Biblioteca de Poesias',
+          'poetry.back': 'Voltar',
+          'poetry.language': 'Idioma',
+          'poetry.empty': 'Sem poesias ainda.',
 
           'menu.file.newWindow': 'Nova janela…',
           'menu.file.close': 'Fechar',
@@ -2888,6 +2954,9 @@ function installLongPress(el, getTarget){
           if(id === 'trash'){
             updateTrashIconUI();
           }
+          if(id === 'poetry'){
+            renderPoetryWindow();
+          }
         }
       });
       }
@@ -2922,6 +2991,7 @@ function installLongPress(el, getTarget){
 
       const APPS = [
         { id:'trash', titleKey:'app.trash', icon:'trash', iconFile:getTrashIconFile, showInStart:false },
+        { id:'poetry', titleKey:'app.poetry', icon:'file', iconFile:'/assets/icons/poetry.png' },
         { id:'clothes', titleKey:'app.clothes', icon:'folder', iconFile:'/assets/icons/Clothes.png' },
         { id:'music', titleKey:'app.music', icon:'music', iconFile:'/assets/icons/Music.png' },
         { id:'mediaplayer', titleKey:'app.mediaplayer', icon:'music', iconFile:'/assets/icons/BLISS%20mediaplayer.png' },
@@ -2974,6 +3044,40 @@ function installLongPress(el, getTarget){
       ];
 
       const VIDEO_CHANNEL_URL = 'https://www.youtube.com/@diev';
+
+      // Add new poems here.
+      const POEMS = [
+        {
+          id: 'evolve',
+          title: 'Evolve',
+          body_en: `To evolve is to change
+More than it is to progress
+The human race is in its teenager phase
+We break everything
+And apologize for nothing
+
+And the ones closer to the truth
+Are the ones who say, “I know nothing”
+
+But it’s different when it comes from the temple
+And when it comes from the streets
+Because insanity is a common trait
+Associated with unearned wisdom`,
+          body_pt: `Evoluir é mudar
+Mais do que é progredir
+A raça humana vive sua fase adolescente
+Quebramos tudo
+E não pedimos desculpas por nada
+
+E os que estão mais perto da verdade
+São os que dizem: “Eu nada sei”
+
+Mas é diferente quando vem do templo
+E quando vem das ruas
+Porque a insanidade é um traço comum
+Associado à sabedoria não conquistada`
+        }
+      ];
 
       const CONTENT = {
         about: () => `
@@ -3038,6 +3142,39 @@ function installLongPress(el, getTarget){
         art: () => `<h2>BLISS — ${t('app.art')}</h2><p>${t('common.soon')}</p>`,
         games: () => `<h2>BLISS — ${t('app.games')}</h2><p>${t('common.soon')}</p>`,
         videos: () => `<h2>BLISS — ${t('app.videos')}</h2><p>${t('common.soon')}</p>`,
+        poetry: () => {
+          if(POEMS.length === 0){
+            return `<h2>${t('app.poetry')}</h2><p>${t('poetry.empty')}</p>`;
+          }
+          if(state.poetry.view === 'read' && state.poetry.currentId){
+            const poem = getPoemById(state.poetry.currentId);
+            if(!poem){
+              state.poetry.view = 'list';
+            } else {
+              return `
+                <div style="display:flex; gap:8px; align-items:center; margin-bottom:10px;">
+                  <button class="btn bevel" type="button" data-poetry-action="back">${t('poetry.back')}</button>
+                  <span class="tag">${t('poetry.language')}</span>
+                  <span class="kbd">${state.lang.toUpperCase()}</span>
+                </div>
+                <h2>${poem.title}</h2>
+                <div class="poem-body">${getPoemBody(poem)}</div>
+              `;
+            }
+          }
+          const grid = POEMS.map(poem => `
+            <button class="poetry-item bevel" type="button" data-poem-id="${poem.id}">
+              <div class="pixel" style="width:34px;height:34px;display:flex;align-items:center;justify-content:center;">
+                <img class="pixel" src="/assets/icons/poetry2.png" width="32" height="32" alt="${poem.title}" style="display:block;" />
+              </div>
+              <span>${poem.title}</span>
+            </button>
+          `).join('');
+          return `
+            <h2>${t('poetry.title')}</h2>
+            <div class="poetry-grid">${grid}</div>
+          `;
+        },
         trash: () => {
           const items = Array.from(state.trash);
           if(items.length === 0){
@@ -3351,6 +3488,13 @@ function installLongPress(el, getTarget){
         if(card && card.dataset && card.dataset.musicLink){
           e.preventDefault();
           openLink(card.dataset.musicLink, 'music');
+        }
+        const poemItem = e.target.closest && e.target.closest('[data-poem-id]');
+        if(poemItem && poemItem.dataset && poemItem.dataset.poemId){
+          e.preventDefault();
+          state.poetry.view = 'read';
+          state.poetry.currentId = poemItem.dataset.poemId;
+          renderPoetryWindow();
         }
         const trashItem = e.target.closest && e.target.closest('[data-trash-id]');
         if(trashItem && trashItem.dataset && trashItem.dataset.trashId){
@@ -4313,6 +4457,11 @@ function installLongPress(el, getTarget){
           closeWindowMenu();
           closeModal();
         }
+        if(e.key === 'Enter' && state.activeWindowId === 'poetry' && state.poetry.view === 'list' && state.poetry.selectedId){
+          state.poetry.view = 'read';
+          state.poetry.currentId = state.poetry.selectedId;
+          renderPoetryWindow();
+        }
 
         // Keyboard context menu (Shift+F10)
         if(e.shiftKey && e.key === 'F10'){
@@ -4340,6 +4489,23 @@ function installLongPress(el, getTarget){
         }
       });
       document.addEventListener('click', (e)=>{
+        const poemItem = e.target.closest && e.target.closest('[data-poem-id]');
+        if(poemItem){
+          const id = poemItem.dataset.poemId;
+          state.poetry.selectedId = id;
+          renderPoetryWindow();
+          return;
+        }
+        const poemAction = e.target.closest && e.target.closest('[data-poetry-action]');
+        if(poemAction && poemAction.dataset && poemAction.dataset.poetryAction){
+          if(poemAction.dataset.poetryAction === 'back'){
+            state.poetry.view = 'list';
+            state.poetry.currentId = null;
+            renderPoetryWindow();
+          }
+          return;
+        }
+
         const trashItem = e.target.closest && e.target.closest('[data-trash-id]');
         if(trashItem){
           const id = trashItem.dataset.trashId;
