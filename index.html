@@ -713,7 +713,7 @@ function installLongPress(el, getTarget){
           'app.videos': 'Videos',
           'app.about': 'About',
           'app.contact': 'Contact',
-          'app.diev': 'Diev',
+          'app.diev': 'DIEV',
           'app.settings': 'Settings',
 
           'menu.logoff': 'Log off…',
@@ -725,6 +725,19 @@ function installLongPress(el, getTarget){
           'ctx.language': 'Language',
           'ctx.about': 'About',
           'ctx.logoff': 'Log off…',
+
+          'menubar.file': 'File',
+          'menubar.edit': 'Edit',
+          'menubar.view': 'View',
+          'menubar.help': 'Help',
+          'status.ready': 'Ready',
+          'window.minimize': 'Minimize',
+          'window.close': 'Close',
+          'window.resize': 'Resize',
+          'window.nocontent': 'No content.',
+          'music.header': 'BLISS — Music',
+          'music.subtitle': 'Listen everywhere:',
+          'music.tip': 'Music is a beautiful thing, innit?',
 
           'settings.title': 'Settings',
           'settings.languageTab': 'Language',
@@ -748,7 +761,7 @@ function installLongPress(el, getTarget){
           'app.videos': 'Vídeos',
           'app.about': 'Sobre',
           'app.contact': 'Contato',
-          'app.diev': 'Diev',
+          'app.diev': 'DIEV',
           'app.settings': 'Configurações',
 
           'menu.logoff': 'Sair…',
@@ -760,6 +773,19 @@ function installLongPress(el, getTarget){
           'ctx.language': 'Idioma',
           'ctx.about': 'Sobre',
           'ctx.logoff': 'Sair…',
+
+          'menubar.file': 'Arquivo',
+          'menubar.edit': 'Editar',
+          'menubar.view': 'Exibir',
+          'menubar.help': 'Ajuda',
+          'status.ready': 'Pronto',
+          'window.minimize': 'Minimizar',
+          'window.close': 'Fechar',
+          'window.resize': 'Redimensionar',
+          'window.nocontent': 'Sem conteúdo.',
+          'music.header': 'BLISS — Música',
+          'music.subtitle': 'Ouça em todas as plataformas:',
+          'music.tip': 'Musica é uma coisa linda, não é?',
 
           'settings.title': 'Configurações',
           'settings.languageTab': 'Idioma',
@@ -817,6 +843,33 @@ function installLongPress(el, getTarget){
           if(winEl){
             const titleEl = winEl.querySelector('.title-left strong');
             if(titleEl) titleEl.textContent = title;
+
+            const mb = winEl.querySelector('.menubar');
+            if(mb){
+              const spans = mb.querySelectorAll('span');
+              if(spans[0]) spans[0].textContent = t('menubar.file');
+              if(spans[1]) spans[1].textContent = t('menubar.edit');
+              if(spans[2]) spans[2].textContent = t('menubar.view');
+              if(spans[3]) spans[3].textContent = t('menubar.help');
+            }
+
+            const sb = winEl.querySelector('.statusbar');
+            if(sb){
+              const spans = sb.querySelectorAll('span');
+              if(spans[0]) spans[0].textContent = t('status.ready');
+            }
+
+            const minBtn = winEl.querySelector('[data-action="min"]');
+            if(minBtn) minBtn.setAttribute('title', t('window.minimize'));
+            const closeBtn = winEl.querySelector('[data-action="close"]');
+            if(closeBtn) closeBtn.setAttribute('title', t('window.close'));
+            const rz = winEl.querySelector('.resize');
+            if(rz) rz.setAttribute('title', t('window.resize'));
+
+            if(id === 'music'){
+              const c = winEl.querySelector('.content');
+              if(c) c.innerHTML = CONTENT.music();
+            }
           }
         });
       }
@@ -875,8 +928,8 @@ function installLongPress(el, getTarget){
         `,
         clothes: () => `<h2>BLISS — Clothes</h2><p>Área de roupas (placeholder).</p>`,
         music: () => `
-  <h2>BLISS — Music</h2>
-  <p style="margin:0 0 10px 0;">Listen everywhere:</p>
+  <h2>${t('music.header')}</h2>
+  <p style="margin:0 0 10px 0;">${t('music.subtitle')}</p>
 
   <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:12px;">
     <a href="https://open.spotify.com/artist/6bjnHKF2yjUlKyYD15cNGq" target="_blank" rel="noreferrer" style="text-decoration:none; color:inherit;">
@@ -935,7 +988,7 @@ function installLongPress(el, getTarget){
   </div>
 
   <div class="hr98"></div>
-  <div class="tiny">Tip: you can replace the squares with real pixel icons later.</div>
+  <div class="tiny">${t('music.tip')}</div>
 `,
         art: () => `<h2>BLISS — Art</h2><p>Galeria (placeholder).</p>`,
         games: () => `<h2>BLISS — Games</h2><p>Jogos (placeholder).</p>`,
@@ -1461,7 +1514,7 @@ function installLongPress(el, getTarget){
         el.style.height = wstate.height + 'px';
         el.style.zIndex = String(wstate.z);
 
-        const bodyHTML = (CONTENT[appId] ? CONTENT[appId]() : `<h2>${wstate.title}</h2><p>Sem conteúdo.</p>`);
+        const bodyHTML = (CONTENT[appId] ? CONTENT[appId]() : `<h2>${wstate.title}</h2><p>${t('window.nocontent')}</p>`);
 
         el.innerHTML = `
           <div class="frame bevel">
@@ -1471,15 +1524,15 @@ function installLongPress(el, getTarget){
                 <strong>${wstate.title}</strong>
               </div>
               <div class="title-controls">
-                <div class="wctl bevel" title="Minimizar" data-action="min">_</div>
-                <div class="wctl bevel" title="Fechar" data-action="close">×</div>
+                <div class="wctl bevel" title="${t('window.minimize')}" data-action="min">_</div>
+                <div class="wctl bevel" title="${t('window.close')}" data-action="close">×</div>
               </div>
             </div>
-            <div class="menubar"><span>File</span><span>Edit</span><span>View</span><span>Help</span></div>
+            <div class="menubar"><span>${t('menubar.file')}</span><span>${t('menubar.edit')}</span><span>${t('menubar.view')}</span><span>${t('menubar.help')}</span></div>
             <div class="content">${bodyHTML}</div>
-            <div class="statusbar"><span>Ready</span><span>BLISS 98</span></div>
+            <div class="statusbar"><span>${t('status.ready')}</span><span>BLISS 98</span></div>
           </div>
-          <div class="resize" title="Resize"></div>
+          <div class="resize" title="${t('window.resize')}"></div>
         `;
 
         el.addEventListener('mousedown', (e)=>{ e.stopPropagation(); focusWindow(appId); closeStartMenu(); });
