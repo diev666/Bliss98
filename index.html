@@ -400,7 +400,7 @@
                 <p class="login-sub" data-i18n="login.sub">Enter your name to login</p>
               </div>
             </div>
-            <button id="langBtn" class="btn bevel lang-btn" type="button" aria-label="Language">
+            <button id="langBtn" class="btn bevel lang-btn" type="button" aria-label="Language" data-i18n-aria="aria.language">
               EN
             </button>
           </div>
@@ -435,7 +435,7 @@
 
         <div class="taskbar bevel" id="taskbar">
           <div class="task-left">
-            <div id="startBtn" class="btn bevel" title="Menu">
+            <div id="startBtn" class="btn bevel" title="Menu" data-i18n-title="start.menu">
               <svg class="pixel" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
                 <rect x="0" y="0" width="16" height="16" fill="#000080" />
                 <rect x="2" y="2" width="5" height="5" fill="#ffcc00" />
@@ -457,13 +457,13 @@
           </div>
         </div>
 
-        <div id="startMenu" class="start-menu bevel hidden" role="menu" aria-label="Menu Bliss">
+        <div id="startMenu" class="start-menu bevel hidden" role="menu" aria-label="Menu Bliss" data-i18n-aria="aria.startMenu">
           <div class="start-side"><span>BLISS 98</span></div>
           <div class="start-list" id="startList"></div>
         </div>
 
         <!-- Desktop context menu -->
-        <div id="ctxMenu" class="ctx-menu bevel hidden" role="menu" aria-label="Context menu">
+        <div id="ctxMenu" class="ctx-menu bevel hidden" role="menu" aria-label="Context menu" data-i18n-aria="aria.contextMenu">
           <!-- items injected by JS -->
         </div>
       </div>
@@ -546,6 +546,65 @@ function snapToGrid(x, y){
   const sx = Math.round(x / stepX) * stepX;
   const sy = Math.round(y / stepY) * stepY;
   return clampIconPos(sx, sy);
+}
+
+function getGridMetrics(){
+  const area = $('#desktopArea').getBoundingClientRect();
+  const stepX = ICON_SIZE.w + ICON_GAP.x;
+  const stepY = ICON_SIZE.h + ICON_GAP.y;
+  const cols = Math.max(1, Math.floor((area.width - 6) / stepX));
+  const rows = Math.max(1, Math.floor((area.height - 6) / stepY));
+  return { stepX, stepY, cols, rows };
+}
+
+function snapToGridClamped(x, y, metrics){
+  const snapped = snapToGrid(x, y);
+  const maxX = (metrics.cols - 1) * metrics.stepX;
+  const maxY = (metrics.rows - 1) * metrics.stepY;
+  return {
+    x: clamp(snapped.x, 0, maxX),
+    y: clamp(snapped.y, 0, maxY)
+  };
+}
+
+function gridCellFromPos(x, y, metrics){
+  return {
+    col: clamp(Math.round(x / metrics.stepX), 0, metrics.cols - 1),
+    row: clamp(Math.round(y / metrics.stepY), 0, metrics.rows - 1)
+  };
+}
+
+function gridPosFromCell(cell, metrics){
+  return { x: cell.col * metrics.stepX, y: cell.row * metrics.stepY };
+}
+
+function findFreeCell(startCell, occupied, metrics){
+  const total = metrics.cols * metrics.rows;
+  const startIdx = startCell.row * metrics.cols + startCell.col;
+  for(let i = 0; i < total; i++){
+    const idx = (startIdx + i) % total;
+    const col = idx % metrics.cols;
+    const row = Math.floor(idx / metrics.cols);
+    const key = `${col},${row}`;
+    if(!occupied.has(key)){
+      return { col, row };
+    }
+  }
+  return startCell;
+}
+
+function placeOnFreeCell(x, y, occupied, metrics){
+  const snapped = snapToGridClamped(x, y, metrics);
+  const cell = gridCellFromPos(snapped.x, snapped.y, metrics);
+  const key = `${cell.col},${cell.row}`;
+  const targetCell = occupied.has(key) ? findFreeCell(cell, occupied, metrics) : cell;
+  const pos = gridPosFromCell(targetCell, metrics);
+  occupied.set(`${targetCell.col},${targetCell.row}`, true);
+  return {
+    x: pos.x,
+    y: pos.y,
+    changed: targetCell.col !== cell.col || targetCell.row !== cell.row || pos.x !== snapped.x || pos.y !== snapped.y
+  };
 }
 
 function arrangeIcons(){
@@ -706,6 +765,26 @@ function installLongPress(el, getTarget){
           'login.enter': 'Enter',
           'login.copyright': '© BLISS / DIEV — Bliss 98 OS',
 
+          'common.soon': 'Soon.',
+
+          'aria.language': 'Language',
+          'aria.startMenu': 'BLISS Menu',
+          'aria.contextMenu': 'Context menu',
+          'start.menu': 'Menu',
+
+          'menubar.file': 'File',
+          'menubar.edit': 'Edit',
+          'menubar.view': 'View',
+          'menubar.help': 'Help',
+
+          'status.ready': 'Ready',
+
+          'win.minimize': 'Minimize',
+          'win.close': 'Close',
+          'win.resize': 'Resize',
+          'win.maximize': 'Maximize',
+          'win.restore': 'Restore',
+
           'app.clothes': 'Clothes',
           'app.music': 'Music',
           'app.art': 'Art',
@@ -713,7 +792,7 @@ function installLongPress(el, getTarget){
           'app.videos': 'Videos',
           'app.about': 'About',
           'app.contact': 'Contact',
-          'app.diev': 'Diev',
+          'app.diev': 'DIEV',
           'app.settings': 'Settings',
           'app.mediaplayer': 'BLISS Media Player',
 
@@ -729,9 +808,21 @@ function installLongPress(el, getTarget){
 
           'settings.title': 'Settings',
           'settings.languageTab': 'Language',
-          'settings.languageDesc': 'Choose your language for Bliss 98.',
+          'settings.languageDesc': 'Choose your language for BLISS 98.',
           'settings.lang.en': 'English',
           'settings.lang.pt': 'Português (BR)',
+
+          'music.title': 'BLISS — Music',
+          'music.subtitle': 'Listen everywhere:',
+          'music.tip': 'Music is a beautiful thing, innit?',
+
+          'about.title': 'About — BLISS 98',
+          'about.p1': 'BLISS 98 is a playful Windows 98–style desktop built for BLISS.',
+          'about.p2': 'Explore the apps, open windows, and make yourself at home.',
+
+          'contact.title': 'Contact',
+          'diev.title': 'DIEV',
+          'diev.p1': 'Official page for DIEV.',
 
           'player.title': 'BLISS Media Player',
           'player.now': 'Now playing:',
@@ -741,7 +832,7 @@ function installLongPress(el, getTarget){
           'player.next': 'Next',
           'player.vol': 'Vol',
           'player.loading': 'Loading tracks…',
-          'player.notfound': 'No tracks found. Add MP3 files to /assets/audio/ and create /assets/audio/tracks.json.',
+          'player.notfound': 'No songs yet.',
           'player.autoplay': 'Autoplay may be blocked by your browser. If it does not start, press Play.'
         },
         pt: {
@@ -753,6 +844,26 @@ function installLongPress(el, getTarget){
           'login.enter': 'Entrar',
           'login.copyright': '© BLISS / DIEV — Bliss 98 OS',
 
+          'common.soon': 'Em breve.',
+
+          'aria.language': 'Idioma',
+          'aria.startMenu': 'Menu BLISS',
+          'aria.contextMenu': 'Menu de contexto',
+          'start.menu': 'Menu',
+
+          'menubar.file': 'Arquivo',
+          'menubar.edit': 'Editar',
+          'menubar.view': 'Exibir',
+          'menubar.help': 'Ajuda',
+
+          'status.ready': 'Pronto',
+
+          'win.minimize': 'Minimizar',
+          'win.close': 'Fechar',
+          'win.resize': 'Redimensionar',
+          'win.maximize': 'Maximizar',
+          'win.restore': 'Restaurar',
+
           'app.clothes': 'Roupas',
           'app.music': 'Música',
           'app.art': 'Arte',
@@ -760,7 +871,7 @@ function installLongPress(el, getTarget){
           'app.videos': 'Vídeos',
           'app.about': 'Sobre',
           'app.contact': 'Contato',
-          'app.diev': 'Diev',
+          'app.diev': 'DIEV',
           'app.settings': 'Configurações',
           'app.mediaplayer': 'BLISS Media Player',
 
@@ -776,9 +887,21 @@ function installLongPress(el, getTarget){
 
           'settings.title': 'Configurações',
           'settings.languageTab': 'Idioma',
-          'settings.languageDesc': 'Escolha o idioma do Bliss 98.',
+          'settings.languageDesc': 'Escolha o idioma do BLISS 98.',
           'settings.lang.en': 'English',
           'settings.lang.pt': 'Português (BR)',
+
+          'music.title': 'BLISS — Música',
+          'music.subtitle': 'Ouça em todas as plataformas:',
+          'music.tip': 'Música é uma coisa linda, não é?',
+
+          'about.title': 'Sobre — BLISS 98',
+          'about.p1': 'BLISS 98 é um desktop estilo Windows 98 feito para a BLISS.',
+          'about.p2': 'Explore os apps, abra janelas e fique à vontade.',
+
+          'contact.title': 'Contato',
+          'diev.title': 'DIEV',
+          'diev.p1': 'Página oficial do DIEV.',
 
           'player.title': 'BLISS Media Player',
           'player.now': 'Tocando:',
@@ -788,7 +911,7 @@ function installLongPress(el, getTarget){
           'player.next': 'Próxima',
           'player.vol': 'Vol',
           'player.loading': 'Carregando músicas…',
-          'player.notfound': 'Nenhuma música encontrada. Coloque MP3 em /assets/audio/ e crie /assets/audio/tracks.json.',
+          'player.notfound': 'Sem músicas ainda.',
           'player.autoplay': 'O autoplay pode ser bloqueado. Se não tocar, aperte Play.'
         }
       };
@@ -797,17 +920,31 @@ function installLongPress(el, getTarget){
         return (I18N[state.lang] && I18N[state.lang][key]) || (I18N.en && I18N.en[key]) || key;
       }
 
-      function applyI18n(){
+      function applyI18nTo(root){
         // text nodes
-        $$('[data-i18n]').forEach(el => {
+        $$('[data-i18n]', root).forEach(el => {
           const key = el.getAttribute('data-i18n');
           if(key) el.textContent = t(key);
         });
+        // titles
+        $$('[data-i18n-title]', root).forEach(el => {
+          const key = el.getAttribute('data-i18n-title');
+          if(key) el.setAttribute('title', t(key));
+        });
+        // aria labels
+        $$('[data-i18n-aria]', root).forEach(el => {
+          const key = el.getAttribute('data-i18n-aria');
+          if(key) el.setAttribute('aria-label', t(key));
+        });
         // placeholders
-        $$('[data-i18n-placeholder]').forEach(el => {
+        $$('[data-i18n-placeholder]', root).forEach(el => {
           const key = el.getAttribute('data-i18n-placeholder');
           if(key) el.setAttribute('placeholder', t(key));
         });
+      }
+
+      function applyI18n(){
+        applyI18nTo(document);
 
         // Update language button label
         const lb = $('#langBtn');
@@ -842,9 +979,20 @@ function installLongPress(el, getTarget){
             const titleEl = winEl.querySelector('.title-left strong');
             if(titleEl) titleEl.textContent = title;
 
+            const c = winEl.querySelector('.content');
+            if(c && CONTENT[id]) {
+              c.innerHTML = CONTENT[id]();
+            }
+            applyI18nTo(winEl);
+
+            const minCtl = winEl.querySelector('[data-action="min"]');
+            const closeCtl = winEl.querySelector('[data-action="close"]');
+            const resizeCtl = winEl.querySelector('.resize');
+            if(minCtl) minCtl.title = t('win.minimize');
+            if(closeCtl) closeCtl.title = t('win.close');
+            if(resizeCtl) resizeCtl.title = t('win.resize');
+
             if(id === 'mediaplayer') {
-              const c = winEl.querySelector('.content');
-              if(c) c.innerHTML = CONTENT.mediaplayer();
               setTimeout(mpInitInWindow, 0);
             }
           }
@@ -892,22 +1040,14 @@ function installLongPress(el, getTarget){
 
       const CONTENT = {
         about: () => `
-          <h2>About — BLISS 98</h2>
-          <p><strong>BLISS 98</strong> é um site que simula um sistema operacional estilo Windows 98.</p>
-          <div class="card bevel">
-            <strong>O que tem aqui</strong>
-            <ul class="list98">
-              <li>Login com nome</li>
-              <li>Desktop com ícones</li>
-              <li>Taskbar + Menu Bliss</li>
-              <li>Janelas arrastáveis, minimizáveis e redimensionáveis</li>
-            </ul>
-          </div>
+          <h2>${t('about.title')}</h2>
+          <p>${t('about.p1')}</p>
+          <p class="tiny">${t('about.p2')}</p>
         `,
-        clothes: () => `<h2>BLISS — Clothes</h2><p>Área de roupas (placeholder).</p>`,
+        clothes: () => `<h2>BLISS — ${t('app.clothes')}</h2><p>${t('common.soon')}</p>`,
         music: () => `
-  <h2>BLISS — Music</h2>
-  <p style="margin:0 0 10px 0;">Listen everywhere:</p>
+  <h2>${t('music.title')}</h2>
+  <p style="margin:0 0 10px 0;">${t('music.subtitle')}</p>
 
   <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:12px;">
     <a href="https://open.spotify.com/artist/6bjnHKF2yjUlKyYD15cNGq" target="_blank" rel="noreferrer" style="text-decoration:none; color:inherit;">
@@ -966,7 +1106,7 @@ function installLongPress(el, getTarget){
   </div>
 
   <div class="hr98"></div>
-  <div class="tiny">Tip: you can replace the squares with real pixel icons later.</div>
+  <div class="tiny">${t('music.tip')}</div>
 `,
 
         mediaplayer: () => `
@@ -999,11 +1139,11 @@ function installLongPress(el, getTarget){
           </div>
         `,
 
-        art: () => `<h2>BLISS — Art</h2><p>Galeria (placeholder).</p>`,
-        games: () => `<h2>BLISS — Games</h2><p>Jogos (placeholder).</p>`,
-        videos: () => `<h2>BLISS — Videos</h2><p>Vídeos (placeholder).</p>`,
-        contact: () => `<h2>Contact</h2><p>Contato (placeholder).</p>`,
-        diev: () => `<h2>Diev</h2><p>Bio/press (placeholder).</p>`,
+        art: () => `<h2>BLISS — ${t('app.art')}</h2><p>${t('common.soon')}</p>`,
+        games: () => `<h2>BLISS — ${t('app.games')}</h2><p>${t('common.soon')}</p>`,
+        videos: () => `<h2>BLISS — ${t('app.videos')}</h2><p>${t('common.soon')}</p>`,
+        contact: () => `<h2>${t('contact.title')}</h2><p>${t('common.soon')}</p>`,
+        diev: () => `<h2>${t('diev.title')}</h2><p>${t('diev.p1')}</p>`,
         settings: () => `
           <h2 data-i18n="settings.title">Settings</h2>
           <div class="card bevel">
@@ -1258,6 +1398,9 @@ function installLongPress(el, getTarget){
         grid.innerHTML = '';
 
         const saved = loadIconPositions();
+        const metrics = getGridMetrics();
+        const occupied = new Map();
+        let needsSave = false;
 
         APPS.forEach((app, idx) => {
           const el = document.createElement('div');
@@ -1266,9 +1409,13 @@ function installLongPress(el, getTarget){
 
           const def = defaultIconPos(idx);
           const pos = (saved && saved[app.id]) ? saved[app.id] : def;
-          const clamped = clampIconPos(pos.x, pos.y);
-          el.style.left = clamped.x + 'px';
-          el.style.top = clamped.y + 'px';
+          const placed = placeOnFreeCell(pos.x, pos.y, occupied, metrics);
+          el.style.left = placed.x + 'px';
+          el.style.top = placed.y + 'px';
+          if(placed.changed || !saved[app.id]){
+            saved[app.id] = { x: placed.x, y: placed.y };
+            needsSave = true;
+          }
 
           const iconHtml = app.iconFile
             ? `<img class="pixel" src="${app.iconFile}" width="32" height="32" alt="${t(app.titleKey)}" style="display:block;" />`
@@ -1304,6 +1451,7 @@ function installLongPress(el, getTarget){
           installLongPress(el, ()=>({ target:'icon', appId: app.id }));
           grid.appendChild(el);
         });
+        if(needsSave) saveIconPositions(saved);
       }
       function selectIcon(id){
         state.selectedIconId = id;
@@ -1425,6 +1573,19 @@ function installLongPress(el, getTarget){
           if(dragging){
             // Save all moved positions in one write
             const saved = loadIconPositions();
+            const metrics = getGridMetrics();
+            const movedIds = new Set(startPositions.map(p => p.id));
+            const occupied = new Map();
+
+            APPS.forEach((app, idx) => {
+              if(movedIds.has(app.id)) return;
+              const base = saved[app.id] || defaultIconPos(idx);
+              const placed = placeOnFreeCell(base.x, base.y, occupied, metrics);
+              if(placed.changed || !saved[app.id]){
+                saved[app.id] = { x: placed.x, y: placed.y };
+              }
+            });
+
             startPositions.forEach(p => {
               let x = parseInt(p.el.style.left || '0', 10);
               let y = parseInt(p.el.style.top || '0', 10);
@@ -1433,11 +1594,12 @@ function installLongPress(el, getTarget){
                 const snapped = snapToGrid(x, y);
                 x = snapped.x;
                 y = snapped.y;
-                p.el.style.left = x + 'px';
-                p.el.style.top = y + 'px';
               }
 
-              saved[p.id] = { x, y };
+              const placed = placeOnFreeCell(x, y, occupied, metrics);
+              p.el.style.left = placed.x + 'px';
+              p.el.style.top = placed.y + 'px';
+              saved[p.id] = { x: placed.x, y: placed.y };
               p.el.dataset.dragged = '1';
             });
             saveIconPositions(saved);
@@ -1738,15 +1900,20 @@ function installLongPress(el, getTarget){
                 <strong>${wstate.title}</strong>
               </div>
               <div class="title-controls">
-                <div class="wctl bevel" title="Minimizar" data-action="min">_</div>
-                <div class="wctl bevel" title="Fechar" data-action="close">×</div>
+                <div class="wctl bevel" title="${t('win.minimize')}" data-action="min">_</div>
+                <div class="wctl bevel" title="${t('win.close')}" data-action="close">×</div>
               </div>
             </div>
-            <div class="menubar"><span>File</span><span>Edit</span><span>View</span><span>Help</span></div>
+            <div class="menubar">
+              <span data-i18n="menubar.file">${t('menubar.file')}</span>
+              <span data-i18n="menubar.edit">${t('menubar.edit')}</span>
+              <span data-i18n="menubar.view">${t('menubar.view')}</span>
+              <span data-i18n="menubar.help">${t('menubar.help')}</span>
+            </div>
             <div class="content">${bodyHTML}</div>
-            <div class="statusbar"><span>Ready</span><span>BLISS 98</span></div>
+            <div class="statusbar"><span data-i18n="status.ready">${t('status.ready')}</span><span>BLISS 98</span></div>
           </div>
-          <div class="resize" title="Resize"></div>
+          <div class="resize" title="${t('win.resize')}"></div>
         `;
 
         el.addEventListener('mousedown', (e)=>{ e.stopPropagation(); focusWindow(appId); closeStartMenu(); });
@@ -2037,8 +2204,8 @@ function installLongPress(el, getTarget){
         if(!name){ $('#username').focus(); return; }
         setUser(name);
         showDesktop();
-        if(!state.windows.has('music')) openApp('music');
         if(!state.windows.has('mediaplayer')) openApp('mediaplayer');
+        if(!state.windows.has('music')) openApp('music');
         setTimeout(()=>{ mpPlay(); }, 0);
       }
 
