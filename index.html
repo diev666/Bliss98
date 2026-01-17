@@ -671,13 +671,7 @@
         <div class="login-panel bevel">
           <div class="login-title">
             <div class="login-left">
-              <svg class="logo pixel" viewBox="0 0 16 16" aria-hidden="true">
-                <rect x="0" y="0" width="16" height="16" fill="#c0c0c0" />
-                <rect x="1" y="1" width="14" height="14" fill="#ffffff" />
-                <rect x="2" y="2" width="12" height="12" fill="#008080" />
-                <rect x="4" y="4" width="8" height="8" fill="#000080" />
-                <rect x="6" y="6" width="4" height="4" fill="#ffcc00" />
-              </svg>
+              <img class="logo pixel" src="/assets/icons/bliss.png" width="34" height="34" alt="" style="display:block;" />
               <div>
                 <h1>BLISS 98</h1>
                 <p class="login-sub" data-i18n="login.sub">Enter your name to login</p>
@@ -719,13 +713,7 @@
         <div class="taskbar bevel" id="taskbar">
           <div class="task-left">
             <div id="startBtn" class="btn bevel" title="Menu" data-i18n-title="start.menu">
-              <svg class="pixel" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
-                <rect x="0" y="0" width="16" height="16" fill="#000080" />
-                <rect x="2" y="2" width="5" height="5" fill="#ffcc00" />
-                <rect x="9" y="2" width="5" height="5" fill="#00ff99" />
-                <rect x="2" y="9" width="5" height="5" fill="#ff6699" />
-                <rect x="9" y="9" width="5" height="5" fill="#66ccff" />
-              </svg>
+              <img class="pixel" src="/assets/icons/bliss.png" width="16" height="16" alt="" style="display:block;" />
               <strong>Bliss</strong>
             </div>
           </div>
@@ -3813,7 +3801,7 @@ function installLongPress(el, getTarget){
 
         const logout = document.createElement('div');
         logout.className = 'menu-item';
-        logout.innerHTML = `<div style="width:18px;height:18px;">${iconSVG('user')}</div><div>${t('menu.logoff')}</div>`;
+        logout.innerHTML = `<div style="width:18px;height:18px;display:flex;align-items:center;justify-content:center;"><img class="pixel" src="/assets/icons/logout.png" width="16" height="16" alt="" style="display:block;" /></div><div>${t('menu.logoff')}</div>`;
         logout.addEventListener('click', ()=>{ closeStartMenu(); showLogin(); });
         list.appendChild(logout);
       }
