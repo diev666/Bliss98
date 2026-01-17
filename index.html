@@ -556,6 +556,93 @@
       .music-small .music-item{padding:6px; gap:6px;}
       .music-small .music-label{font-size:12px;}
       .music-hide-icons .music-icon{display:none;}
+      .games-grid{
+        display:grid;
+        grid-template-columns: repeat(auto-fill, 92px);
+        gap:12px;
+        align-items:start;
+      }
+      .games-item{
+        background:transparent;
+        border:1px solid transparent;
+        width:92px;
+        max-width:92px;
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        gap:6px;
+        padding:6px 4px;
+        cursor:default;
+      }
+      .games-item.selected{
+        border:1px dotted #000080;
+        background:#d6e6ff;
+      }
+      .games-item span{
+        text-align:center;
+        line-height:1.1;
+        max-width:86px;
+        word-break:break-word;
+      }
+      .snake-layout{
+        display:flex;
+        gap:12px;
+        flex-wrap:wrap;
+        align-items:stretch;
+      }
+      .snake-board{
+        flex:1 1 260px;
+        min-width:220px;
+        min-height:240px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        position:relative;
+        padding:8px;
+        background:#fff;
+      }
+      .snake-side{
+        width:200px;
+        min-width:180px;
+        display:flex;
+        flex-direction:column;
+        gap:10px;
+      }
+      .snake-controls{
+        display:flex;
+        flex-direction:column;
+        gap:8px;
+      }
+      .snake-controls .btn{
+        justify-content:center;
+      }
+      .snake-speed{
+        display:flex;
+        flex-direction:column;
+        gap:4px;
+      }
+      .snake-speed select{
+        height:24px;
+      }
+      .snake-overlay{
+        position:absolute;
+        inset:8px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        background:rgba(233,233,233,0.85);
+      }
+      .snake-overlay-box{
+        display:flex;
+        flex-direction:column;
+        gap:8px;
+        padding:10px 12px;
+        min-width:160px;
+        text-align:center;
+      }
+      .snake-instructions{
+        line-height:1.3;
+      }
       @media (max-width: 520px){
         .music-grid{
           grid-template-columns:1fr;
@@ -569,6 +656,17 @@
         .music-item span{
           max-width:none;
           text-align:left;
+        }
+        .games-grid{
+          grid-template-columns:repeat(2, minmax(0, 1fr));
+        }
+        .games-item{
+          width:100%;
+          max-width:100%;
+        }
+        .snake-side{
+          width:100%;
+          min-width:0;
         }
       }
       .settings-shell{
@@ -615,6 +713,29 @@
         flex-wrap:wrap;
         align-items:flex-start;
       }
+      .settings-panel-header{
+        display:flex;
+        align-items:center;
+        gap:10px;
+        margin-bottom:10px;
+      }
+      .settings-panel-icon{
+        width:48px;
+        height:48px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        border:1px solid #808080;
+        box-shadow:inset 1px 1px #fff, inset -1px -1px #404040;
+        background:#e9e9e9;
+        flex-shrink:0;
+      }
+      .settings-panel-icon img{
+        width:48px;
+        height:48px;
+        object-fit:contain;
+        display:block;
+      }
       .settings-logo{
         width:96px;
         height:72px;
@@ -649,6 +770,7 @@
       @media (max-width: 520px){
         .settings-general{flex-direction:column;}
         .settings-logo{width:100%; height:72px;}
+        .settings-panel-header{align-items:flex-start;}
       }
       .clothes-grid{
         display:grid;
@@ -986,6 +1108,14 @@
           scanlines: false,
           tab: 'general',
         },
+        games: {
+          view: 'list',
+          selectedId: null,
+        },
+        snake: {
+          speed: 'normal',
+          highScore: 0,
+        },
         trash: new Set(),
         iconLabels: {},
         trashSelection: new Set(),
@@ -1009,6 +1139,7 @@
       const ICON_LABELS_KEY = 'bliss98_icon_labels';
       const CLOTHES_CACHE_KEY = 'bliss98_clothes_cache';
       const CLOTHES_CACHE_TTL = 1000 * 60 * 60 * 3;
+      const SNAKE_HIGH_KEY = 'bliss98_snake_highscore';
       const SFX = {
         boot: {
           src: '/assets/audio/boot.mp3',
@@ -1454,6 +1585,388 @@ function renderPoetryWindow(){
     const id = item.dataset.poemId;
     item.classList.toggle('selected', state.poetry.selectedId === id);
   });
+}
+
+function renderGamesWindow(){
+  const win = document.getElementById('win_games');
+  if(!win) return;
+  const content = win.querySelector('.content');
+  if(!content) return;
+  content.innerHTML = CONTENT.games();
+  applyI18nTo(win);
+
+  if(state.games.view === 'list'){
+    if(!state.games.selectedId) state.games.selectedId = 'snake';
+    const items = Array.from(win.querySelectorAll('[data-game-id]'));
+    items.forEach(item => {
+      const id = item.dataset.gameId;
+      item.classList.toggle('selected', state.games.selectedId === id);
+      item.addEventListener('click', (e)=>{
+        if(e.detail > 1) return;
+        state.games.selectedId = id;
+        items.forEach(btn => btn.classList.toggle('selected', btn === item));
+      });
+      item.addEventListener('dblclick', (e)=>{
+        e.stopPropagation();
+        openGameFromHub(id);
+      });
+      item.addEventListener('keydown', (e)=>{
+        if(e.key === 'Enter' || e.key === ' '){
+          e.preventDefault();
+          openGameFromHub(id);
+        }
+      });
+    });
+    return;
+  }
+
+  if(state.games.view === 'snake'){
+    initSnakeInWindow(win);
+  }
+}
+
+function initGamesWindow(){
+  renderGamesWindow();
+}
+
+function openGameFromHub(id){
+  if(id === 'snake'){
+    state.games.view = 'snake';
+    state.games.selectedId = 'snake';
+    renderGamesWindow();
+  }
+}
+
+function backToGamesHub(){
+  state.games.view = 'list';
+  state.games.selectedId = 'snake';
+  snakeStop();
+  renderGamesWindow();
+}
+
+const SNAKE_SPEEDS = {
+  slow: 180,
+  normal: 130,
+  fast: 90,
+};
+
+let snake = {
+  grid: 20,
+  body: [],
+  dir: { x: 1, y: 0 },
+  nextDir: { x: 1, y: 0 },
+  food: { x: 0, y: 0 },
+  running: false,
+  paused: false,
+  score: 0,
+  gameOver: false,
+  started: false,
+  speed: 'normal',
+  timer: null,
+  cell: 16,
+  ctx: null,
+  els: null,
+  swipeStart: null,
+};
+
+function loadSnakeHighScore(){
+  try{
+    const raw = localStorage.getItem(SNAKE_HIGH_KEY);
+    const parsed = parseInt(raw || '0', 10);
+    return Number.isFinite(parsed) ? parsed : 0;
+  } catch {
+    return 0;
+  }
+}
+
+function saveSnakeHighScore(score){
+  try{ localStorage.setItem(SNAKE_HIGH_KEY, String(score)); } catch {}
+}
+
+function isSnakeActive(){
+  return state.activeWindowId === 'games' && state.games.view === 'snake';
+}
+
+function initSnakeInWindow(winEl){
+  const board = winEl.querySelector('#snakeBoard');
+  const canvas = winEl.querySelector('#snakeCanvas');
+  if(!board || !canvas) return;
+
+  snake.els = {
+    board,
+    canvas,
+    startBtn: winEl.querySelector('[data-snake-action="start"]'),
+    pauseBtn: winEl.querySelector('[data-snake-action="pause"]'),
+    playAgainBtn: winEl.querySelector('[data-snake-action="playAgain"]'),
+    speedSelect: winEl.querySelector('[data-snake-speed]'),
+    score: winEl.querySelector('[data-snake-score]'),
+    high: winEl.querySelector('[data-snake-high]'),
+    overlay: winEl.querySelector('#snakeOverlay'),
+    overScore: winEl.querySelector('[data-snake-over-score]'),
+    backBtn: winEl.querySelector('[data-games-action="back"]'),
+  };
+
+  snake.ctx = canvas.getContext('2d');
+  snake.ctx.imageSmoothingEnabled = false;
+
+  if(typeof state.snake.highScore !== 'number' || Number.isNaN(state.snake.highScore)){
+    state.snake.highScore = loadSnakeHighScore();
+  }
+  snake.speed = state.snake.speed || 'normal';
+  if(snake.els.speedSelect) snake.els.speedSelect.value = snake.speed;
+
+  const fixedSize = 320;
+  canvas.width = fixedSize;
+  canvas.height = fixedSize;
+  canvas.style.width = fixedSize + 'px';
+  canvas.style.height = fixedSize + 'px';
+  snake.cell = Math.max(8, Math.floor(fixedSize / snake.grid));
+  snakeDraw();
+
+  if(snake.els.backBtn){
+    snake.els.backBtn.addEventListener('click', (e)=>{
+      e.preventDefault();
+      backToGamesHub();
+    });
+  }
+  if(snake.els.startBtn){
+    snake.els.startBtn.addEventListener('click', (e)=>{
+      e.preventDefault();
+      snakeStartGame();
+    });
+  }
+  if(snake.els.pauseBtn){
+    snake.els.pauseBtn.addEventListener('click', (e)=>{
+      e.preventDefault();
+      snakeTogglePause();
+    });
+  }
+  if(snake.els.playAgainBtn){
+    snake.els.playAgainBtn.addEventListener('click', (e)=>{
+      e.preventDefault();
+      snakeStartGame();
+    });
+  }
+  if(snake.els.speedSelect){
+    snake.els.speedSelect.addEventListener('change', (e)=>{
+      const val = e.target.value;
+      state.snake.speed = val;
+      snake.speed = val;
+      if(snake.running) snakeStartLoop();
+    });
+  }
+
+  board.addEventListener('touchstart', snakeHandleTouchStart, { passive: true });
+  board.addEventListener('touchend', snakeHandleTouchEnd, { passive: true });
+
+  snakePrepareBoard();
+  updateSnakeUI();
+}
+
+function snakePrepareBoard(){
+  snakeStopLoop();
+  snake.running = false;
+  snake.paused = false;
+  snake.gameOver = false;
+  snake.started = false;
+  snake.score = 0;
+  snake.dir = { x: 1, y: 0 };
+  snake.nextDir = { x: 1, y: 0 };
+  const mid = Math.floor(snake.grid / 2);
+  snake.body = [
+    { x: mid, y: mid },
+    { x: mid - 1, y: mid },
+    { x: mid - 2, y: mid },
+  ];
+  snakePlaceFood();
+  snakeDraw();
+  updateSnakeUI();
+}
+
+function snakeStartGame(){
+  const mid = Math.floor(snake.grid / 2);
+  snake.body = [
+    { x: mid, y: mid },
+    { x: mid - 1, y: mid },
+    { x: mid - 2, y: mid },
+  ];
+  snake.dir = { x: 1, y: 0 };
+  snake.nextDir = { x: 1, y: 0 };
+  snake.score = 0;
+  snake.running = true;
+  snake.paused = false;
+  snake.gameOver = false;
+  snake.started = true;
+  snakePlaceFood();
+  snakeStartLoop();
+  updateSnakeUI();
+  snakeDraw();
+}
+
+function snakeStartLoop(){
+  snakeStopLoop();
+  const step = SNAKE_SPEEDS[snake.speed] || SNAKE_SPEEDS.normal;
+  snake.timer = setInterval(snakeTick, step);
+}
+
+function snakeStopLoop(){
+  if(snake.timer){
+    clearInterval(snake.timer);
+    snake.timer = null;
+  }
+}
+
+function snakeTogglePause(){
+  if(!snake.running) return;
+  snake.paused = !snake.paused;
+  updateSnakeUI();
+}
+
+function snakeStop(){
+  snakeStopLoop();
+  snake.running = false;
+  snake.paused = false;
+  snake.gameOver = false;
+  snake.started = false;
+  snake.els = null;
+  snake.ctx = null;
+}
+
+function snakeTick(){
+  if(!snake.running || snake.paused || snake.gameOver) return;
+  snake.dir = { ...snake.nextDir };
+  const head = snake.body[0];
+  const next = {
+    x: (head.x + snake.dir.x + snake.grid) % snake.grid,
+    y: (head.y + snake.dir.y + snake.grid) % snake.grid,
+  };
+  if(snake.body.some(seg => seg.x === next.x && seg.y === next.y)){
+    snakeGameOver();
+    return;
+  }
+
+  snake.body.unshift(next);
+  if(next.x === snake.food.x && next.y === snake.food.y){
+    snake.score += 10;
+    snakePlaceFood();
+  } else {
+    snake.body.pop();
+  }
+  snakeDraw();
+  updateSnakeUI();
+}
+
+function snakePlaceFood(){
+  let x = 0;
+  let y = 0;
+  let guard = 0;
+  do{
+    x = Math.floor(Math.random() * snake.grid);
+    y = Math.floor(Math.random() * snake.grid);
+    guard += 1;
+  } while(snake.body.some(seg => seg.x === x && seg.y === y) && guard < 200);
+  snake.food = { x, y };
+}
+
+function snakeGameOver(){
+  snake.running = false;
+  snake.paused = false;
+  snake.gameOver = true;
+  snakeStopLoop();
+  if(snake.score > state.snake.highScore){
+    state.snake.highScore = snake.score;
+    saveSnakeHighScore(state.snake.highScore);
+  }
+  updateSnakeUI();
+}
+
+function snakeDraw(){
+  if(!snake.ctx || !snake.els) return;
+  const canvas = snake.els.canvas;
+  const ctx = snake.ctx;
+  const cell = snake.cell;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.fillStyle = '#1b7c1b';
+  snake.body.forEach((seg, idx)=>{
+    ctx.fillStyle = idx === 0 ? '#0f5c0f' : '#1b7c1b';
+    ctx.fillRect(seg.x * cell, seg.y * cell, cell, cell);
+  });
+
+  ctx.fillStyle = '#b20000';
+  ctx.fillRect(snake.food.x * cell, snake.food.y * cell, cell, cell);
+}
+
+
+function snakeHandleDirection(dx, dy){
+  if(!isSnakeActive()) return;
+  if(dx === -snake.dir.x && dy === -snake.dir.y) return;
+  snake.nextDir = { x: dx, y: dy };
+}
+
+function snakeHandleKey(e){
+  if(!isSnakeActive()) return false;
+  const tag = e.target && e.target.tagName;
+  if(tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return false;
+
+  const key = e.key.toLowerCase();
+  let handled = true;
+  if(key === 'arrowup' || key === 'w') snakeHandleDirection(0, -1);
+  else if(key === 'arrowdown' || key === 's') snakeHandleDirection(0, 1);
+  else if(key === 'arrowleft' || key === 'a') snakeHandleDirection(-1, 0);
+  else if(key === 'arrowright' || key === 'd') snakeHandleDirection(1, 0);
+  else if(key === ' ' || key === 'spacebar') snakeTogglePause();
+  else handled = false;
+
+  if(handled){
+    e.preventDefault();
+  }
+  return handled;
+}
+
+function snakeHandleTouchStart(e){
+  if(state.windows.has('games') && state.activeWindowId !== 'games'){
+    focusWindow('games');
+  }
+  if(!isSnakeActive()) return;
+  const touch = e.changedTouches[0];
+  snake.swipeStart = { x: touch.clientX, y: touch.clientY, t: Date.now() };
+}
+
+function snakeHandleTouchEnd(e){
+  if(!isSnakeActive() || !snake.swipeStart) return;
+  const touch = e.changedTouches[0];
+  const dx = touch.clientX - snake.swipeStart.x;
+  const dy = touch.clientY - snake.swipeStart.y;
+  const absX = Math.abs(dx);
+  const absY = Math.abs(dy);
+  if(Math.max(absX, absY) < 18){
+    snake.swipeStart = null;
+    return;
+  }
+  if(absX > absY){
+    snakeHandleDirection(dx > 0 ? 1 : -1, 0);
+  } else {
+    snakeHandleDirection(0, dy > 0 ? 1 : -1);
+  }
+  snake.swipeStart = null;
+}
+
+function updateSnakeUI(){
+  if(!snake.els) return;
+  if(snake.els.score) snake.els.score.textContent = String(snake.score);
+  if(snake.els.high) snake.els.high.textContent = String(state.snake.highScore || 0);
+  if(snake.els.overScore) snake.els.overScore.textContent = String(snake.score);
+  if(snake.els.overlay) snake.els.overlay.classList.toggle('hidden', !snake.gameOver);
+  if(snake.els.startBtn){
+    snake.els.startBtn.textContent = snake.started ? t('snake.restart') : t('snake.start');
+  }
+  if(snake.els.pauseBtn){
+    snake.els.pauseBtn.classList.toggle('pressed', snake.paused);
+  }
 }
 
 function loadClothesCache(){
@@ -2061,6 +2574,21 @@ function installLongPress(el, getTarget){
           'app.poetry': 'Poetry',
           'app.trash': 'Recycle Bin',
           'app.mediaplayer': 'BLISS Media Player',
+          'games.snake': 'Snake',
+          'games.back': 'Back',
+          'snake.title': 'Snake',
+          'snake.start': 'Start',
+          'snake.restart': 'Restart',
+          'snake.pause': 'Pause',
+          'snake.score': 'Score:',
+          'snake.highScore': 'High Score:',
+          'snake.speed': 'Speed:',
+          'snake.speed.slow': 'Slow',
+          'snake.speed.normal': 'Normal',
+          'snake.speed.fast': 'Fast',
+          'snake.instructions': 'Use arrow keys or WASD. On mobile, swipe.',
+          'snake.gameOver': 'Game Over',
+          'snake.playAgain': 'Play again',
 
           'menu.logoff': 'Log off…',
 
@@ -2351,6 +2879,21 @@ function installLongPress(el, getTarget){
           'app.poetry': 'Poesias',
           'app.trash': 'Lixeira',
           'app.mediaplayer': 'BLISS Media Player',
+          'games.snake': 'Snake',
+          'games.back': 'Voltar',
+          'snake.title': 'Snake',
+          'snake.start': 'Iniciar',
+          'snake.restart': 'Reiniciar',
+          'snake.pause': 'Pausar',
+          'snake.score': 'Score:',
+          'snake.highScore': 'High Score:',
+          'snake.speed': 'Velocidade:',
+          'snake.speed.slow': 'Lento',
+          'snake.speed.normal': 'Normal',
+          'snake.speed.fast': 'Rápido',
+          'snake.instructions': 'Use as setas ou WASD. No celular, deslize.',
+          'snake.gameOver': 'Game Over',
+          'snake.playAgain': 'Jogar novamente',
 
           'menu.logoff': 'Sair…',
 
@@ -2639,6 +3182,7 @@ function installLongPress(el, getTarget){
         updateOpenWindowTitles();
         renderTaskButtons();
         renderCtxMenu();
+        updateSnakeUI();
       }
 
       function setLang(lang){
@@ -4048,7 +4592,56 @@ Eu sou o buffalo branco extinto`
         `,
 
         art: () => `<h2>BLISS — ${t('app.art')}</h2><p>${t('common.soon')}</p>`,
-        games: () => `<h2>BLISS — ${t('app.games')}</h2><p>${t('common.soon')}</p>`,
+        games: () => {
+          if(state.games.view === 'snake'){
+            return `
+              <div style="display:flex; gap:8px; align-items:center; margin-bottom:10px;">
+                <button class="btn bevel" type="button" data-games-action="back" data-i18n="games.back">Back</button>
+              </div>
+              <h2>BLISS — ${t('games.snake')}</h2>
+              <div class="snake-layout">
+                <div class="snake-board bevel-in" id="snakeBoard">
+                  <canvas id="snakeCanvas" class="pixel" width="320" height="320"></canvas>
+                  <div class="snake-overlay hidden" id="snakeOverlay">
+                    <div class="snake-overlay-box bevel">
+                      <strong data-i18n="snake.gameOver">Game Over</strong>
+                      <div class="tiny"><span data-i18n="snake.score">Score:</span> <span data-snake-over-score>0</span></div>
+                      <button class="btn bevel" type="button" data-snake-action="playAgain" data-i18n="snake.playAgain">Play again</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="snake-side">
+                  <div class="snake-controls">
+                    <button class="btn bevel" type="button" data-snake-action="start" data-i18n="snake.start">Start</button>
+                    <button class="btn bevel" type="button" data-snake-action="pause" data-i18n="snake.pause">Pause</button>
+                    <div class="tiny"><span data-i18n="snake.score">Score:</span> <strong data-snake-score>0</strong></div>
+                    <div class="tiny"><span data-i18n="snake.highScore">High Score:</span> <strong data-snake-high>0</strong></div>
+                    <label class="snake-speed">
+                      <span class="tiny" data-i18n="snake.speed">Speed:</span>
+                      <select data-snake-speed>
+                        <option value="slow" data-i18n="snake.speed.slow">Slow</option>
+                        <option value="normal" data-i18n="snake.speed.normal">Normal</option>
+                        <option value="fast" data-i18n="snake.speed.fast">Fast</option>
+                      </select>
+                    </label>
+                  </div>
+                  <div class="tiny snake-instructions" data-i18n="snake.instructions">Use arrow keys or WASD. On mobile, swipe.</div>
+                </div>
+              </div>
+            `;
+          }
+          return `
+            <h2>BLISS — ${t('app.games')}</h2>
+            <div class="games-grid">
+              <button class="games-item" type="button" data-game-id="snake">
+                <div class="pixel" style="width:34px;height:34px;display:flex;align-items:center;justify-content:center;">
+                  <img class="pixel" src="/assets/icons/snake.png" width="32" height="32" alt="${t('games.snake')}" style="display:block;" />
+                </div>
+                <span data-i18n="games.snake">Snake</span>
+              </button>
+            </div>
+          `;
+        },
         videos: () => `<h2>BLISS — ${t('app.videos')}</h2><p>${t('common.soon')}</p>`,
         poetry: () => {
           if(POEMS.length === 0){
@@ -4151,16 +4744,30 @@ Eu sou o buffalo branco extinto`
                 </div>
               </div>
               <div class="settings-panel" role="tabpanel" data-tab="language" id="settingsPanel_language">
-                <strong data-i18n="settings.languageTab">Language</strong>
-                <p style="margin:6px 0 10px 0;" data-i18n="settings.languageDesc">Choose your language for BLISS 98.</p>
+                <div class="settings-panel-header">
+                  <div class="settings-panel-icon">
+                    <img class="pixel" src="/assets/icons/language.png" width="48" height="48" alt="" />
+                  </div>
+                  <div>
+                    <strong data-i18n="settings.languageTab">Language</strong>
+                    <div class="tiny" data-i18n="settings.languageDesc">Choose your language for BLISS 98.</div>
+                  </div>
+                </div>
                 <div class="settings-actions">
                   <button class="btn bevel" type="button" data-set-lang="en"><span class="kbd" style="margin-right:6px;">EN</span><span data-i18n="settings.lang.en">English</span></button>
                   <button class="btn bevel" type="button" data-set-lang="pt"><span class="kbd" style="margin-right:6px;">PT</span><span data-i18n="settings.lang.pt">Português (BR)</span></button>
                 </div>
               </div>
               <div class="settings-panel" role="tabpanel" data-tab="appearance" id="settingsPanel_appearance">
-                <strong data-i18n="settings.appearanceTab">Appearance</strong>
-                <p style="margin:6px 0 10px 0;" data-i18n="settings.appearanceDesc">Customize how BLISS 98 looks.</p>
+                <div class="settings-panel-header">
+                  <div class="settings-panel-icon">
+                    <img class="pixel" src="/assets/icons/appearance.png" width="48" height="48" alt="" />
+                  </div>
+                  <div>
+                    <strong data-i18n="settings.appearanceTab">Appearance</strong>
+                    <div class="tiny" data-i18n="settings.appearanceDesc">Customize how BLISS 98 looks.</div>
+                  </div>
+                </div>
                 <div class="settings-block" id="settingsWallpaper">
                   <strong data-i18n="settings.wallpaperTab">Wallpaper</strong>
                   <p style="margin:6px 0 10px 0;" data-i18n="settings.wallpaperDesc">Choose a wallpaper for your desktop.</p>
@@ -4193,8 +4800,15 @@ Eu sou o buffalo branco extinto`
                 </div>
               </div>
               <div class="settings-panel" role="tabpanel" data-tab="performance" id="settingsPanel_performance">
-                <strong data-i18n="settings.animationsTab">Animations</strong>
-                <p style="margin:6px 0 10px 0;" data-i18n="settings.animationsDesc">Toggle window animations.</p>
+                <div class="settings-panel-header">
+                  <div class="settings-panel-icon">
+                    <img class="pixel" src="/assets/icons/performance.png" width="48" height="48" alt="" />
+                  </div>
+                  <div>
+                    <strong data-i18n="settings.animationsTab">Animations</strong>
+                    <div class="tiny" data-i18n="settings.animationsDesc">Toggle window animations.</div>
+                  </div>
+                </div>
                 <div class="settings-actions">
                   <button class="btn bevel" type="button" data-set-animations="on"><span data-i18n="settings.animations.on">On</span></button>
                   <button class="btn bevel" type="button" data-set-animations="off"><span data-i18n="settings.animations.off">Off</span></button>
@@ -5020,6 +5634,11 @@ Eu sou o buffalo branco extinto`
       function closeApp(appId){
         const w = state.windows.get(appId);
         if(!w) return;
+        if(appId === 'games'){
+          snakeStop();
+          state.games.view = 'list';
+          state.games.selectedId = null;
+        }
         state.windows.delete(appId);
         const el = document.getElementById(`win_${appId}`);
         if(state.activeWindowId === appId) state.activeWindowId = null;
@@ -5147,6 +5766,7 @@ Eu sou o buffalo branco extinto`
         if(appId === 'trash') { updateTrashIconUI(); }
         if(appId === 'clothes') { setTimeout(()=>initClothesWindow(el), 0); }
         if(appId === 'settings') { setTimeout(()=>initSettingsTabs(el), 0); }
+        if(appId === 'games') { setTimeout(()=>initGamesWindow(el), 0); }
 
         $('#windows').appendChild(el);
         applyI18nTo(el);
@@ -5469,11 +6089,15 @@ Eu sou o buffalo branco extinto`
           closeWindowMenu();
           closeModal();
         }
+        if(snakeHandleKey(e)) return;
         if(e.key === 'Enter' && state.activeWindowId === 'poetry' && state.poetry.view === 'list' && state.poetry.selectedId){
           state.poetry.view = 'read';
           state.poetry.currentId = state.poetry.selectedId;
           state.poetry.readLang = state.lang;
           renderPoetryWindow();
+        }
+        if(e.key === 'Enter' && state.activeWindowId === 'games' && state.games.view === 'list' && state.games.selectedId){
+          openGameFromHub(state.games.selectedId);
         }
 
         // Keyboard context menu (Shift+F10)
@@ -5660,6 +6284,7 @@ Eu sou o buffalo branco extinto`
         state.wallpaper = loadWallpaper();
         state.animations = loadAnimations();
         state.settings.scanlines = loadScanlines();
+        state.snake.highScore = loadSnakeHighScore();
         state.trash = new Set(loadTrash());
         state.iconLabels = loadIconLabels();
         state.trashSelection = new Set();
