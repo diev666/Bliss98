@@ -34,6 +34,8 @@
         --selection-border:#000080;
         --kbd-bg:#ffffff;
         --kbd-border:#999999;
+        --btn-text:#000000;
+        --muted-text:#4b4b4b;
       }
       body.theme-xp98{
         --shadow-dark:#2b3a52;
@@ -60,6 +62,8 @@
         --selection-border:#316ac5;
         --kbd-bg:#f7f7f7;
         --kbd-border:#7f93ad;
+        --btn-text:#000000;
+        --muted-text:#4b4b4b;
       }
       body.theme-xp98 .taskbar.bevel{
         background:linear-gradient(90deg, #1d3e8a, #2a5db3);
@@ -104,6 +108,8 @@
         --selection-border:#9ec5ff;
         --kbd-bg:#1b1b1b;
         --kbd-border:#5a5a5a;
+        --btn-text:#e0e0e0;
+        --muted-text:#b9b9b9;
       }
 
       html,body{height:100%;margin:0;}
@@ -144,6 +150,7 @@
         align-items:center;
         gap:6px;
         cursor:pointer;
+        color:var(--btn-text);
       }
       .btn:active{ filter:brightness(0.97); }
       .btn.pressed{
@@ -280,6 +287,7 @@
         align-items:center;
         gap:6px;
         padding:2px 6px;
+        color:var(--text);
       }
       .task-left{display:flex; align-items:center; gap:6px;}
       .task-buttons{
@@ -298,6 +306,7 @@
         display:flex;
         align-items:center;
         padding:0 8px;
+        color:var(--text);
       }
       .clock{min-width:72px; text-align:right; font-variant-numeric:tabular-nums;}
 
@@ -308,6 +317,7 @@
         width:260px;
         display:flex;
         padding:0;
+        color:var(--menu-text);
       }
       .start-side{
         width:30px;
@@ -350,7 +360,7 @@
       }
       .menu-sep{height:1px; background:var(--sep); margin:2px 0;}
       /* Desktop context menu (Win98 style) */
-.ctx-menu{
+      .ctx-menu{
   position:absolute;
   min-width:220px;
   padding:2px;
@@ -447,6 +457,11 @@
         cursor:pointer;
         font-size:12px;
         line-height:1;
+        color:var(--btn-text);
+      }
+      .titlebar .wctl,
+      .modal-titlebar .wctl{
+        color:var(--titlebar-text);
       }
       .menubar{
         height:22px;
@@ -457,6 +472,7 @@
         background:var(--task);
         border-bottom:1px solid var(--sep);
         user-select:none;
+        color:var(--text);
       }
       .menubar span{
         cursor:default;
@@ -588,6 +604,7 @@
         border-top:1px solid var(--sep);
         font-size:12px;
         position:relative;
+        color:var(--text);
       }
       .status-center{
         position:absolute;
@@ -751,22 +768,23 @@
       }
       .music-grid{
         display:grid;
-        grid-template-columns: repeat(auto-fill, 92px);
-        gap:12px;
+        grid-template-columns: repeat(auto-fill, 120px);
+        gap:14px;
         align-items:start;
       }
       .music-item{
         display:flex;
         flex-direction:column;
         align-items:center;
-        gap:6px;
-        width:92px;
-        max-width:92px;
-        padding:6px 4px;
+        gap:8px;
+        width:120px;
+        max-width:120px;
+        padding:8px 6px;
         border:1px solid transparent;
         background:transparent;
         appearance:none;
         cursor:default;
+        color:var(--content-text);
       }
       .music-item.selected{
         border:1px dotted var(--selection-border);
@@ -775,10 +793,23 @@
       .music-item span{
         text-align:center;
         line-height:1.1;
-        max-width:86px;
+        max-width:112px;
         word-break:break-word;
       }
+      .music-icon{
+        width:56px;
+        height:56px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+      }
+      .music-icon img{
+        width:48px;
+        height:48px;
+      }
       .music-small .music-item{padding:6px; gap:6px;}
+      .music-small .music-icon{width:40px; height:40px;}
+      .music-small .music-icon img{width:32px; height:32px;}
       .music-small .music-label{font-size:12px;}
       .music-hide-icons .music-icon{display:none;}
       .games-grid{
@@ -931,12 +962,14 @@
         border-bottom:none;
         cursor:pointer;
         white-space:nowrap;
+        color:var(--btn-text);
       }
       .settings-tab[aria-selected="true"]{
         background:var(--panel-bg);
         position:relative;
         top:1px;
         z-index:1;
+        color:var(--content-text);
       }
       .settings-panels{
         padding:0 6px 6px;
@@ -5393,8 +5426,8 @@ Eu sou o buffalo branco extinto`
   <div class="music-grid">
     ${MUSIC_LINKS.map(link => `
       <button class="music-item" type="button" data-music-id="${link.id}" data-music-link="${link.url}">
-        <div class="music-icon pixel" style="width:34px;height:34px;display:flex;align-items:center;justify-content:center;">
-          <img class="pixel" src="${link.icon}" width="32" height="32" alt="${link.label}" style="display:block;" />
+        <div class="music-icon pixel">
+          <img class="pixel" src="${link.icon}" width="48" height="48" alt="${link.label}" style="display:block;" />
         </div>
         <span class="music-label" style="font-weight:700;">${link.label}</span>
       </button>
