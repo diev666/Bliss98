@@ -646,15 +646,23 @@
         align-items:stretch;
       }
       .snake-board{
-        flex:1 1 260px;
-        min-width:220px;
-        min-height:240px;
+        flex:0 0 auto;
+        width:336px;
+        height:336px;
+        min-width:336px;
+        min-height:336px;
+        max-width:100%;
+        max-height:100%;
         display:flex;
         align-items:center;
         justify-content:center;
         position:relative;
         padding:8px;
         background:var(--panel-in);
+        touch-action:none;
+      }
+      .snake-board canvas{
+        touch-action:none;
       }
       .snake-side{
         width:200px;
@@ -725,6 +733,13 @@
         .snake-side{
           width:100%;
           min-width:0;
+        }
+        .snake-board{
+          width:336px;
+          height:336px;
+          min-width:336px;
+          min-height:336px;
+          margin:0 auto;
         }
       }
       .settings-shell{
@@ -1901,8 +1916,14 @@ function initSnakeInWindow(winEl){
     });
   }
 
-  board.addEventListener('touchstart', snakeHandleTouchStart, { passive: true });
-  board.addEventListener('touchend', snakeHandleTouchEnd, { passive: true });
+  board.addEventListener('touchstart', snakeHandleTouchStart, { passive: false });
+  board.addEventListener('touchmove', snakeHandleTouchMove, { passive: false });
+  board.addEventListener('touchend', snakeHandleTouchEnd, { passive: false });
+  board.addEventListener('pointerdown', (e)=>{
+    if(e.pointerType === 'mouse' || e.pointerType === 'pen'){
+      snakeHandleTap(e.clientX, e.clientY);
+    }
+  });
 
   snakePrepareBoard();
   updateSnakeUI();
@@ -2077,8 +2098,14 @@ function snakeHandleTouchStart(e){
     focusWindow('games');
   }
   if(!isSnakeActive()) return;
+  e.preventDefault();
   const touch = e.changedTouches[0];
   snake.swipeStart = { x: touch.clientX, y: touch.clientY, t: Date.now() };
+}
+
+function snakeHandleTouchMove(e){
+  if(!isSnakeActive()) return;
+  e.preventDefault();
 }
 
 function snakeHandleTouchEnd(e){
@@ -2089,6 +2116,7 @@ function snakeHandleTouchEnd(e){
   const absX = Math.abs(dx);
   const absY = Math.abs(dy);
   if(Math.max(absX, absY) < 18){
+    snakeHandleTap(touch.clientX, touch.clientY);
     snake.swipeStart = null;
     return;
   }
@@ -2098,6 +2126,24 @@ function snakeHandleTouchEnd(e){
     snakeHandleDirection(0, dy > 0 ? 1 : -1);
   }
   snake.swipeStart = null;
+}
+
+function snakeHandleTap(clientX, clientY){
+  if(!isSnakeActive() || !snake.els || !snake.els.canvas) return;
+  const rect = snake.els.canvas.getBoundingClientRect();
+  const x = clientX - rect.left;
+  const y = clientY - rect.top;
+  const head = snake.body[0];
+  if(!head) return;
+  const headX = (head.x + 0.5) * snake.cell;
+  const headY = (head.y + 0.5) * snake.cell;
+  const dx = x - headX;
+  const dy = y - headY;
+  if(Math.abs(dx) > Math.abs(dy)){
+    snakeHandleDirection(dx > 0 ? 1 : -1, 0);
+  } else {
+    snakeHandleDirection(0, dy > 0 ? 1 : -1);
+  }
 }
 
 function updateSnakeUI(){
@@ -2809,7 +2855,7 @@ function installLongPress(el, getTarget){
           'settings.lang.pt': 'Português (BR)',
           'settings.appearanceTab': 'Appearance',
           'settings.appearanceDesc': 'Customize how BLISS 98 looks.',
-          'settings.darkMode.title': 'Dark Mode (WOW)',
+          'settings.darkMode.title': 'Dark Mode',
           'settings.darkMode.desc': 'Makes BLISS 98 darker and easier on the eyes.',
           'settings.darkMode.on': 'On',
           'settings.darkMode.off': 'Off',
@@ -3003,7 +3049,7 @@ function installLongPress(el, getTarget){
           'about.p4': 'we are our own GODS.',
           'about.p5': 'There are no rules.',
           'about.p6': 'We create our own world from the inside out.',
-          'about.footer': 'Design By DIEV',
+          'about.footer': 'Designed By DIEV',
 
           'contact.title': 'Contact',
           'contact.label.instagramDIEV': 'Instagram (DIEV):',
@@ -3133,7 +3179,7 @@ function installLongPress(el, getTarget){
           'settings.lang.pt': 'Português (BR)',
           'settings.appearanceTab': 'Aparência',
           'settings.appearanceDesc': 'Personalize o visual do BLISS 98.',
-          'settings.darkMode.title': 'Dark Mode (WOW)',
+          'settings.darkMode.title': 'Modo Escuro',
           'settings.darkMode.desc': 'Deixa o BLISS 98 mais escuro e confortável.',
           'settings.darkMode.on': 'Ligado',
           'settings.darkMode.off': 'Desligado',
@@ -3327,7 +3373,7 @@ function installLongPress(el, getTarget){
           'about.p4': 'nós somos nossos próprios DEUSES.',
           'about.p5': 'Não existem regras.',
           'about.p6': 'Nós criamos o nosso próprio mundo de dentro para fora.',
-          'about.footer': 'Design By DIEV',
+          'about.footer': 'Design by DIEV',
 
           'contact.title': 'Contato',
           'contact.label.instagramDIEV': 'Instagram (DIEV):',
@@ -5011,8 +5057,8 @@ Eu sou o buffalo branco extinto`
                     <div class="tiny" data-i18n="settings.appearanceDesc">Customize how BLISS 98 looks.</div>
                   </div>
                 </div>
-                <div class="settings-block" id="settingsDarkMode">
-                  <strong data-i18n="settings.darkMode.title">Dark Mode (WOW)</strong>
+              <div class="settings-block" id="settingsDarkMode">
+                  <strong data-i18n="settings.darkMode.title">Dark Mode</strong>
                   <p style="margin:6px 0 10px 0;" data-i18n="settings.darkMode.desc">Makes BLISS 98 darker and easier on the eyes.</p>
                   <div class="settings-actions">
                     <button class="btn bevel" type="button" data-set-darkmode="on"><span data-i18n="settings.darkMode.on">On</span></button>
@@ -5227,6 +5273,8 @@ Eu sou o buffalo branco extinto`
 
         if(vol){
           vol.value = String(mp.vol);
+        }
+        if(audio){
           audio.volume = mp.vol;
         }
 
@@ -5266,6 +5314,89 @@ Eu sou o buffalo branco extinto`
         mpUpdateTime();
       }
 
+      function mpApplyVolume(els){
+        if(!els || !els.audio) return;
+        if(els.vol){
+          els.vol.value = String(mp.vol);
+        }
+        els.audio.volume = mp.vol;
+      }
+
+      function mpBindAudioEventsOnce(audio){
+        if(!audio || audio.dataset.mpBound === '1') return;
+        audio.dataset.mpBound = '1';
+        audio.addEventListener('ended', ()=> mpNext());
+        audio.addEventListener('timeupdate', mpUpdateTime);
+        audio.addEventListener('loadedmetadata', mpUpdateTime);
+        audio.addEventListener('durationchange', mpUpdateTime);
+        audio.addEventListener('canplay', mpUpdateTime);
+      }
+
+      function mpBindUiEventsOnce(win, els){
+        if(!win || win.dataset.mpUiBound === '1') return;
+        win.dataset.mpUiBound = '1';
+
+        if(els.vol){
+          els.vol.addEventListener('input', ()=>{
+            mp.vol = Number(els.vol.value);
+            if(els.audio) els.audio.volume = mp.vol;
+            mpSaveState();
+          });
+        }
+
+        if(els.seek){
+          els.seek.addEventListener('input', ()=>{
+            mp.seeking = true;
+            mpSeekTo(els.seek.value);
+          });
+          els.seek.addEventListener('change', ()=>{
+            mp.seeking = false;
+            mpSeekTo(els.seek.value);
+          });
+          els.seek.addEventListener('pointerdown', ()=>{
+            mp.seeking = true;
+          });
+          els.seek.addEventListener('pointerup', ()=>{
+            mp.seeking = false;
+          });
+          els.seek.addEventListener('pointercancel', ()=>{
+            mp.seeking = false;
+          });
+        }
+
+        if(els.fileInput){
+          els.fileInput.addEventListener('change', ()=>{
+            mpAddFiles(els.fileInput.files);
+            mpRender();
+          });
+        }
+
+        const dropTarget = win.querySelector('.mp-mini');
+        if(dropTarget && !dropTarget.dataset.mpDrop){
+          dropTarget.dataset.mpDrop = '1';
+          const showDrop = (on)=>{
+            if(!els.dropHint) return;
+            els.dropHint.classList.toggle('hidden', !on);
+            els.dropHint.classList.toggle('active', !!on);
+          };
+          dropTarget.addEventListener('dragover', (e)=>{
+            e.preventDefault();
+            showDrop(true);
+          });
+          dropTarget.addEventListener('dragleave', ()=>{
+            showDrop(false);
+          });
+          dropTarget.addEventListener('drop', (e)=>{
+            e.preventDefault();
+            showDrop(false);
+            if(e.dataTransfer && e.dataTransfer.files){
+              mpAddFiles(e.dataTransfer.files);
+              mpRender();
+            }
+          });
+        }
+      }
+
       function mpFormatTime(raw){
         if(!Number.isFinite(raw)) return '--:--';
         const total = Math.max(0, Math.floor(raw));
@@ -5285,9 +5416,14 @@ Eu sou o buffalo branco extinto`
         const dur = Number.isFinite(audio.duration) ? audio.duration : 0;
         const cur = Number.isFinite(audio.currentTime) ? audio.currentTime : 0;
 
-        if(seek && !mp.seeking){
-          const ratio = dur ? (cur / dur) : 0;
-          seek.value = String(Math.round(ratio * 1000));
+        if(seek){
+          seek.disabled = !dur;
+          if(!dur){
+            seek.value = '0';
+          } else if(!mp.seeking){
+            const ratio = cur / dur;
+            seek.value = String(Math.round(ratio * 1000));
+          }
         }
         if(current) current.textContent = mpFormatTime(cur);
         if(total) total.textContent = dur ? mpFormatTime(dur) : '--:--';
@@ -5462,78 +5598,12 @@ Eu sou o buffalo branco extinto`
       function mpInitInWindow(){
         const els = mpEls();
         if(!els) return;
-        const { audio, vol, seek, fileInput, dropHint, win } = els;
-
-        // Volume
-        if(vol){
-          vol.value = String(mp.vol);
-          audio.volume = mp.vol;
-          vol.addEventListener('input', ()=>{
-            mp.vol = Number(vol.value);
-            audio.volume = mp.vol;
-            mpSaveState();
-          });
-        }
-
-        if(seek){
-          seek.addEventListener('input', ()=>{
-            mp.seeking = true;
-            mpSeekTo(seek.value);
-          });
-          seek.addEventListener('change', ()=>{
-            mp.seeking = false;
-          });
-          seek.addEventListener('pointerdown', ()=>{
-            mp.seeking = true;
-          });
-          seek.addEventListener('pointerup', ()=>{
-            mp.seeking = false;
-          });
-          seek.addEventListener('pointercancel', ()=>{
-            mp.seeking = false;
-          });
-        }
-
+        const { audio, win } = els;
+        mpBindAudioEventsOnce(audio);
+        mpBindUiEventsOnce(win, els);
         mp.supportsFlac = !!audio.canPlayType('audio/flac');
-
-        if(fileInput){
-          fileInput.addEventListener('change', ()=>{
-            mpAddFiles(fileInput.files);
-            mpRender();
-          });
-        }
-
-        const dropTarget = win ? win.querySelector('.mp-mini') : null;
-        if(dropTarget && !dropTarget.dataset.mpDrop){
-          dropTarget.dataset.mpDrop = '1';
-          const showDrop = (on)=>{
-            if(!dropHint) return;
-            dropHint.classList.toggle('hidden', !on);
-            dropHint.classList.toggle('active', !!on);
-          };
-          dropTarget.addEventListener('dragover', (e)=>{
-            e.preventDefault();
-            showDrop(true);
-          });
-          dropTarget.addEventListener('dragleave', ()=>{
-            showDrop(false);
-          });
-          dropTarget.addEventListener('drop', (e)=>{
-            e.preventDefault();
-            showDrop(false);
-            if(e.dataTransfer && e.dataTransfer.files){
-              mpAddFiles(e.dataTransfer.files);
-              mpRender();
-            }
-          });
-        }
-
-        // Ended -> next
-        audio.addEventListener('ended', ()=> mpNext());
-        audio.addEventListener('timeupdate', mpUpdateTime);
-        audio.addEventListener('loadedmetadata', mpUpdateTime);
-        audio.addEventListener('durationchange', mpUpdateTime);
-
+        mpApplyVolume(els);
+        mpUpdateTime();
         // Load tracks each time window is (re)rendered
         mpLoadTracks();
       }
@@ -6599,6 +6669,7 @@ Eu sou o buffalo branco extinto`
         showDesktop();
         if(!state.windows.has('mediaplayer')) openApp('mediaplayer');
         if(!state.windows.has('music')) openApp('music');
+        setTimeout(()=>{ mpInitInWindow(); }, 0);
         schedulePlayerAutoplay();
       }
 
