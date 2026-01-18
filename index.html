@@ -412,6 +412,15 @@
         padding:6px 8px;
         cursor:pointer;
       }
+      .menu-drop .menu-item{
+        color:var(--menu-text);
+        background:transparent;
+      }
+      .menu-drop .menu-item:disabled,
+      .menu-drop .menu-item.disabled{
+        color:var(--muted-text);
+        cursor:default;
+      }
       .menu-item:hover{
         background:var(--select);
         color:var(--select-text);
