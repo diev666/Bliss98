@@ -1210,6 +1210,8 @@
         },
         menuOpen: null,
         gridSnap: true,
+        autoPlayTimer: null,
+        didAutoPlayThisSession: false,
       };
 
       const ICON_POS_KEY = 'bliss98_icon_positions';
@@ -2872,6 +2874,8 @@ function installLongPress(el, getTarget){
           'dialog.rename.title': 'Rename',
           'dialog.rename.desc': 'Enter a new name.',
           'dialog.rename.confirm': 'Rename',
+          'dialog.loginEmpty.title': 'Enter your name',
+          'dialog.loginEmpty.body': 'Please type a name to continue.',
           'dialog.trash.empty': 'Recycle Bin is empty.',
           'dialog.trash.restore': 'Restore',
           'dialog.trash.restoreAll': 'Restore All',
@@ -3190,6 +3194,8 @@ function installLongPress(el, getTarget){
           'dialog.rename.title': 'Renomear',
           'dialog.rename.desc': 'Digite um novo nome.',
           'dialog.rename.confirm': 'Renomear',
+          'dialog.loginEmpty.title': 'Digite seu nome',
+          'dialog.loginEmpty.body': 'Digite um nome para continuar.',
           'dialog.trash.empty': 'A lixeira está vazia.',
           'dialog.trash.restore': 'Restaurar',
           'dialog.trash.restoreAll': 'Restaurar tudo',
@@ -5192,6 +5198,39 @@ Eu sou o buffalo branco extinto`
         els.fileInput.click();
       }
 
+      function schedulePlayerAutoplay(){
+        if(state.didAutoPlayThisSession) return;
+        if(state.autoPlayTimer) clearTimeout(state.autoPlayTimer);
+        state.autoPlayTimer = setTimeout(async ()=>{
+          if(state.didAutoPlayThisSession) return;
+          if(mp.playing) return;
+          if(!state.windows.has('mediaplayer')) openApp('mediaplayer');
+
+          const tryPlay = async () => {
+            if(mp.tracks.length === 0){
+              await mpLoadTracks();
+            }
+            if(mp.tracks.length === 0) return false;
+            if(mp.idx < 0 || mp.idx >= mp.tracks.length){
+              mp.idx = 0;
+              mpSetTrack(0);
+            }
+            await mpPlay();
+            return mp.playing;
+          };
+
+          let ok = await tryPlay();
+          if(!ok){
+            for(let i=0;i<3;i++){
+              await new Promise(r => setTimeout(r, 500));
+              ok = await tryPlay();
+              if(ok) break;
+            }
+          }
+          if(ok) state.didAutoPlayThisSession = true;
+        }, 6000);
+      }
+
       function mpSetTrack(i){
         const els = mpEls();
         if(!els) return;
@@ -5517,6 +5556,11 @@ Eu sou o buffalo branco extinto`
       function doLogoff(){
         if(logoffInProgress) return;
         logoffInProgress = true;
+        if(state.autoPlayTimer){
+          clearTimeout(state.autoPlayTimer);
+          state.autoPlayTimer = null;
+        }
+        state.didAutoPlayThisSession = false;
         closeStartMenu();
         closeCtxMenu();
         closeWindowMenu();
@@ -6432,12 +6476,17 @@ Eu sou o buffalo branco extinto`
 
       function enter(){
         const name = $('#username').value.trim();
-        if(!name){ $('#username').focus(); return; }
+        if(!name){
+          showMessage('dialog.loginEmpty.title', 'dialog.loginEmpty.body');
+          $('#username').focus();
+          return;
+        }
+        state.didAutoPlayThisSession = false;
         setUser(name);
         showDesktop();
         if(!state.windows.has('mediaplayer')) openApp('mediaplayer');
         if(!state.windows.has('music')) openApp('music');
-        setTimeout(()=>{ mpPlay(); }, 0);
+        schedulePlayerAutoplay();
       }
 
       $('#enter').addEventListener('click', enter);
