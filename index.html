@@ -437,17 +437,6 @@
         cursor:move;
         touch-action:none;
       }
-      body.titlebar-transparent .titlebar{
-        background:transparent !important;
-        background-image:none !important;
-        box-shadow:none !important;
-        color:var(--titlebar-text);
-        text-shadow:1px 1px 0 rgba(0,0,0,0.55);
-        border-top:1px solid var(--shadow-white);
-        border-left:1px solid var(--shadow-white);
-        border-right:1px solid var(--shadow-dark);
-        border-bottom:1px solid var(--shadow-dark);
-      }
       .title-left{display:flex; align-items:center; gap:6px;}
       .title-left strong{font-weight:700; font-size:12px;}
       .title-controls{display:flex; gap:4px;}
@@ -1299,17 +1288,6 @@
         background:linear-gradient(90deg, var(--title), var(--title2));
         color:var(--titlebar-text);
       }
-      body.titlebar-transparent .modal-titlebar{
-        background:transparent !important;
-        background-image:none !important;
-        box-shadow:none !important;
-        color:var(--titlebar-text);
-        text-shadow:1px 1px 0 rgba(0,0,0,0.55);
-        border-top:1px solid var(--shadow-white);
-        border-left:1px solid var(--shadow-white);
-        border-right:1px solid var(--shadow-dark);
-        border-bottom:1px solid var(--shadow-dark);
-      }
       .modal-body{
         padding:10px;
         background:var(--content-bg);
@@ -1603,7 +1581,7 @@
         offWhite: { bar1:'#e6e6e6', bar2:'#cfcfcf', text:'#1a1a1a' },
         greenDark: { bar1:'#1b4a2a', bar2:'#0e2e1a', text:'#f1f1f1' },
         redDark: { bar1:'#5a1a1a', bar2:'#2f0b0b', text:'#f1f1f1' },
-        transparent: { bar1:'rgba(0,0,0,0.3)', bar2:'rgba(0,0,0,0.3)', text:'#f1f1f1' },
+        blank: { bar1:'#b6b6b6', bar2:'#c9c9c9', text:'#1a1a1a' },
         xpBlue: { bar1:'#0a2e8f', bar2:'#4f86d8', text:'#ffffff' },
       };
 
@@ -2698,6 +2676,7 @@ function loadDarkMode(){
 function loadTitlebarTheme(){
   try{
     const raw = localStorage.getItem(TITLEBAR_KEY);
+    if(raw === 'transparent') return 'blank';
     return raw || 'defaultBlue';
   } catch {
     return 'defaultBlue';
@@ -2815,10 +2794,6 @@ function setThemePresetCustom(){
 }
 
 function applyWallpaper(id){
-  if(!themeApplying && id === 'xp98bliss' && state.theme.preset !== 'xp98'){
-    setThemePreset('xp98');
-    return;
-  }
   const wp = WALLPAPERS.find(w => w.id === id) || WALLPAPERS[0];
   state.wallpaper = wp.id;
   const desktop = $('#desktop');
@@ -2853,15 +2828,9 @@ function setTitlebarTheme(id, fromPreset=false){
 
 function applyTitlebarTheme(){
   const cur = TITLEBAR_THEMES[state.theme.titlebar] || TITLEBAR_THEMES.defaultBlue;
-  const isTransparent = state.theme.titlebar === 'transparent';
-  const base = TITLEBAR_THEMES.defaultBlue;
-  const bar1 = isTransparent ? base.bar1 : cur.bar1;
-  const bar2 = isTransparent ? base.bar2 : cur.bar2;
-  const text = isTransparent ? '#f1f1f1' : cur.text;
-  document.body.classList.toggle('titlebar-transparent', isTransparent);
-  document.body.style.setProperty('--title', bar1);
-  document.body.style.setProperty('--title2', bar2);
-  document.body.style.setProperty('--titlebar-text', text);
+  document.body.style.setProperty('--title', cur.bar1);
+  document.body.style.setProperty('--title2', cur.bar2);
+  document.body.style.setProperty('--titlebar-text', cur.text);
 }
 
 function setThemePreset(id, opts={}){
@@ -3406,7 +3375,7 @@ function installLongPress(el, getTarget){
           'titlebar.offWhite': 'Off-white',
           'titlebar.greenDark': 'Dark Green',
           'titlebar.redDark': 'Dark Red',
-          'titlebar.transparent': 'Transparent',
+          'titlebar.blank': 'Blank',
           'titlebar.xpBlue': 'XP Blue',
           'theme.default': 'Default',
           'theme.totvers': 'Totvers',
@@ -3761,7 +3730,7 @@ function installLongPress(el, getTarget){
           'titlebar.offWhite': 'Branco off-white',
           'titlebar.greenDark': 'Verde escuro',
           'titlebar.redDark': 'Vermelho escuro',
-          'titlebar.transparent': 'Transparente',
+          'titlebar.blank': 'Vazio',
           'titlebar.xpBlue': 'Azul XP',
           'theme.default': 'Padrão',
           'theme.totvers': 'Totvers',
@@ -5714,9 +5683,9 @@ Eu sou o buffalo branco extinto`
                       <span class="titlebar-swatch" style="background:linear-gradient(90deg,#5a1a1a,#2f0b0b);"></span>
                       <span data-i18n="titlebar.redDark">Dark Red</span>
                     </button>
-                    <button class="btn bevel" type="button" data-set-titlebar="transparent">
-                      <span class="titlebar-swatch" style="background:repeating-linear-gradient(45deg,#666 0 2px,#999 2px 4px);"></span>
-                      <span data-i18n="titlebar.transparent">Transparent</span>
+                    <button class="btn bevel" type="button" data-set-titlebar="blank">
+                      <span class="titlebar-swatch" style="background:linear-gradient(90deg,#b6b6b6,#c9c9c9);"></span>
+                      <span data-i18n="titlebar.blank">Blank</span>
                     </button>
                     <button class="btn bevel" type="button" data-set-titlebar="xpBlue">
                       <span class="titlebar-swatch" style="background:linear-gradient(90deg,#0a246a,#3a6ea5);"></span>
@@ -7720,6 +7689,7 @@ Eu sou o buffalo branco extinto`
         state.settings.darkMode = loadDarkMode();
         state.theme.preset = loadThemePreset();
         state.theme.titlebar = loadTitlebarTheme();
+        if(state.theme.titlebar === 'transparent') state.theme.titlebar = 'blank';
         state.snake.highScore = loadSnakeHighScore();
         state.trash = new Set(loadTrash());
         state.iconLabels = loadIconLabels();
