@@ -17,6 +17,50 @@
         --text:#000;
         --menu:#c0c0c0;
         --select:#000080;
+        --select-text:#ffffff;
+        --content-bg:#ffffff;
+        --content-text:#000000;
+        --panel-bg:#e9e9e9;
+        --panel-in:#ffffff;
+        --panel-border:#808080;
+        --input-bg:#ffffff;
+        --input-text:#000000;
+        --menu-text:#000000;
+        --link:#0000ee;
+        --sep:#9a9a9a;
+        --sep-light:#ffffff;
+        --selection-bg:#d6e6ff;
+        --selection-border:#000080;
+        --kbd-bg:#ffffff;
+        --kbd-border:#999999;
+      }
+      body.dark{
+        --shadow-dark:#000000;
+        --shadow-mid:#1c1c1c;
+        --shadow-light:#3a3a3a;
+        --shadow-white:#5a5a5a;
+        --title:#1b3f7a;
+        --title2:#0a2e5c;
+        --task:#2a2a2a;
+        --text:#e6e6e6;
+        --menu:#2a2a2a;
+        --select:#1b3f7a;
+        --select-text:#f1f1f1;
+        --content-bg:#1f1f1f;
+        --content-text:#e6e6e6;
+        --panel-bg:#303030;
+        --panel-in:#1b1b1b;
+        --panel-border:#5a5a5a;
+        --input-bg:#1b1b1b;
+        --input-text:#e6e6e6;
+        --menu-text:#f1f1f1;
+        --link:#8bb6ff;
+        --sep:#4a4a4a;
+        --sep-light:#2a2a2a;
+        --selection-bg:#1c3f66;
+        --selection-border:#9ec5ff;
+        --kbd-bg:#1b1b1b;
+        --kbd-border:#5a5a5a;
       }
 
       html,body{height:100%;margin:0;}
@@ -43,7 +87,7 @@
         box-shadow: 1px 1px 0 0 var(--shadow-mid) inset, -1px -1px 0 0 var(--shadow-light) inset;
       }
       .bevel-in{
-        background:#fff;
+        background:var(--panel-in);
         border-top:2px solid var(--shadow-dark);
         border-left:2px solid var(--shadow-dark);
         border-right:2px solid var(--shadow-white);
@@ -112,10 +156,13 @@
         height:26px;
         padding:0 8px;
         outline:none;
+        background:var(--input-bg);
+        color:var(--input-text);
+        border:1px solid var(--panel-border);
       }
       .login-footer{display:flex; justify-content:space-between; align-items:center; margin-top:12px; gap:10px;}
       .tiny{font-size:12px; opacity:.85; user-select:text;}
-      .kbd{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:12px; background:#fff; padding:1px 5px; border:1px solid #999;}
+      .kbd{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:12px; background:var(--kbd-bg); padding:1px 5px; border:1px solid var(--kbd-border);}
 
       #desktop{ position:absolute; inset:0; background:var(--bg); }
       .desktop-area{
@@ -155,8 +202,8 @@
         word-break:break-word;
       }
       .icon.selected span{
-        background:rgba(0,0,128,0.9);
-        outline:1px dotted #fff;
+        background:var(--select);
+        outline:1px dotted var(--select-text);
       }
       .icon.trashed{
         opacity:0.65;
@@ -187,7 +234,7 @@
         padding:0 6px;
       }
       .task-buttons::-webkit-scrollbar{height:8px;}
-      .task-buttons::-webkit-scrollbar-thumb{background:#9a9a9a;}
+      .task-buttons::-webkit-scrollbar-thumb{background:var(--sep);}
       .task-right{ display:flex; align-items:center; gap:8px; }
       .tray{
         height:24px;
@@ -207,7 +254,7 @@
       }
       .start-side{
         width:30px;
-        background:linear-gradient(#000080, #000);
+        background:linear-gradient(var(--title), var(--shadow-dark));
         color:#fff;
         display:flex;
         align-items:flex-end;
@@ -242,15 +289,16 @@
       }
       .menu-item:hover{
         background:var(--select);
-        color:#fff;
+        color:var(--select-text);
       }
-      .menu-sep{height:1px; background:#9a9a9a; margin:2px 0;}
+      .menu-sep{height:1px; background:var(--sep); margin:2px 0;}
       /* Desktop context menu (Win98 style) */
 .ctx-menu{
   position:absolute;
   min-width:220px;
   padding:2px;
   z-index:9999;
+  color:var(--menu-text);
 }
 .ctx-item{
   width:100%;
@@ -269,11 +317,11 @@
 .ctx-item:hover,
 .ctx-item:focus{
   background:var(--select);
-  color:#fff;
+  color:var(--select-text);
   outline:none;
 }
 .ctx-left{display:flex; align-items:center; gap:10px;}
-.ctx-sep{height:1px; background:#9a9a9a; margin:2px 0;}
+.ctx-sep{height:1px; background:var(--sep); margin:2px 0;}
 .ctx-check{
   width:16px;
   height:16px;
@@ -339,7 +387,7 @@
         gap:14px;
         padding:0 8px;
         background:var(--task);
-        border-bottom:1px solid #9a9a9a;
+        border-bottom:1px solid var(--sep);
         user-select:none;
       }
       .menubar span{
@@ -347,8 +395,8 @@
         padding:0 6px;
       }
       .menubar span.active{
-        background:#000080;
-        color:#fff;
+        background:var(--select);
+        color:var(--select-text);
       }
       .menu-drop{
         position:absolute;
@@ -358,6 +406,7 @@
         border:2px solid var(--shadow-dark);
         box-shadow: -2px -2px 0 0 var(--shadow-white) inset, 2px 2px 0 0 var(--shadow-mid) inset;
         z-index:5;
+        color:var(--menu-text);
       }
       .menu-drop.hidden{display:none;}
       .menu-item{
@@ -376,8 +425,8 @@
       }
       .menu-item:hover,
       .menu-item:focus{
-        background:#000080;
-        color:#fff;
+        background:var(--select);
+        color:var(--select-text);
         outline:none;
       }
       .menu-left{
@@ -396,7 +445,7 @@
       }
       .menu-sep{
         height:1px;
-        background:#9a9a9a;
+        background:var(--sep);
         margin:2px 0;
       }
       .menu-item.has-sub:hover > .menu-sub,
@@ -415,13 +464,14 @@
         border:2px solid var(--shadow-dark);
         box-shadow: -2px -2px 0 0 var(--shadow-white) inset, 2px 2px 0 0 var(--shadow-mid) inset;
         z-index:6;
+        color:var(--menu-text);
       }
       .content{
         flex:1;
         padding:10px;
         overflow:auto;
-        background:#fff;
-        color:#000;
+        background:var(--content-bg);
+        color:var(--content-text);
         user-select:text;
         -webkit-user-select:text;
       }
@@ -438,7 +488,7 @@
         padding:2px 8px;
         height:auto;
         background:var(--task);
-        border-bottom:1px solid #9a9a9a;
+        border-bottom:1px solid var(--sep);
         flex-wrap:wrap;
       }
       .trash-actions .btn{
@@ -459,7 +509,7 @@
       .content h2{margin:0 0 8px 0; font-size:16px;}
       .content p{margin:0 0 10px 0; line-height:1.35;}
       .content .card{ padding:10px; margin:10px 0; }
-      .content a{color:#0000ee;}
+      .content a{color:var(--link);}
       .statusbar{
         height:22px;
         display:flex;
@@ -467,7 +517,7 @@
         justify-content:space-between;
         padding:0 8px;
         background:var(--task);
-        border-top:1px solid #9a9a9a;
+        border-top:1px solid var(--sep);
         font-size:12px;
         position:relative;
       }
@@ -492,7 +542,7 @@
       .rubberband{
         position:absolute;
         pointer-events:none;
-        border:1px dotted #ffffff;
+        border:1px dotted var(--select-text);
         background:rgba(0,0,128,0.18);
         box-shadow: 0 0 0 1px rgba(0,0,0,0.15) inset;
       }
@@ -512,15 +562,20 @@
         user-select:text;
         -webkit-user-select:text;
       }
+      input[type="text"], select, textarea{
+        background:var(--input-bg);
+        color:var(--input-text);
+        border:1px solid var(--panel-border);
+      }
 
-      .hr98{height:1px; background:#b0b0b0; border-bottom:1px solid #fff; margin:10px 0;}
+      .hr98{height:1px; background:var(--sep); border-bottom:1px solid var(--sep-light); margin:10px 0;}
       .grid2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
       .list98{padding-left:18px; margin:0;}
       .tag{
         display:inline-block;
         padding:1px 6px;
-        border:1px solid #999;
-        background:#f2f2f2;
+        border:1px solid var(--panel-border);
+        background:var(--panel-bg);
         margin-right:6px;
         font-size:12px;
       }
@@ -544,8 +599,8 @@
         cursor:default;
       }
       .music-item.selected{
-        border:1px dotted #000080;
-        background:#d6e6ff;
+        border:1px dotted var(--selection-border);
+        background:var(--selection-bg);
       }
       .music-item span{
         text-align:center;
@@ -575,8 +630,8 @@
         cursor:default;
       }
       .games-item.selected{
-        border:1px dotted #000080;
-        background:#d6e6ff;
+        border:1px dotted var(--selection-border);
+        background:var(--selection-bg);
       }
       .games-item span{
         text-align:center;
@@ -599,7 +654,7 @@
         justify-content:center;
         position:relative;
         padding:8px;
-        background:#fff;
+        background:var(--panel-in);
       }
       .snake-side{
         width:200px;
@@ -631,6 +686,9 @@
         align-items:center;
         justify-content:center;
         background:rgba(233,233,233,0.85);
+      }
+      body.dark .snake-overlay{
+        background:rgba(20,20,20,0.85);
       }
       .snake-overlay-box{
         display:flex;
@@ -683,14 +741,14 @@
       }
       .settings-tab{
         padding:4px 10px;
-        background:#c0c0c0;
-        border:1px solid #808080;
+        background:var(--task);
+        border:1px solid var(--panel-border);
         border-bottom:none;
         cursor:pointer;
         white-space:nowrap;
       }
       .settings-tab[aria-selected="true"]{
-        background:#e9e9e9;
+        background:var(--panel-bg);
         position:relative;
         top:1px;
         z-index:1;
@@ -701,9 +759,9 @@
       .settings-panel{
         display:none;
         padding:12px;
-        background:#e9e9e9;
-        border:1px solid #808080;
-        box-shadow:inset 1px 1px #fff, inset -1px -1px #404040;
+        background:var(--panel-bg);
+        border:1px solid var(--panel-border);
+        box-shadow:inset 1px 1px var(--shadow-white), inset -1px -1px var(--shadow-dark);
         min-height:200px;
       }
       .settings-panel.active{display:block;}
@@ -725,9 +783,9 @@
         display:flex;
         align-items:center;
         justify-content:center;
-        border:1px solid #808080;
-        box-shadow:inset 1px 1px #fff, inset -1px -1px #404040;
-        background:#e9e9e9;
+        border:1px solid var(--panel-border);
+        box-shadow:inset 1px 1px var(--shadow-white), inset -1px -1px var(--shadow-dark);
+        background:var(--panel-bg);
         flex-shrink:0;
       }
       .settings-panel-icon img{
@@ -742,9 +800,9 @@
         display:flex;
         align-items:center;
         justify-content:center;
-        border:2px solid #808080;
-        box-shadow:inset 1px 1px #fff, inset -1px -1px #404040;
-        background:#e9e9e9;
+        border:2px solid var(--panel-border);
+        box-shadow:inset 1px 1px var(--shadow-white), inset -1px -1px var(--shadow-dark);
+        background:var(--panel-bg);
       }
       .settings-logo img{
         width:48px;
@@ -760,7 +818,7 @@
       .settings-block{
         margin-top:8px;
         padding-top:8px;
-        border-top:1px solid #b0b0b0;
+        border-top:1px solid var(--sep);
       }
       .settings-actions{
         display:flex;
@@ -788,8 +846,8 @@
       }
       .clothes-item:focus,
       .clothes-item:focus-visible{
-        outline:1px dotted #000080;
-        background:#d6e6ff;
+        outline:1px dotted var(--selection-border);
+        background:var(--selection-bg);
       }
       .clothes-thumb{
         width:100%;
@@ -827,8 +885,8 @@
         cursor:default;
       }
       .poetry-item.selected{
-        border:1px dotted #000080;
-        background:#d6e6ff;
+        border:1px dotted var(--selection-border);
+        background:var(--selection-bg);
       }
       .poetry-item span{
         text-align:center;
@@ -860,8 +918,8 @@
         cursor:default;
       }
       .trash-item.selected{
-        border:1px dotted #000080;
-        background:#d6e6ff;
+        border:1px dotted var(--selection-border);
+        background:var(--selection-bg);
       }
       .trash-item span{
         text-align:center;
@@ -877,8 +935,8 @@
       .mp-hide-list #mpList,
       .mp-hide-list #mpMsg{display:none;}
       .mp-item.selected{
-        outline:1px dotted #000080;
-        background:#d6e6ff;
+        outline:1px dotted var(--selection-border);
+        background:var(--selection-bg);
       }
       #win_mediaplayer .content{
         background:var(--task);
@@ -954,13 +1012,13 @@
         min-height:14px;
       }
       .mp-drop{
-        border:1px dotted #000080;
-        background:#e9e9e9;
+        border:1px dotted var(--selection-border);
+        background:var(--panel-bg);
         text-align:center;
         padding:6px;
       }
       .mp-drop.active{
-        background:#d6e6ff;
+        background:var(--selection-bg);
       }
       .diev-small .content{font-size:12px;}
       .diev-large .content{font-size:15px;}
@@ -1018,8 +1076,8 @@
       }
       .modal-body{
         padding:10px;
-        background:#fff;
-        color:#000;
+        background:var(--content-bg);
+        color:var(--content-text);
         overflow:auto;
         max-height:calc(100% - 72px);
       }
@@ -1034,7 +1092,7 @@
         gap:8px;
         padding:10px;
         background:var(--task);
-        border-top:1px solid #9a9a9a;
+        border-top:1px solid var(--sep);
       }
       @keyframes winOpen{
         from{opacity:0; transform:scale(0.98);}
@@ -1190,6 +1248,7 @@
         settings: {
           scanlines: false,
           tab: 'general',
+          darkMode: false,
         },
         games: {
           view: 'list',
@@ -1220,6 +1279,7 @@
       const WALLPAPER_KEY = 'bliss98_wallpaper';
       const ANIMATIONS_KEY = 'bliss98_animations';
       const SCANLINES_KEY = 'bliss98_scanlines';
+      const DARKMODE_KEY = 'bliss98_darkmode';
       const TRASH_KEY = 'bliss98_trash';
       const ICON_LABELS_KEY = 'bliss98_icon_labels';
       const CLOTHES_CACHE_KEY = 'bliss98_clothes_cache';
@@ -2287,6 +2347,19 @@ function setScanlines(enabled){
   updateScanlinesButtons();
 }
 
+function updateDarkModeButtons(root=document){
+  $$('[data-set-darkmode]', root).forEach(btn => {
+    const on = btn.dataset.setDarkmode === 'on';
+    btn.classList.toggle('pressed', on === state.settings.darkMode);
+  });
+}
+
+function setDarkMode(enabled){
+  state.settings.darkMode = !!enabled;
+  applyDarkMode();
+  updateDarkModeButtons();
+}
+
 function loadScanlines(){
   try{
     const raw = localStorage.getItem(SCANLINES_KEY);
@@ -2297,9 +2370,25 @@ function loadScanlines(){
   }
 }
 
+function loadDarkMode(){
+  try{
+    const raw = localStorage.getItem(DARKMODE_KEY);
+    if(raw === null) return false;
+    return raw === '1';
+  } catch {
+    return false;
+  }
+}
+
 function saveScanlines(){
   try{
     localStorage.setItem(SCANLINES_KEY, state.settings.scanlines ? '1' : '0');
+  } catch {}
+}
+
+function saveDarkMode(){
+  try{
+    localStorage.setItem(DARKMODE_KEY, state.settings.darkMode ? '1' : '0');
   } catch {}
 }
 
@@ -2405,6 +2494,13 @@ function applyScanlines(){
   document.body.classList.toggle('scanlines', state.settings.scanlines);
   saveScanlines();
   updateScanlinesButtons();
+}
+
+function applyDarkMode(){
+  document.body.classList.toggle('dark', state.settings.darkMode);
+  saveDarkMode();
+  updateDarkModeButtons();
+  renderCtxMenu();
 }
 
 function applyWindowState(winEl, appId){
@@ -2713,6 +2809,10 @@ function installLongPress(el, getTarget){
           'settings.lang.pt': 'Português (BR)',
           'settings.appearanceTab': 'Appearance',
           'settings.appearanceDesc': 'Customize how BLISS 98 looks.',
+          'settings.darkMode.title': 'Dark Mode (WOW)',
+          'settings.darkMode.desc': 'Makes BLISS 98 darker and easier on the eyes.',
+          'settings.darkMode.on': 'On',
+          'settings.darkMode.off': 'Off',
           'settings.animationsTab': 'Animations',
           'settings.animationsDesc': 'Toggle window animations.',
           'settings.animations.on': 'On',
@@ -2903,7 +3003,7 @@ function installLongPress(el, getTarget){
           'about.p4': 'we are our own GODS.',
           'about.p5': 'There are no rules.',
           'about.p6': 'We create our own world from the inside out.',
-          'about.footer': 'BLISS 98 Desing by DIEV',
+          'about.footer': 'Design By DIEV',
 
           'contact.title': 'Contact',
           'contact.label.instagramDIEV': 'Instagram (DIEV):',
@@ -3033,6 +3133,10 @@ function installLongPress(el, getTarget){
           'settings.lang.pt': 'Português (BR)',
           'settings.appearanceTab': 'Aparência',
           'settings.appearanceDesc': 'Personalize o visual do BLISS 98.',
+          'settings.darkMode.title': 'Dark Mode (WOW)',
+          'settings.darkMode.desc': 'Deixa o BLISS 98 mais escuro e confortável.',
+          'settings.darkMode.on': 'Ligado',
+          'settings.darkMode.off': 'Desligado',
           'settings.animationsTab': 'Animações',
           'settings.animationsDesc': 'Ative ou desative as animações das janelas.',
           'settings.animations.on': 'Ligado',
@@ -3223,7 +3327,7 @@ function installLongPress(el, getTarget){
           'about.p4': 'nós somos nossos próprios DEUSES.',
           'about.p5': 'Não existem regras.',
           'about.p6': 'Nós criamos o nosso próprio mundo de dentro para fora.',
-          'about.footer': 'BLISS 98 Desing by DIEV',
+          'about.footer': 'Design By DIEV',
 
           'contact.title': 'Contato',
           'contact.label.instagramDIEV': 'Instagram (DIEV):',
@@ -3285,6 +3389,7 @@ function installLongPress(el, getTarget){
         });
         updateWallpaperButtons(root);
         updateAnimationButtons(root);
+        updateDarkModeButtons(root);
       }
 
       function applyI18n(){
@@ -4904,6 +5009,14 @@ Eu sou o buffalo branco extinto`
                   <div>
                     <strong data-i18n="settings.appearanceTab">Appearance</strong>
                     <div class="tiny" data-i18n="settings.appearanceDesc">Customize how BLISS 98 looks.</div>
+                  </div>
+                </div>
+                <div class="settings-block" id="settingsDarkMode">
+                  <strong data-i18n="settings.darkMode.title">Dark Mode (WOW)</strong>
+                  <p style="margin:6px 0 10px 0;" data-i18n="settings.darkMode.desc">Makes BLISS 98 darker and easier on the eyes.</p>
+                  <div class="settings-actions">
+                    <button class="btn bevel" type="button" data-set-darkmode="on"><span data-i18n="settings.darkMode.on">On</span></button>
+                    <button class="btn bevel" type="button" data-set-darkmode="off"><span data-i18n="settings.darkMode.off">Off</span></button>
                   </div>
                 </div>
                 <div class="settings-block" id="settingsWallpaper">
@@ -6661,6 +6774,10 @@ Eu sou o buffalo branco extinto`
         if(scanBtn && scanBtn.dataset && scanBtn.dataset.setScanlines){
           setScanlines(scanBtn.dataset.setScanlines === 'on');
         }
+        const darkBtn = e.target.closest && e.target.closest('[data-set-darkmode]');
+        if(darkBtn && darkBtn.dataset && darkBtn.dataset.setDarkmode){
+          setDarkMode(darkBtn.dataset.setDarkmode === 'on');
+        }
         const musicCard = e.target.closest && e.target.closest('[data-music-id]');
         if(musicCard){
           if(musicCard.dataset && musicCard.dataset.touchOpened === '1'){
@@ -6701,6 +6818,7 @@ Eu sou o buffalo branco extinto`
         state.wallpaper = loadWallpaper();
         state.animations = loadAnimations();
         state.settings.scanlines = loadScanlines();
+        state.settings.darkMode = loadDarkMode();
         state.snake.highScore = loadSnakeHighScore();
         state.trash = new Set(loadTrash());
         state.iconLabels = loadIconLabels();
@@ -6708,6 +6826,7 @@ Eu sou o buffalo branco extinto`
 
         // Apply translations immediately (default is English)
         applyI18n();
+        applyDarkMode();
         applyScanlines();
         updateTrashIconUI();
 
