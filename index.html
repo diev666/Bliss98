@@ -6865,6 +6865,45 @@ Eu sou o buffalo branco extinto`
         return { left, top, width:w, height:h };
       }
 
+      function sizeWindowToContent(winEl, appId){
+        if(!winEl) return;
+        const frame = winEl.querySelector('.frame');
+        const content = winEl.querySelector('.content');
+        if(!frame || !content) return;
+
+        const area = $('#desktopArea').getBoundingClientRect();
+        const frameRect = frame.getBoundingClientRect();
+        const contentRect = content.getBoundingClientRect();
+        const extraW = frameRect.width - contentRect.width;
+        const extraH = frameRect.height - contentRect.height;
+
+        const targetW = Math.ceil(Math.max(content.scrollWidth, content.clientWidth) + extraW);
+        const targetH = Math.ceil(Math.max(content.scrollHeight, content.clientHeight) + extraH);
+
+        const maxW = Math.max(280, Math.floor(area.width));
+        const maxH = Math.max(200, Math.floor(area.height));
+        const newW = clamp(targetW, 280, maxW);
+        const newH = clamp(targetH, 200, maxH);
+
+        let newL = parseFloat(winEl.style.left) || 0;
+        let newT = parseFloat(winEl.style.top) || 0;
+        if(newL + newW > maxW) newL = Math.max(0, maxW - newW);
+        if(newT + newH > maxH) newT = Math.max(0, maxH - newH);
+
+        winEl.style.width = newW + 'px';
+        winEl.style.height = newH + 'px';
+        winEl.style.left = newL + 'px';
+        winEl.style.top = newT + 'px';
+
+        const w = state.windows.get(appId);
+        if(w){
+          w.width = newW;
+          w.height = newH;
+          w.left = newL;
+          w.top = newT;
+        }
+      }
+
       function openApp(appId){
         const app = APPS.find(a=>a.id===appId);
         if(!app) return;
@@ -7048,6 +7087,7 @@ Eu sou o buffalo branco extinto`
         el.style.width = wstate.width + 'px';
         el.style.height = wstate.height + 'px';
         el.style.zIndex = String(wstate.z);
+        el.style.visibility = 'hidden';
         if(state.animations) el.classList.add('anim-open');
 
         const bodyHTML = (CONTENT[appId] ? CONTENT[appId]() : `<h2>${wstate.title}</h2><p>Sem conteúdo.</p>`);
@@ -7113,6 +7153,8 @@ Eu sou o buffalo branco extinto`
         applyI18nTo(el);
         applyWindowState(el, appId);
         if(appId === 'trash') updateTrashIconUI();
+        sizeWindowToContent(el, appId);
+        el.style.visibility = 'visible';
         if(state.animations){
           el.addEventListener('animationend', ()=>{ el.classList.remove('anim-open'); }, { once:true });
         }
