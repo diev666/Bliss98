@@ -13,6 +13,7 @@
         --shadow-white:#ffffff;
         --title:#000080;
         --title2:#1084d0;
+        --titlebar-text:#ffffff;
         --task:#c0c0c0;
         --text:#000;
         --menu:#c0c0c0;
@@ -41,6 +42,7 @@
         --shadow-white:#5a5a5a;
         --title:#1b3f7a;
         --title2:#0a2e5c;
+        --titlebar-text:#f1f1f1;
         --task:#2a2a2a;
         --text:#e6e6e6;
         --menu:#2a2a2a;
@@ -165,6 +167,20 @@
       .kbd{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:12px; background:var(--kbd-bg); padding:1px 5px; border:1px solid var(--kbd-border);}
 
       #desktop{ position:absolute; inset:0; background:var(--bg); }
+      #desktop.wallpaper-matrix{
+        background-color:#020202;
+        background-image:
+          repeating-linear-gradient(90deg, rgba(0,255,90,0.18) 0 1px, transparent 1px 4px),
+          repeating-linear-gradient(180deg, rgba(0,255,90,0.12) 0 2px, transparent 2px 10px),
+          linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.9));
+        background-size: 4px 100%, 100% 120px, 100% 100%;
+        background-repeat: repeat;
+        animation: matrixFlow 6s linear infinite;
+      }
+      @keyframes matrixFlow{
+        from{ background-position: 0 0, 0 0, 0 0; }
+        to{ background-position: 0 0, 0 240px, 0 0; }
+      }
       .desktop-area{
         position:absolute; inset:0 0 30px 0;
         padding:10px;
@@ -366,7 +382,7 @@
         justify-content:space-between;
         padding:2px 3px;
         background:linear-gradient(90deg, var(--title), var(--title2));
-        color:#fff;
+        color:var(--titlebar-text);
         cursor:move;
         touch-action:none;
       }
@@ -792,6 +808,13 @@
         gap:10px;
         margin-bottom:10px;
       }
+      .titlebar-swatch{
+        width:16px;
+        height:16px;
+        border:1px solid var(--panel-border);
+        box-shadow:inset 1px 1px var(--shadow-white), inset -1px -1px var(--shadow-dark);
+        flex-shrink:0;
+      }
       .settings-panel-icon{
         width:48px;
         height:48px;
@@ -869,8 +892,8 @@
         height:auto;
         aspect-ratio:1/1;
         object-fit:cover;
-        border:1px solid #777;
-        background:#fff;
+        border:1px solid var(--panel-border);
+        background:var(--panel-in);
         display:block;
       }
       .clothes-status{
@@ -1087,7 +1110,7 @@
         justify-content:space-between;
         padding:2px 4px;
         background:linear-gradient(90deg, var(--title), var(--title2));
-        color:#fff;
+        color:var(--titlebar-text);
       }
       .modal-body{
         padding:10px;
@@ -1265,6 +1288,10 @@
           tab: 'general',
           darkMode: false,
         },
+        theme: {
+          preset: 'default',
+          titlebar: 'defaultBlue',
+        },
         games: {
           view: 'list',
           selectedId: null,
@@ -1300,6 +1327,8 @@
       const CLOTHES_CACHE_KEY = 'bliss98_clothes_cache';
       const CLOTHES_CACHE_TTL = 1000 * 60 * 60 * 3;
       const SNAKE_HIGH_KEY = 'bliss98_snake_highscore';
+      const TITLEBAR_KEY = 'bliss98_titlebar_theme';
+      const THEME_PRESET_KEY = 'bliss98_theme_preset';
       const SFX = {
         boot: {
           src: '/assets/audio/boot.mp3',
@@ -1344,6 +1373,34 @@
           size: 'auto',
           repeat: 'repeat'
         },
+        {
+          id: 'tot',
+          labelKey: 'wallpaper.tot',
+          background: 'radial-gradient(circle at 20% 20%, #ffd1e6 0%, #ff9fcb 45%, #ff7fb7 100%), repeating-radial-gradient(circle, rgba(255,255,255,0.35) 0 1px, transparent 1px 10px)',
+          size: 'cover',
+          repeat: 'repeat'
+        },
+        {
+          id: 'matrix',
+          labelKey: 'wallpaper.matrix',
+          className: 'wallpaper-matrix'
+        },
+      ];
+
+      const TITLEBAR_THEMES = {
+        defaultBlue: { bar1:'#000080', bar2:'#1084d0', text:'#ffffff' },
+        pinkLight: { bar1:'#f6a6cf', bar2:'#e46aa9', text:'#1a1a1a' },
+        purpleDark: { bar1:'#3a1c5a', bar2:'#1b0f30', text:'#f1f1f1' },
+        offWhite: { bar1:'#e6e6e6', bar2:'#cfcfcf', text:'#1a1a1a' },
+        greenDark: { bar1:'#1b4a2a', bar2:'#0e2e1a', text:'#f1f1f1' },
+        redDark: { bar1:'#5a1a1a', bar2:'#2f0b0b', text:'#f1f1f1' },
+        transparent: { bar1:'rgba(0,0,0,0.3)', bar2:'rgba(0,0,0,0.3)', text:'#f1f1f1' },
+      };
+
+      const THEME_PRESETS = [
+        { id:'default', nameKey:'theme.default', titlebarColor:'defaultBlue', wallpaperId:'classic', darkMode:false },
+        { id:'totvers', nameKey:'theme.totvers', titlebarColor:'pinkLight', wallpaperId:'tot', darkMode:false },
+        { id:'matrix', nameKey:'theme.matrix', titlebarColor:'greenDark', wallpaperId:'matrix', darkMode:true },
       ];
 
       function initSfx(){
@@ -2400,10 +2457,11 @@ function updateDarkModeButtons(root=document){
   });
 }
 
-function setDarkMode(enabled){
+function setDarkMode(enabled, fromPreset=false){
   state.settings.darkMode = !!enabled;
   applyDarkMode();
   updateDarkModeButtons();
+  if(!fromPreset && !themeApplying) setThemePresetCustom();
 }
 
 function loadScanlines(){
@@ -2426,6 +2484,24 @@ function loadDarkMode(){
   }
 }
 
+function loadTitlebarTheme(){
+  try{
+    const raw = localStorage.getItem(TITLEBAR_KEY);
+    return raw || 'defaultBlue';
+  } catch {
+    return 'defaultBlue';
+  }
+}
+
+function loadThemePreset(){
+  try{
+    const raw = localStorage.getItem(THEME_PRESET_KEY);
+    return raw || 'default';
+  } catch {
+    return 'default';
+  }
+}
+
 function saveScanlines(){
   try{
     localStorage.setItem(SCANLINES_KEY, state.settings.scanlines ? '1' : '0');
@@ -2435,6 +2511,18 @@ function saveScanlines(){
 function saveDarkMode(){
   try{
     localStorage.setItem(DARKMODE_KEY, state.settings.darkMode ? '1' : '0');
+  } catch {}
+}
+
+function saveTitlebarTheme(){
+  try{
+    localStorage.setItem(TITLEBAR_KEY, state.theme.titlebar);
+  } catch {}
+}
+
+function saveThemePreset(){
+  try{
+    localStorage.setItem(THEME_PRESET_KEY, state.theme.preset);
   } catch {}
 }
 
@@ -2483,18 +2571,88 @@ function updateWallpaperButtons(root=document){
   });
 }
 
+let themeApplying = false;
+
+function updateTitlebarButtons(root=document){
+  $$('[data-set-titlebar]', root).forEach(btn => {
+    btn.classList.toggle('pressed', btn.dataset.setTitlebar === state.theme.titlebar);
+  });
+}
+
+function updateThemeButtons(root=document){
+  $$('[data-set-theme]', root).forEach(btn => {
+    btn.classList.toggle('pressed', btn.dataset.setTheme === state.theme.preset);
+  });
+  const current = root.querySelector('[data-theme-current]');
+  if(current){
+    const key = `theme.${state.theme.preset}`;
+    current.textContent = t(key);
+  }
+}
+
+function setThemePresetCustom(){
+  if(state.theme.preset !== 'custom'){
+    state.theme.preset = 'custom';
+    saveThemePreset();
+    updateThemeButtons();
+  }
+}
+
 function applyWallpaper(id){
   const wp = WALLPAPERS.find(w => w.id === id) || WALLPAPERS[0];
   state.wallpaper = wp.id;
   const desktop = $('#desktop');
   if(desktop){
-    desktop.style.background = wp.background;
-    desktop.style.backgroundSize = wp.size || 'auto';
-    desktop.style.backgroundRepeat = wp.repeat || 'repeat';
+    desktop.classList.remove('wallpaper-matrix');
+    if(wp.className){
+      desktop.classList.add(wp.className);
+      desktop.style.background = '';
+      desktop.style.backgroundSize = '';
+      desktop.style.backgroundRepeat = '';
+    } else {
+      desktop.style.background = wp.background;
+      desktop.style.backgroundSize = wp.size || 'auto';
+      desktop.style.backgroundRepeat = wp.repeat || 'repeat';
+    }
   }
   try{ localStorage.setItem(WALLPAPER_KEY, wp.id); } catch {}
   updateWallpaperButtons();
   renderCtxMenu();
+  if(!themeApplying) setThemePresetCustom();
+}
+
+function setTitlebarTheme(id, fromPreset=false){
+  state.theme.titlebar = id;
+  saveTitlebarTheme();
+  applyTitlebarTheme();
+  updateTitlebarButtons();
+  if(!fromPreset && !themeApplying) setThemePresetCustom();
+}
+
+function applyTitlebarTheme(){
+  const cur = TITLEBAR_THEMES[state.theme.titlebar] || TITLEBAR_THEMES.defaultBlue;
+  const isTransparent = state.theme.titlebar === 'transparent';
+  const alpha = state.settings.darkMode ? 0.5 : 0.3;
+  const bar1 = isTransparent ? `rgba(0,0,0,${alpha})` : cur.bar1;
+  const bar2 = isTransparent ? `rgba(0,0,0,${alpha})` : cur.bar2;
+  const text = isTransparent ? '#f1f1f1' : cur.text;
+  document.body.style.setProperty('--title', bar1);
+  document.body.style.setProperty('--title2', bar2);
+  document.body.style.setProperty('--titlebar-text', text);
+}
+
+function setThemePreset(id, opts={}){
+  const preset = THEME_PRESETS.find(t => t.id === id);
+  if(!preset) return;
+  themeApplying = true;
+  state.theme.preset = id;
+  saveThemePreset();
+  setDarkMode(preset.darkMode, true);
+  applyWallpaper(preset.wallpaperId);
+  setTitlebarTheme(preset.titlebarColor, true);
+  themeApplying = false;
+  updateThemeButtons();
+  if(!opts.init) renderCtxMenu();
 }
 
 function applyMusicState(winEl){
@@ -2547,6 +2705,7 @@ function applyDarkMode(){
   saveDarkMode();
   updateDarkModeButtons();
   renderCtxMenu();
+  applyTitlebarTheme();
 }
 
 function applyWindowState(winEl, appId){
@@ -2855,6 +3014,11 @@ function installLongPress(el, getTarget){
           'settings.lang.pt': 'Português (BR)',
           'settings.appearanceTab': 'Appearance',
           'settings.appearanceDesc': 'Customize how BLISS 98 looks.',
+          'settings.themes.title': 'Themes',
+          'settings.themes.desc': 'Select a theme to change wallpaper, title color, and dark mode.',
+          'settings.themes.current': 'Current theme:',
+          'settings.titlebar.title': 'Window Title Color',
+          'settings.titlebar.desc': 'Choose the color of the window title bars.',
           'settings.darkMode.title': 'Dark Mode',
           'settings.darkMode.desc': 'Makes BLISS 98 darker and easier on the eyes.',
           'settings.darkMode.on': 'On',
@@ -2869,6 +3033,17 @@ function installLongPress(el, getTarget){
           'settings.scanlinesDesc': 'Add scanline effect to the display.',
           'settings.scanlines.on': 'On',
           'settings.scanlines.off': 'Off',
+          'titlebar.defaultBlue': 'Default Blue',
+          'titlebar.pinkLight': 'Light Pink',
+          'titlebar.purpleDark': 'Dark Purple',
+          'titlebar.offWhite': 'Off-white',
+          'titlebar.greenDark': 'Dark Green',
+          'titlebar.redDark': 'Dark Red',
+          'titlebar.transparent': 'Transparent',
+          'theme.default': 'Default',
+          'theme.totvers': 'Totvers',
+          'theme.matrix': 'Matrix',
+          'theme.custom': 'Custom',
           'poetry.title': 'Poetry Library',
           'poetry.back': 'Back',
           'poetry.language': 'Language',
@@ -3031,6 +3206,8 @@ function installLongPress(el, getTarget){
           'wallpaper.bliss': 'Sunrise',
           'wallpaper.clouds': 'Clouds',
           'wallpaper.diev': 'Grid',
+          'wallpaper.tot': 'Tot (Pink)',
+          'wallpaper.matrix': 'Matrix',
 
           'music.title': 'BLISS — Music',
           'music.subtitle': 'Listen everywhere:',
@@ -3179,6 +3356,11 @@ function installLongPress(el, getTarget){
           'settings.lang.pt': 'Português (BR)',
           'settings.appearanceTab': 'Aparência',
           'settings.appearanceDesc': 'Personalize o visual do BLISS 98.',
+          'settings.themes.title': 'Temas',
+          'settings.themes.desc': 'Selecione um tema para mudar papel de parede, cor do topo e dark mode.',
+          'settings.themes.current': 'Tema atual:',
+          'settings.titlebar.title': 'Cor do topo da janela',
+          'settings.titlebar.desc': 'Escolha a cor das barras de título.',
           'settings.darkMode.title': 'Modo Escuro',
           'settings.darkMode.desc': 'Deixa o BLISS 98 mais escuro e confortável.',
           'settings.darkMode.on': 'Ligado',
@@ -3193,6 +3375,17 @@ function installLongPress(el, getTarget){
           'settings.scanlinesDesc': 'Adicione efeito de scanlines na tela.',
           'settings.scanlines.on': 'Ligado',
           'settings.scanlines.off': 'Desligado',
+          'titlebar.defaultBlue': 'Azul padrão',
+          'titlebar.pinkLight': 'Rosa claro',
+          'titlebar.purpleDark': 'Roxo escuro',
+          'titlebar.offWhite': 'Branco off-white',
+          'titlebar.greenDark': 'Verde escuro',
+          'titlebar.redDark': 'Vermelho escuro',
+          'titlebar.transparent': 'Transparente',
+          'theme.default': 'Padrão',
+          'theme.totvers': 'Totvers',
+          'theme.matrix': 'Matrix',
+          'theme.custom': 'Personalizado',
           'poetry.title': 'Biblioteca de Poesias',
           'poetry.back': 'Voltar',
           'poetry.language': 'Idioma',
@@ -3355,6 +3548,8 @@ function installLongPress(el, getTarget){
           'wallpaper.bliss': 'Nascer do Sol',
           'wallpaper.clouds': 'Nuvens',
           'wallpaper.diev': 'Grid',
+          'wallpaper.tot': 'Tot (Rosa)',
+          'wallpaper.matrix': 'Matrix',
 
           'music.title': 'BLISS — Música',
           'music.subtitle': 'Ouça em todas as plataformas:',
@@ -3436,6 +3631,8 @@ function installLongPress(el, getTarget){
         updateWallpaperButtons(root);
         updateAnimationButtons(root);
         updateDarkModeButtons(root);
+        updateTitlebarButtons(root);
+        updateThemeButtons(root);
       }
 
       function applyI18n(){
@@ -5057,7 +5254,51 @@ Eu sou o buffalo branco extinto`
                     <div class="tiny" data-i18n="settings.appearanceDesc">Customize how BLISS 98 looks.</div>
                   </div>
                 </div>
-              <div class="settings-block" id="settingsDarkMode">
+                <div class="settings-block" id="settingsThemes">
+                  <strong data-i18n="settings.themes.title">Themes</strong>
+                  <p style="margin:6px 0 10px 0;" data-i18n="settings.themes.desc">Select a theme to change wallpaper, title color, and dark mode.</p>
+                  <div class="settings-actions">
+                    <button class="btn bevel" type="button" data-set-theme="default"><span data-i18n="theme.default">Default</span></button>
+                    <button class="btn bevel" type="button" data-set-theme="totvers"><span data-i18n="theme.totvers">Totvers</span></button>
+                    <button class="btn bevel" type="button" data-set-theme="matrix"><span data-i18n="theme.matrix">Matrix</span></button>
+                  </div>
+                  <div class="tiny" style="margin-top:6px;"><span data-i18n="settings.themes.current">Current theme:</span> <span data-theme-current></span></div>
+                </div>
+                <div class="settings-block" id="settingsTitlebar">
+                  <strong data-i18n="settings.titlebar.title">Window Title Color</strong>
+                  <p style="margin:6px 0 10px 0;" data-i18n="settings.titlebar.desc">Choose the color of the window title bars.</p>
+                  <div class="settings-actions">
+                    <button class="btn bevel" type="button" data-set-titlebar="defaultBlue">
+                      <span class="titlebar-swatch" style="background:linear-gradient(90deg,#000080,#1084d0);"></span>
+                      <span data-i18n="titlebar.defaultBlue">Default Blue</span>
+                    </button>
+                    <button class="btn bevel" type="button" data-set-titlebar="pinkLight">
+                      <span class="titlebar-swatch" style="background:linear-gradient(90deg,#f6a6cf,#e46aa9);"></span>
+                      <span data-i18n="titlebar.pinkLight">Light Pink</span>
+                    </button>
+                    <button class="btn bevel" type="button" data-set-titlebar="purpleDark">
+                      <span class="titlebar-swatch" style="background:linear-gradient(90deg,#3a1c5a,#1b0f30);"></span>
+                      <span data-i18n="titlebar.purpleDark">Dark Purple</span>
+                    </button>
+                    <button class="btn bevel" type="button" data-set-titlebar="offWhite">
+                      <span class="titlebar-swatch" style="background:linear-gradient(90deg,#e6e6e6,#cfcfcf);"></span>
+                      <span data-i18n="titlebar.offWhite">Off-white</span>
+                    </button>
+                    <button class="btn bevel" type="button" data-set-titlebar="greenDark">
+                      <span class="titlebar-swatch" style="background:linear-gradient(90deg,#1b4a2a,#0e2e1a);"></span>
+                      <span data-i18n="titlebar.greenDark">Dark Green</span>
+                    </button>
+                    <button class="btn bevel" type="button" data-set-titlebar="redDark">
+                      <span class="titlebar-swatch" style="background:linear-gradient(90deg,#5a1a1a,#2f0b0b);"></span>
+                      <span data-i18n="titlebar.redDark">Dark Red</span>
+                    </button>
+                    <button class="btn bevel" type="button" data-set-titlebar="transparent">
+                      <span class="titlebar-swatch" style="background:repeating-linear-gradient(45deg,#666 0 2px,#999 2px 4px);"></span>
+                      <span data-i18n="titlebar.transparent">Transparent</span>
+                    </button>
+                  </div>
+                </div>
+                <div class="settings-block" id="settingsDarkMode">
                   <strong data-i18n="settings.darkMode.title">Dark Mode</strong>
                   <p style="margin:6px 0 10px 0;" data-i18n="settings.darkMode.desc">Makes BLISS 98 darker and easier on the eyes.</p>
                   <div class="settings-actions">
@@ -5084,6 +5325,14 @@ Eu sou o buffalo branco extinto`
                     <button class="btn bevel" type="button" data-set-wallpaper="diev">
                       <span class="wallpaper-swatch" style="background:repeating-linear-gradient(0deg, rgba(255,255,255,0.08) 0 1px, transparent 1px 6px), repeating-linear-gradient(90deg, rgba(255,255,255,0.08) 0 1px, transparent 1px 6px), linear-gradient(135deg, #0a2333, #114b6a);"></span>
                       <span data-i18n="wallpaper.diev">Grid</span>
+                    </button>
+                    <button class="btn bevel" type="button" data-set-wallpaper="tot">
+                      <span class="wallpaper-swatch" style="background:radial-gradient(circle at 20% 20%, #ffd1e6 0%, #ff9fcb 45%, #ff7fb7 100%);"></span>
+                      <span data-i18n="wallpaper.tot">Tot (Pink)</span>
+                    </button>
+                    <button class="btn bevel" type="button" data-set-wallpaper="matrix">
+                      <span class="wallpaper-swatch" style="background:repeating-linear-gradient(90deg, rgba(0,255,90,0.6) 0 2px, transparent 2px 5px), linear-gradient(180deg, #000 0%, #0a1a0f 100%);"></span>
+                      <span data-i18n="wallpaper.matrix">Matrix</span>
                     </button>
                   </div>
                 </div>
@@ -5718,7 +5967,9 @@ Eu sou o buffalo branco extinto`
         $('#login').classList.add('hidden');
         $('#desktop').classList.remove('hidden');
         $('#username').blur();
+        themeApplying = true;
         applyWallpaper(state.wallpaper);
+        themeApplying = false;
         renderIcons();
         renderStartMenu();
         tickClock();
@@ -6849,6 +7100,14 @@ Eu sou o buffalo branco extinto`
         if(darkBtn && darkBtn.dataset && darkBtn.dataset.setDarkmode){
           setDarkMode(darkBtn.dataset.setDarkmode === 'on');
         }
+        const titleBtn = e.target.closest && e.target.closest('[data-set-titlebar]');
+        if(titleBtn && titleBtn.dataset && titleBtn.dataset.setTitlebar){
+          setTitlebarTheme(titleBtn.dataset.setTitlebar);
+        }
+        const themeBtn = e.target.closest && e.target.closest('[data-set-theme]');
+        if(themeBtn && themeBtn.dataset && themeBtn.dataset.setTheme){
+          setThemePreset(themeBtn.dataset.setTheme);
+        }
         const musicCard = e.target.closest && e.target.closest('[data-music-id]');
         if(musicCard){
           if(musicCard.dataset && musicCard.dataset.touchOpened === '1'){
@@ -6890,10 +7149,18 @@ Eu sou o buffalo branco extinto`
         state.animations = loadAnimations();
         state.settings.scanlines = loadScanlines();
         state.settings.darkMode = loadDarkMode();
+        state.theme.preset = loadThemePreset();
+        state.theme.titlebar = loadTitlebarTheme();
         state.snake.highScore = loadSnakeHighScore();
         state.trash = new Set(loadTrash());
         state.iconLabels = loadIconLabels();
         state.trashSelection = new Set();
+
+        if(state.theme.preset && state.theme.preset !== 'custom'){
+          setThemePreset(state.theme.preset, { init:true });
+        } else {
+          applyTitlebarTheme();
+        }
 
         // Apply translations immediately (default is English)
         applyI18n();
