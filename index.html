@@ -36,30 +36,45 @@
         --kbd-border:#999999;
       }
       body.theme-xp98{
-        --shadow-dark:#2b3f5f;
-        --shadow-mid:#7f9db9;
-        --shadow-light:#f2f6ff;
+        --shadow-dark:#2b3a52;
+        --shadow-mid:#6f86a6;
+        --shadow-light:#edf2fb;
         --shadow-white:#ffffff;
-        --task:#d6e5ff;
+        --task:#d4d9e3;
         --text:#000000;
-        --menu:#ece9d8;
+        --menu:#dfe4ec;
         --select:#316ac5;
         --select-text:#ffffff;
         --content-bg:#ffffff;
         --content-text:#000000;
-        --panel-bg:#ece9d8;
+        --panel-bg:#dfe4ec;
         --panel-in:#ffffff;
-        --panel-border:#7f9db9;
+        --panel-border:#7f93ad;
         --input-bg:#ffffff;
         --input-text:#000000;
         --menu-text:#000000;
         --link:#1b4f9c;
-        --sep:#9fb3d1;
+        --sep:#9aa9c2;
         --sep-light:#ffffff;
-        --selection-bg:#cfe2ff;
+        --selection-bg:#c8d8f2;
         --selection-border:#316ac5;
         --kbd-bg:#f7f7f7;
-        --kbd-border:#7f9db9;
+        --kbd-border:#7f93ad;
+      }
+      body.theme-xp98 .taskbar.bevel{
+        background:linear-gradient(90deg, #1d3e8a, #2a5db3);
+      }
+      body.theme-xp98 #startBtn.btn.bevel{
+        background:linear-gradient(180deg, #38c85a, #1f9b3f);
+        color:#ffffff;
+        border-top-color:#c7f3cf;
+        border-left-color:#c7f3cf;
+        border-right-color:#0b6d2a;
+        border-bottom-color:#0b6d2a;
+        box-shadow: 1px 1px 0 0 rgba(255,255,255,0.25) inset, -1px -1px 0 0 rgba(0,0,0,0.2) inset;
+      }
+      body.theme-xp98 .tray.bevel{
+        background:linear-gradient(180deg, #5a8fe2, #3f6fc8);
       }
       body.dark{
         --shadow-dark:#000000;
@@ -412,6 +427,17 @@
         cursor:move;
         touch-action:none;
       }
+      body.titlebar-transparent .titlebar{
+        background:transparent !important;
+        background-image:none !important;
+        box-shadow:none !important;
+        color:var(--titlebar-text);
+        text-shadow:1px 1px 0 rgba(0,0,0,0.55);
+        border-top:1px solid var(--shadow-white);
+        border-left:1px solid var(--shadow-white);
+        border-right:1px solid var(--shadow-dark);
+        border-bottom:1px solid var(--shadow-dark);
+      }
       .title-left{display:flex; align-items:center; gap:6px;}
       .title-left strong{font-weight:700; font-size:12px;}
       .title-controls{display:flex; gap:4px;}
@@ -620,6 +646,108 @@
         background:var(--panel-bg);
         margin-right:6px;
         font-size:12px;
+      }
+      .videos-shell{
+        display:flex;
+        flex-direction:column;
+        gap:10px;
+      }
+      .videos-header{
+        display:flex;
+        flex-wrap:wrap;
+        gap:8px 12px;
+        align-items:center;
+      }
+      .videos-header a{
+        color:var(--link);
+        text-decoration:underline;
+      }
+      .videos-player{
+        display:flex;
+        flex-direction:column;
+        gap:6px;
+      }
+      .videos-player-head{
+        display:flex;
+        flex-wrap:wrap;
+        align-items:center;
+        gap:8px 12px;
+        justify-content:space-between;
+      }
+      .videos-player-actions{
+        display:flex;
+        flex-wrap:wrap;
+        gap:6px;
+      }
+      .videos-embed{
+        padding:4px;
+      }
+      .videos-embed-inner{
+        position:relative;
+        width:100%;
+        padding-top:56.25%;
+        background:#000;
+      }
+      .videos-embed-inner iframe{
+        position:absolute;
+        inset:0;
+        width:100%;
+        height:100%;
+        border:0;
+      }
+      .videos-list{
+        display:grid;
+        grid-template-columns:repeat(auto-fill, minmax(180px, 1fr));
+        gap:10px;
+      }
+      .videos-item{
+        display:flex;
+        gap:8px;
+        align-items:flex-start;
+        padding:6px;
+        border:1px solid transparent;
+        background:var(--content-bg);
+        color:var(--content-text);
+        text-align:left;
+        cursor:default;
+      }
+      .videos-item.selected{
+        border:1px dotted var(--select-text);
+        background:var(--selection-bg);
+      }
+      .videos-thumb{
+        width:96px;
+        height:54px;
+        flex:0 0 auto;
+        border:1px solid var(--panel-border);
+        background:#000;
+        object-fit:cover;
+      }
+      .videos-meta{
+        display:flex;
+        flex-direction:column;
+        gap:4px;
+        min-width:0;
+      }
+      .videos-title{
+        font-weight:700;
+        font-size:12px;
+        line-height:1.2;
+      }
+      .videos-sub{
+        font-size:11px;
+        opacity:.85;
+      }
+      @media (max-width: 520px){
+        .videos-item{
+          flex-direction:column;
+          align-items:flex-start;
+        }
+        .videos-thumb{
+          width:100%;
+          height:auto;
+          aspect-ratio:16/9;
+        }
       }
       .music-grid{
         display:grid;
@@ -1138,6 +1266,17 @@
         background:linear-gradient(90deg, var(--title), var(--title2));
         color:var(--titlebar-text);
       }
+      body.titlebar-transparent .modal-titlebar{
+        background:transparent !important;
+        background-image:none !important;
+        box-shadow:none !important;
+        color:var(--titlebar-text);
+        text-shadow:1px 1px 0 rgba(0,0,0,0.55);
+        border-top:1px solid var(--shadow-white);
+        border-left:1px solid var(--shadow-white);
+        border-right:1px solid var(--shadow-dark);
+        border-bottom:1px solid var(--shadow-dark);
+      }
       .modal-body{
         padding:10px;
         background:var(--content-bg);
@@ -1305,6 +1444,8 @@
         videos: {
           openNewTab: true,
           thumbSize: 'large',
+          items: [],
+          selectedId: null,
         },
         art: {
           zoom: 100,
@@ -1355,6 +1496,7 @@
       const SNAKE_HIGH_KEY = 'bliss98_snake_highscore';
       const TITLEBAR_KEY = 'bliss98_titlebar_theme';
       const THEME_PRESET_KEY = 'bliss98_theme_preset';
+      const YOUTUBE_KEY = 'bliss98_youtube_api_key';
       const SFX = {
         boot: {
           src: '/assets/audio/boot.mp3',
@@ -1429,7 +1571,7 @@
         greenDark: { bar1:'#1b4a2a', bar2:'#0e2e1a', text:'#f1f1f1' },
         redDark: { bar1:'#5a1a1a', bar2:'#2f0b0b', text:'#f1f1f1' },
         transparent: { bar1:'rgba(0,0,0,0.3)', bar2:'rgba(0,0,0,0.3)', text:'#f1f1f1' },
-        xpBlue: { bar1:'#0a246a', bar2:'#3a6ea5', text:'#ffffff' },
+        xpBlue: { bar1:'#0a2e8f', bar2:'#4f86d8', text:'#ffffff' },
       };
 
       const THEME_PRESETS = [
@@ -2640,6 +2782,10 @@ function setThemePresetCustom(){
 }
 
 function applyWallpaper(id){
+  if(!themeApplying && id === 'xp98bliss' && state.theme.preset !== 'xp98'){
+    setThemePreset('xp98');
+    return;
+  }
   const wp = WALLPAPERS.find(w => w.id === id) || WALLPAPERS[0];
   state.wallpaper = wp.id;
   const desktop = $('#desktop');
@@ -2675,10 +2821,11 @@ function setTitlebarTheme(id, fromPreset=false){
 function applyTitlebarTheme(){
   const cur = TITLEBAR_THEMES[state.theme.titlebar] || TITLEBAR_THEMES.defaultBlue;
   const isTransparent = state.theme.titlebar === 'transparent';
-  const alpha = state.settings.darkMode ? 0.5 : 0.3;
-  const bar1 = isTransparent ? `rgba(0,0,0,${alpha})` : cur.bar1;
-  const bar2 = isTransparent ? `rgba(0,0,0,${alpha})` : cur.bar2;
+  const base = TITLEBAR_THEMES.defaultBlue;
+  const bar1 = isTransparent ? base.bar1 : cur.bar1;
+  const bar2 = isTransparent ? base.bar2 : cur.bar2;
   const text = isTransparent ? '#f1f1f1' : cur.text;
+  document.body.classList.toggle('titlebar-transparent', isTransparent);
   document.body.style.setProperty('--title', bar1);
   document.body.style.setProperty('--title2', bar2);
   document.body.style.setProperty('--titlebar-text', text);
@@ -2736,6 +2883,149 @@ function applyArtState(winEl){
   win.classList.toggle('art-zoom-50', state.art.zoom === 50);
   win.classList.toggle('art-zoom-100', state.art.zoom === 100);
   win.classList.toggle('art-zoom-200', state.art.zoom === 200);
+}
+
+function loadYouTubeApiKey(){
+  try{
+    return localStorage.getItem(YOUTUBE_KEY) || '';
+  } catch {
+    return '';
+  }
+}
+
+function saveYouTubeApiKey(key){
+  try{
+    if(key){
+      localStorage.setItem(YOUTUBE_KEY, key);
+    } else {
+      localStorage.removeItem(YOUTUBE_KEY);
+    }
+  } catch {}
+}
+
+function getFallbackEmbedUrl(){
+  return `https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(VIDEO_CHANNEL_HANDLE)}`;
+}
+
+function formatIsoDuration(iso){
+  const match = /PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/.exec(iso || '');
+  if(!match) return '';
+  const h = parseInt(match[1] || '0', 10);
+  const m = parseInt(match[2] || '0', 10);
+  const s = parseInt(match[3] || '0', 10);
+  const mm = String(m + (h * 60)).padStart(2, '0');
+  const ss = String(s).padStart(2, '0');
+  return `${mm}:${ss}`;
+}
+
+function formatVideoDate(iso){
+  const d = new Date(iso);
+  if(Number.isNaN(d.getTime())) return '';
+  const locale = state.lang === 'pt' ? 'pt-BR' : 'en-US';
+  return d.toLocaleDateString(locale, { year:'numeric', month:'short', day:'numeric' });
+}
+
+async function fetchYouTubeVideos(apiKey){
+  const base = 'https://www.googleapis.com/youtube/v3';
+  const channelUrl = `${base}/channels?part=contentDetails&forHandle=${encodeURIComponent(VIDEO_CHANNEL_HANDLE)}&key=${encodeURIComponent(apiKey)}`;
+  const chRes = await fetch(channelUrl);
+  if(!chRes.ok) throw new Error('channel');
+  const chData = await chRes.json();
+  const uploads = chData?.items?.[0]?.contentDetails?.relatedPlaylists?.uploads;
+  if(!uploads) throw new Error('uploads');
+
+  const listUrl = `${base}/playlistItems?part=snippet,contentDetails&maxResults=24&playlistId=${uploads}&key=${encodeURIComponent(apiKey)}`;
+  const listRes = await fetch(listUrl);
+  if(!listRes.ok) throw new Error('playlist');
+  const listData = await listRes.json();
+  const items = (listData.items || []).map(it => ({
+    id: it?.contentDetails?.videoId,
+    title: it?.snippet?.title || '',
+    thumb: it?.snippet?.thumbnails?.medium?.url || it?.snippet?.thumbnails?.default?.url || '',
+    publishedAt: it?.contentDetails?.videoPublishedAt || it?.snippet?.publishedAt || ''
+  })).filter(it => it.id);
+
+  const ids = items.map(it => it.id).join(',');
+  if(!ids) return [];
+  const videosUrl = `${base}/videos?part=contentDetails&id=${ids}&key=${encodeURIComponent(apiKey)}`;
+  const vidsRes = await fetch(videosUrl);
+  if(!vidsRes.ok) throw new Error('videos');
+  const vidsData = await vidsRes.json();
+  const durationMap = new Map();
+  (vidsData.items || []).forEach(v => {
+    durationMap.set(v.id, formatIsoDuration(v?.contentDetails?.duration));
+  });
+
+  return items.map(it => ({
+    ...it,
+    duration: durationMap.get(it.id) || ''
+  }));
+}
+
+function renderVideoPlayer(winEl, videoId, opts = {}){
+  const win = winEl || document.getElementById('win_videos');
+  if(!win) return;
+  const frame = win.querySelector('#videosPlayer');
+  if(!frame) return;
+  const src = videoId
+    ? `https://www.youtube.com/embed/${videoId}?rel=0`
+    : getFallbackEmbedUrl();
+  if(opts.force || frame.src !== src){
+    frame.src = src;
+  }
+}
+
+function renderVideosList(winEl, items){
+  const win = winEl || document.getElementById('win_videos');
+  if(!win) return;
+  const list = win.querySelector('#videosList');
+  if(!list) return;
+  if(!items || items.length === 0){
+    list.innerHTML = `<div class="tiny" data-i18n="videos.listEmpty">${t('videos.listEmpty')}</div>`;
+    return;
+  }
+  list.innerHTML = items.map(it => {
+    const selected = it.id === state.videos.selectedId;
+    const date = formatVideoDate(it.publishedAt);
+    const meta = [it.duration, date].filter(Boolean).join(' • ');
+    return `
+      <button class="videos-item bevel-in${selected ? ' selected' : ''}" type="button" data-video-id="${it.id}">
+        <img class="videos-thumb pixel" src="${it.thumb}" alt="" />
+        <div class="videos-meta">
+          <div class="videos-title">${it.title}</div>
+          <div class="videos-sub">${meta}</div>
+        </div>
+      </button>
+    `;
+  }).join('');
+}
+
+function initVideosWindow(winEl){
+  const win = winEl || document.getElementById('win_videos');
+  if(!win) return;
+  const status = win.querySelector('#videosStatus');
+  if(status) status.textContent = '';
+  renderVideoPlayer(win, null, { force:true });
+
+  const key = loadYouTubeApiKey();
+  if(!key){
+    if(status) status.textContent = t('videos.noKey');
+    renderVideosList(win, []);
+    return;
+  }
+
+  if(status) status.textContent = t('videos.loading');
+  fetchYouTubeVideos(key).then(items => {
+    state.videos.items = items;
+    state.videos.selectedId = items[0]?.id || null;
+    if(items[0]) renderVideoPlayer(win, items[0].id, { force:true });
+    renderVideosList(win, items);
+    if(status) status.textContent = items.length ? '' : t('videos.listEmpty');
+  }).catch(()=>{
+    if(status) status.textContent = t('videos.autoFail');
+    renderVideosList(win, []);
+    renderVideoPlayer(win, null, { force:true });
+  });
 }
 
 function applyScanlines(){
@@ -2973,6 +3263,7 @@ function installLongPress(el, getTarget){
           'common.soon': 'Soon.',
           'common.ok': 'OK',
           'common.cancel': 'Cancel',
+          'common.save': 'Save',
           'common.open': 'Open',
           'common.copy': 'Copy',
 
@@ -2990,10 +3281,9 @@ function installLongPress(el, getTarget){
           'status.ready': 'Ready',
 
           'win.minimize': 'Minimize',
+          'win.maximize': 'Fit to content',
           'win.close': 'Close',
           'win.resize': 'Resize',
-          'win.maximize': 'Maximize',
-          'win.restore': 'Restore',
 
           'app.clothes': 'Clothes',
           'app.music': 'Music',
@@ -3196,6 +3486,16 @@ function installLongPress(el, getTarget){
           'menu.videos.thumbSize.large': 'Large',
           'menu.videos.openNewTab': 'Open in new tab',
           'menu.videos.tips': 'Playback tips',
+          'videos.channelLink': 'YouTube: @DIEVBLISS',
+          'videos.watchTitle': 'Watch inside BLISS 98',
+          'videos.openChannel': 'Watch channel videos',
+          'videos.addKey': 'Add YouTube API Key…',
+          'videos.noKey': 'Add a YouTube API key to load the full list. You can still watch here.',
+          'videos.autoFail': 'Unable to load videos automatically. You can still open the channel.',
+          'videos.loading': 'Loading videos…',
+          'videos.listEmpty': 'No videos yet.',
+          'videos.keyTitle': 'YouTube API Key',
+          'videos.keyDesc': 'Paste your YouTube Data API v3 key to load the channel videos.',
 
           'menu.about.copy': 'Copy',
           'menu.about.selectAll': 'Select All',
@@ -3304,7 +3604,7 @@ function installLongPress(el, getTarget){
           'player.drop': 'Drop audio files here',
           'player.flacUnsupported': 'Your browser does not support FLAC. Use MP3/WAV/OGG or another browser.',
           'dialog.playerHowTo.title': 'How to add songs',
-          'dialog.playerHowTo.body': 'Drop audio files into the player or use Add songs… You can also place files in /assets/music and list them in /assets/music/manifest.json.'
+          'dialog.playerHowTo.body': 'Add songs by dragging audio files into the player window, or click Add songs… to choose files.'
         },
         pt: {
           'login.sub': 'Digite seu nome para entrar',
@@ -3318,6 +3618,7 @@ function installLongPress(el, getTarget){
           'common.soon': 'Em breve.',
           'common.ok': 'OK',
           'common.cancel': 'Cancelar',
+          'common.save': 'Salvar',
           'common.open': 'Abrir',
           'common.copy': 'Copiar',
 
@@ -3335,10 +3636,9 @@ function installLongPress(el, getTarget){
           'status.ready': 'Pronto',
 
           'win.minimize': 'Minimizar',
+          'win.maximize': 'Ajustar ao conteúdo',
           'win.close': 'Fechar',
           'win.resize': 'Redimensionar',
-          'win.maximize': 'Maximizar',
-          'win.restore': 'Restaurar',
 
           'app.clothes': 'Roupas',
           'app.music': 'Música',
@@ -3541,6 +3841,16 @@ function installLongPress(el, getTarget){
           'menu.videos.thumbSize.large': 'Grande',
           'menu.videos.openNewTab': 'Abrir em nova aba',
           'menu.videos.tips': 'Dicas',
+          'videos.channelLink': 'YouTube: @DIEVBLISS',
+          'videos.watchTitle': 'Assista no BLISS 98',
+          'videos.openChannel': 'Assistir vídeos do canal',
+          'videos.addKey': 'Adicionar chave da API do YouTube…',
+          'videos.noKey': 'Adicione uma chave da API do YouTube para carregar a lista completa. Ainda dá para assistir por aqui.',
+          'videos.autoFail': 'Não foi possível carregar os vídeos automaticamente. Você ainda pode abrir o canal.',
+          'videos.loading': 'Carregando vídeos…',
+          'videos.listEmpty': 'Ainda não há vídeos.',
+          'videos.keyTitle': 'Chave da API do YouTube',
+          'videos.keyDesc': 'Cole sua chave da API do YouTube Data v3 para carregar os vídeos do canal.',
 
           'menu.about.copy': 'Copiar',
           'menu.about.selectAll': 'Selecionar tudo',
@@ -3649,7 +3959,7 @@ function installLongPress(el, getTarget){
           'player.drop': 'Solte arquivos de áudio aqui',
           'player.flacUnsupported': 'Seu navegador não suporta FLAC. Use MP3/WAV/OGG ou outro navegador.',
           'dialog.playerHowTo.title': 'Como adicionar músicas',
-          'dialog.playerHowTo.body': 'Arraste arquivos de áudio para o player ou use Adicionar músicas… Você também pode colocar arquivos em /assets/music e listar no /assets/music/manifest.json.'
+          'dialog.playerHowTo.body': 'Adicione músicas arrastando arquivos de áudio para a janela do player, ou clique em Adicionar músicas… para escolher arquivos.'
         }
       };
 
@@ -4532,9 +4842,11 @@ function installLongPress(el, getTarget){
             applyWindowState(winEl, id);
 
             const minCtl = winEl.querySelector('[data-action="min"]');
+            const maxCtl = winEl.querySelector('[data-action="max"]');
             const closeCtl = winEl.querySelector('[data-action="close"]');
             const resizeCtl = winEl.querySelector('.resize');
             if(minCtl) minCtl.title = t('win.minimize');
+            if(maxCtl) maxCtl.title = t('win.maximize');
             if(closeCtl) closeCtl.title = t('win.close');
             if(resizeCtl) resizeCtl.title = t('win.resize');
             const status = winEl.querySelector('.statusbar');
@@ -4563,6 +4875,9 @@ function installLongPress(el, getTarget){
           }
           if(id === 'settings'){
             initSettingsTabs(winEl);
+          }
+          if(id === 'videos'){
+            initVideosWindow(winEl);
           }
         }
       });
@@ -4660,7 +4975,8 @@ function installLongPress(el, getTarget){
         { img: '/assets/icons/Clothes.png', url: 'https://www.instagram.com/blissworldweb/' }
       ];
 
-      const VIDEO_CHANNEL_URL = 'https://www.youtube.com/@diev';
+      const VIDEO_CHANNEL_HANDLE = 'DIEVBLISS';
+      const VIDEO_CHANNEL_URL = 'https://www.youtube.com/@DIEVBLISS';
 
       // Add new poems here. Always provide body_en and body_pt.
       const POEMS = [
@@ -5178,7 +5494,29 @@ Eu sou o buffalo branco extinto`
             </div>
           `;
         },
-        videos: () => `<h2>BLISS — ${t('app.videos')}</h2><p>${t('common.soon')}</p>`,
+        videos: () => `
+          <div class="videos-shell">
+            <div class="videos-header">
+              <a href="${VIDEO_CHANNEL_URL}" target="_blank" rel="noopener noreferrer" data-i18n="videos.channelLink">YouTube: @DIEVBLISS</a>
+            </div>
+            <div class="videos-player">
+              <div class="videos-player-head">
+                <strong data-i18n="videos.watchTitle">Watch inside BLISS 98</strong>
+                <div class="videos-player-actions">
+                  <button class="btn bevel" type="button" data-videos-action="openChannel" data-i18n="videos.openChannel">Open channel videos</button>
+                  <button class="btn bevel" type="button" data-videos-action="addKey" data-i18n="videos.addKey">Add YouTube API Key…</button>
+                </div>
+              </div>
+              <div class="videos-embed bevel-in">
+                <div class="videos-embed-inner">
+                  <iframe id="videosPlayer" title="YouTube Player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                </div>
+              </div>
+              <div class="tiny" id="videosStatus"></div>
+            </div>
+            <div class="videos-list" id="videosList"></div>
+          </div>
+        `,
         poetry: () => {
           if(POEMS.length === 0){
             return `<h2>${t('app.poetry')}</h2><p>${t('poetry.empty')}</p>`;
@@ -6524,6 +6862,8 @@ Eu sou o buffalo branco extinto`
           icon: app.icon,
           iconFile: iconFile || null,
           minimized: false,
+          fit: false,
+          prevRect: null,
           left: rect.left,
           top: rect.top,
           width: rect.width,
@@ -6588,6 +6928,66 @@ Eu sou o buffalo branco extinto`
         renderTaskButtons();
       }
 
+      function toggleFitWindow(appId){
+        const w = state.windows.get(appId);
+        if(!w) return;
+        const winEl = document.getElementById(`win_${appId}`);
+        if(!winEl) return;
+
+        if(w.fit && w.prevRect){
+          w.left = w.prevRect.left;
+          w.top = w.prevRect.top;
+          w.width = w.prevRect.width;
+          w.height = w.prevRect.height;
+          w.fit = false;
+          w.prevRect = null;
+          winEl.style.left = w.left + 'px';
+          winEl.style.top = w.top + 'px';
+          winEl.style.width = w.width + 'px';
+          winEl.style.height = w.height + 'px';
+          return;
+        }
+
+        const frame = winEl.querySelector('.frame');
+        const content = winEl.querySelector('.content');
+        if(!frame || !content) return;
+
+        w.prevRect = { left: w.left, top: w.top, width: w.width, height: w.height };
+
+        const frameRect = frame.getBoundingClientRect();
+        const contentRect = content.getBoundingClientRect();
+        const extraW = frameRect.width - contentRect.width;
+        const extraH = frameRect.height - contentRect.height;
+        const targetContentW = Math.max(content.scrollWidth, content.clientWidth);
+        const targetContentH = Math.max(content.scrollHeight, content.clientHeight);
+
+        const area = $('#desktopArea').getBoundingClientRect();
+        const maxW = Math.max(320, Math.floor(area.width));
+        const maxH = Math.max(220, Math.floor(area.height));
+
+        let newW = Math.ceil(targetContentW + extraW);
+        let newH = Math.ceil(targetContentH + extraH);
+
+        newW = clamp(newW, 280, maxW);
+        newH = clamp(newH, 200, maxH);
+
+        let newL = w.left;
+        let newT = w.top;
+        if(newL + newW > maxW) newL = Math.max(0, maxW - newW);
+        if(newT + newH > maxH) newT = Math.max(0, maxH - newH);
+
+        w.left = newL;
+        w.top = newT;
+        w.width = newW;
+        w.height = newH;
+        w.fit = true;
+
+        winEl.style.left = newL + 'px';
+        winEl.style.top = newT + 'px';
+        winEl.style.width = newW + 'px';
+        winEl.style.height = newH + 'px';
+      }
+
       function focusWindow(appId){
         const w = state.windows.get(appId);
         if(!w) return;
@@ -6628,6 +7028,7 @@ Eu sou o buffalo branco extinto`
               </div>
               <div class="title-controls">
                 <div class="wctl bevel" title="${t('win.minimize')}" data-action="min">_</div>
+                <div class="wctl bevel" title="${t('win.maximize')}" data-action="max">[]</div>
                 <div class="wctl bevel" title="${t('win.close')}" data-action="close">×</div>
               </div>
             </div>
@@ -6662,6 +7063,7 @@ Eu sou o buffalo branco extinto`
           e.stopPropagation();
           if(act==='close') closeApp(appId);
           if(act==='min') minimizeApp(appId);
+          if(act==='max') toggleFitWindow(appId);
         });
 
         makeDraggable(el, appId);
@@ -6672,6 +7074,7 @@ Eu sou o buffalo branco extinto`
         if(appId === 'clothes') { setTimeout(()=>initClothesWindow(el), 0); }
         if(appId === 'settings') { setTimeout(()=>initSettingsTabs(el), 0); }
         if(appId === 'games') { setTimeout(()=>initGamesWindow(el), 0); }
+        if(appId === 'videos') { setTimeout(()=>initVideosWindow(el), 0); }
 
         $('#windows').appendChild(el);
         applyI18nTo(el);
@@ -6798,6 +7201,11 @@ Eu sou o buffalo branco extinto`
           pointerId = e.pointerId;
           dir = resizeDir;
           document.body.classList.add('dragging');
+          const w = state.windows.get(appId);
+          if(w){
+            w.fit = false;
+            w.prevRect = null;
+          }
 
           const rect = winEl.getBoundingClientRect();
           startX = e.clientX;
@@ -7166,6 +7574,33 @@ Eu sou o buffalo branco extinto`
         const themeBtn = e.target.closest && e.target.closest('[data-set-theme]');
         if(themeBtn && themeBtn.dataset && themeBtn.dataset.setTheme){
           setThemePreset(themeBtn.dataset.setTheme);
+        }
+        const videosAction = e.target.closest && e.target.closest('[data-videos-action]');
+        if(videosAction && videosAction.dataset && videosAction.dataset.videosAction){
+          const act = videosAction.dataset.videosAction;
+          if(act === 'openChannel'){
+            renderVideoPlayer(null, null, { force:true });
+          }
+          if(act === 'addKey'){
+            showInputDialog({
+              titleKey: 'videos.keyTitle',
+              descKey: 'videos.keyDesc',
+              value: loadYouTubeApiKey(),
+              confirmKey: 'common.save',
+              onConfirm: (val)=>{
+                const next = (val || '').trim();
+                saveYouTubeApiKey(next);
+                initVideosWindow();
+              }
+            });
+          }
+        }
+        const videoItem = e.target.closest && e.target.closest('[data-video-id]');
+        if(videoItem && videoItem.dataset && videoItem.dataset.videoId){
+          state.videos.selectedId = videoItem.dataset.videoId;
+          renderVideoPlayer(null, state.videos.selectedId, { force:true });
+          renderVideosList(null, state.videos.items);
+          return;
         }
         const musicCard = e.target.closest && e.target.closest('[data-music-id]');
         if(musicCard){
