@@ -137,6 +137,12 @@
         background:var(--task);
         color:var(--text);
       }
+      body.retro-glow .window .frame{
+        box-shadow: 0 0 10px rgba(255,255,255,0.12);
+      }
+      body.retro-glow .icon span{
+        text-shadow: 0 0 6px rgba(255,255,255,0.35);
+      }
 
       html,body{height:100%;margin:0;}
       body{
@@ -259,6 +265,24 @@
         position:absolute; inset:0 0 30px 0;
         padding:10px;
       }
+      .drag-layer{
+        position:absolute;
+        inset:0;
+        z-index:9999;
+        pointer-events:none;
+      }
+      .drag-layer.active{
+        pointer-events:auto;
+      }
+      .games-drag-ghost{
+        position:absolute;
+        width:92px;
+        opacity:0.85;
+        pointer-events:none;
+      }
+      .games-drag-ghost.big{
+        width:140px;
+      }
 
       .icons{
         position:relative;
@@ -277,6 +301,10 @@
         padding:6px 4px;
         border:1px solid transparent;
         cursor:default;
+      }
+      .icon[data-app-id="settings"] img{
+        width:36px;
+        height:36px;
       }
       .icon.selected{
         border:1px dotted rgba(255,255,255,0.9);
@@ -372,6 +400,10 @@
         overflow:hidden;
         text-overflow:ellipsis;
         white-space:nowrap;
+      }
+      #startMenu .menu-item img[data-app-id="settings"]{
+        width:18px;
+        height:18px;
       }
       .menu-item{
         display:flex;
@@ -833,6 +865,15 @@
         gap:12px;
         align-items:start;
       }
+      .games-grid.games-big{
+        grid-template-columns: repeat(auto-fill, 140px);
+        gap:16px;
+      }
+      .games-list{
+        display:flex;
+        flex-direction:column;
+        gap:6px;
+      }
       .games-item{
         background:transparent;
         border:1px solid transparent;
@@ -844,6 +885,34 @@
         gap:6px;
         padding:6px 4px;
         cursor:default;
+      }
+      .games-list .games-item{
+        width:100%;
+        max-width:100%;
+        flex-direction:row;
+        justify-content:flex-start;
+        gap:10px;
+      }
+      .games-grid.games-big .games-item{
+        width:140px;
+        max-width:140px;
+        gap:8px;
+        padding:8px 6px;
+      }
+      .games-icon{
+        width:34px;
+        height:34px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+      }
+      .games-grid.games-big .games-icon{
+        width:56px;
+        height:56px;
+      }
+      .games-grid.games-big .games-icon img{
+        width:48px;
+        height:48px;
       }
       .games-item.selected{
         border:1px dotted var(--selection-border);
@@ -1456,6 +1525,7 @@
       <div id="desktop" class="hidden">
         <div class="desktop-area" id="desktopArea">
           <div class="icons" id="iconGrid"></div>
+          <div class="drag-layer" id="dragLayer"></div>
           <div id="windows"></div>
           <div id="rubberband" class="rubberband hidden"></div>
         </div>
@@ -1549,6 +1619,7 @@
           scanlines: false,
           tab: 'general',
           darkMode: false,
+          retroGlow: false,
         },
         theme: {
           preset: 'default',
@@ -1558,6 +1629,11 @@
         games: {
           view: 'list',
           selectedId: null,
+          layout: 'grid',
+          bigIcons: false,
+        },
+        folders: {
+          games: [],
         },
         snake: {
           speed: 'normal',
@@ -1593,6 +1669,10 @@
       const TITLEBAR_KEY = 'bliss98_titlebar_theme';
       const THEME_PRESET_KEY = 'bliss98_theme_preset';
       const THEME_CUSTOM_KEY = 'bliss98_theme_custom';
+      const FOLDER_KEY = 'bliss98_folders';
+      const GAMES_VIEW_KEY = 'bliss98_games_view';
+      const GAMES_BIG_KEY = 'bliss98_games_big';
+      const RETRO_KEY = 'bliss98_retro_glow';
       const YOUTUBE_KEY = 'bliss98_youtube_api_key';
       const SFX = {
         boot: {
@@ -1677,6 +1757,10 @@
         { id:'matrix', nameKey:'theme.matrix', titlebarColor:'greenDark', wallpaperId:'matrix', darkMode:true },
         { id:'xp98', nameKey:'theme.xp98', titlebarColor:'xpBlue', wallpaperId:'xp98bliss', darkMode:false },
         { id:'blank', nameKey:'theme.blank', titlebarColor:'blank', wallpaperId:'classic', darkMode:false },
+      ];
+
+      const VIRTUAL_ICONS = [
+        { id:'snake', titleKey:'games.snake', iconFile:'/assets/icons/snake.png' }
       ];
 
       function initSfx(){
@@ -1958,7 +2042,7 @@ function getDefaultIconLayout(){
   const metrics = getGridMetrics();
   const isMobile = area.width <= 520;
   const order = ['settings','games','about','videos','mediaplayer','diev','art','contact','poetry','music','clothes'];
-  const available = APPS.filter(app => app.showOnDesktop !== false && app.id !== 'trash' && !state.trash.has(app.id));
+  const available = APPS.filter(app => app.showOnDesktop !== false && app.id !== 'trash' && !state.trash.has(app.id) && !isInFolder(app.id));
   const availableIds = new Set(available.map(app => app.id));
   const ordered = order.filter(id => availableIds.has(id)).concat(
     available.map(app => app.id).filter(id => !order.includes(id))
@@ -2020,6 +2104,9 @@ function moveIconsToTrash(ids){
   const filtered = ids.filter(id => id && id !== 'trash');
   if(filtered.length === 0) return;
   filtered.forEach(id => state.trash.add(id));
+  Object.keys(state.folders).forEach(folderId => {
+    removeFromFolder(folderId, filtered);
+  });
   state.trashSelection = new Set();
   saveTrash();
   renderIcons();
@@ -2031,6 +2118,9 @@ function restoreFromTrash(ids){
   const filtered = ids.filter(id => id && id !== 'trash');
   if(filtered.length === 0) return;
   filtered.forEach(id => state.trash.delete(id));
+  Object.keys(state.folders).forEach(folderId => {
+    removeFromFolder(folderId, filtered);
+  });
   state.trashSelection = new Set();
   saveTrash();
   renderIcons();
@@ -2089,8 +2179,24 @@ function renderGamesWindow(){
   applyI18nTo(win);
 
   if(state.games.view === 'list'){
-    if(!state.games.selectedId) state.games.selectedId = 'snake';
+    const firstId = getFirstGameId();
+    if(!state.games.selectedId) state.games.selectedId = firstId;
     const items = Array.from(win.querySelectorAll('[data-game-id]'));
+    if(state.games.selectedId && !items.some(item => item.dataset.gameId === state.games.selectedId)){
+      state.games.selectedId = firstId;
+    }
+    const listEl = win.querySelector('#gamesList');
+    if(listEl){
+      listEl.className = state.games.layout === 'list' ? 'games-list' : 'games-grid';
+      if(state.games.layout === 'grid' && state.games.bigIcons) listEl.classList.add('games-big');
+    }
+    const gridBtn = win.querySelector('[data-games-view="grid"]');
+    const listBtn = win.querySelector('[data-games-view="list"]');
+    const bigBtn = win.querySelector('[data-games-big="toggle"]');
+    if(gridBtn) gridBtn.classList.toggle('pressed', state.games.layout === 'grid');
+    if(listBtn) listBtn.classList.toggle('pressed', state.games.layout === 'list');
+    if(bigBtn) bigBtn.classList.toggle('pressed', state.games.bigIcons);
+
     items.forEach(item => {
       const id = item.dataset.gameId;
       item.classList.toggle('selected', state.games.selectedId === id);
@@ -2109,6 +2215,7 @@ function renderGamesWindow(){
           openGameFromHub(id);
         }
       });
+      makeGameItemDraggable(item, id);
     });
     return;
   }
@@ -2122,17 +2229,26 @@ function initGamesWindow(){
   renderGamesWindow();
 }
 
+function getFirstGameId(){
+  const items = state.folders.games || [];
+  return items[0] || null;
+}
+
 function openGameFromHub(id){
   if(id === 'snake'){
     state.games.view = 'snake';
     state.games.selectedId = 'snake';
     renderGamesWindow();
+    return;
+  }
+  if(getAppById(id)){
+    openApp(id);
   }
 }
 
 function backToGamesHub(){
   state.games.view = 'list';
-  state.games.selectedId = 'snake';
+  state.games.selectedId = getFirstGameId();
   snakeStop();
   renderGamesWindow();
 }
@@ -2726,6 +2842,19 @@ function setScanlines(enabled){
   updateScanlinesButtons();
 }
 
+function updateRetroGlowButtons(root=document){
+  $$('[data-set-retro]', root).forEach(btn => {
+    const on = btn.dataset.setRetro === 'on';
+    btn.classList.toggle('pressed', on === state.settings.retroGlow);
+  });
+}
+
+function setRetroGlow(enabled){
+  state.settings.retroGlow = !!enabled;
+  applyRetroGlow();
+  updateRetroGlowButtons();
+}
+
 function updateDarkModeButtons(root=document){
   $$('[data-set-darkmode]', root).forEach(btn => {
     const on = btn.dataset.setDarkmode === 'on';
@@ -2833,6 +2962,20 @@ function saveIconLabels(){
   } catch {}
 }
 
+function loadFolders(){
+  try{
+    const raw = localStorage.getItem(FOLDER_KEY);
+    if(raw) return JSON.parse(raw);
+  } catch {}
+  return { games: ['snake'] };
+}
+
+function saveFolders(){
+  try{
+    localStorage.setItem(FOLDER_KEY, JSON.stringify(state.folders));
+  } catch {}
+}
+
 function loadWallpaper(){
   try{
     const saved = localStorage.getItem(WALLPAPER_KEY);
@@ -2849,6 +2992,51 @@ function updateWallpaperButtons(root=document){
 }
 
 let themeApplying = false;
+
+function loadGamesLayout(){
+  try{
+    const raw = localStorage.getItem(GAMES_VIEW_KEY);
+    return raw || 'grid';
+  } catch {
+    return 'grid';
+  }
+}
+
+function saveGamesLayout(){
+  try{
+    localStorage.setItem(GAMES_VIEW_KEY, state.games.layout);
+  } catch {}
+}
+
+function loadGamesBigIcons(){
+  try{
+    const raw = localStorage.getItem(GAMES_BIG_KEY);
+    return raw === '1';
+  } catch {
+    return false;
+  }
+}
+
+function saveGamesBigIcons(){
+  try{
+    localStorage.setItem(GAMES_BIG_KEY, state.games.bigIcons ? '1' : '0');
+  } catch {}
+}
+
+function loadRetroGlow(){
+  try{
+    const raw = localStorage.getItem(RETRO_KEY);
+    return raw === '1';
+  } catch {
+    return false;
+  }
+}
+
+function saveRetroGlow(){
+  try{
+    localStorage.setItem(RETRO_KEY, state.settings.retroGlow ? '1' : '0');
+  } catch {}
+}
 
 function updateTitlebarButtons(root=document){
   $$('[data-set-titlebar]', root).forEach(btn => {
@@ -2974,6 +3162,7 @@ function saveCustomThemeFromState(){
     titlebar: state.theme.titlebar,
     darkMode: state.settings.darkMode,
     scanlines: state.settings.scanlines,
+    retroGlow: state.settings.retroGlow,
     palette: state.theme.palette || 'default'
   };
   saveCustomTheme(data);
@@ -2993,6 +3182,8 @@ function applyCustomTheme(){
   setTitlebarTheme(data.titlebar || 'defaultBlue', true);
   state.settings.scanlines = !!data.scanlines;
   applyScanlines();
+  state.settings.retroGlow = !!data.retroGlow;
+  applyRetroGlow();
   themeApplying = false;
   updateThemeButtons();
   updateThemeThumbs();
@@ -3036,6 +3227,159 @@ function applyArtState(winEl){
   win.classList.toggle('art-zoom-50', state.art.zoom === 50);
   win.classList.toggle('art-zoom-100', state.art.zoom === 100);
   win.classList.toggle('art-zoom-200', state.art.zoom === 200);
+}
+
+function getAppById(id){
+  return APPS.find(a => a.id === id) || null;
+}
+
+function getVirtualIconById(id){
+  return VIRTUAL_ICONS.find(v => v.id === id) || null;
+}
+
+function openIconById(id){
+  if(id === 'snake'){
+    openApp('games');
+    state.games.view = 'snake';
+    state.games.selectedId = 'snake';
+    renderGamesWindow();
+    return;
+  }
+  openApp(id);
+}
+
+function isInFolder(id){
+  return (state.folders.games || []).includes(id);
+}
+
+function addToFolder(folderId, ids){
+  const folder = state.folders[folderId] || [];
+  ids.forEach(id => {
+    if(id === 'games' || id === 'trash') return;
+    if(!folder.includes(id)) folder.push(id);
+  });
+  state.folders[folderId] = folder;
+  saveFolders();
+}
+
+function removeFromFolder(folderId, ids){
+  const folder = state.folders[folderId] || [];
+  state.folders[folderId] = folder.filter(id => !ids.includes(id));
+  saveFolders();
+}
+
+function isOverTrashWindow(x, y){
+  const win = document.getElementById('win_trash');
+  if(!win || win.classList.contains('hidden')) return false;
+  const content = win.querySelector('.content');
+  if(!content) return false;
+  const r = content.getBoundingClientRect();
+  return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
+}
+
+function isOverGamesWindow(x, y){
+  const win = document.getElementById('win_games');
+  if(!win || win.classList.contains('hidden')) return false;
+  if(state.games.view !== 'list') return false;
+  const content = win.querySelector('.content');
+  if(!content) return false;
+  const r = content.getBoundingClientRect();
+  return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
+}
+
+function isOverDesktopArea(x, y){
+  const area = $('#desktopArea').getBoundingClientRect();
+  return x >= area.left && x <= area.right && y >= area.top && y <= area.bottom;
+}
+
+function setIconPosition(id, x, y){
+  const saved = loadIconPositions();
+  const metrics = getGridMetrics();
+  let nx = x;
+  let ny = y;
+  if(state.gridSnap){
+    const snapped = snapToGrid(nx, ny);
+    nx = snapped.x;
+    ny = snapped.y;
+  }
+  const occupied = buildOccupied([id], metrics);
+  const placed = placeOnFreeCell(nx, ny, occupied, metrics);
+  saved[id] = { x: placed.x, y: placed.y };
+  saveIconPositions(saved);
+}
+
+function makeGameItemDraggable(itemEl, id){
+  let down = false;
+  let dragging = false;
+  let pointerId = null;
+  let startX = 0;
+  let startY = 0;
+  let ghost = null;
+  const dragLayer = $('#dragLayer');
+
+  const onPointerDown = (e)=>{
+    if(e.pointerType === 'mouse' && e.button !== 0) return;
+    down = true;
+    dragging = false;
+    pointerId = e.pointerId;
+    startX = e.clientX;
+    startY = e.clientY;
+    itemEl.setPointerCapture(pointerId);
+    itemEl.addEventListener('pointermove', onPointerMove);
+    itemEl.addEventListener('pointerup', onPointerUp);
+    itemEl.addEventListener('pointercancel', onPointerUp);
+  };
+
+  const onPointerMove = (e)=>{
+    if(!down) return;
+    if(pointerId !== null && e.pointerId !== pointerId) return;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    if(!dragging && (Math.abs(dx) + Math.abs(dy) > 4)){
+      dragging = true;
+      if(dragLayer){
+        dragLayer.classList.add('active');
+        ghost = itemEl.cloneNode(true);
+        ghost.classList.add('games-drag-ghost');
+        if(state.games.bigIcons && state.games.layout === 'grid') ghost.classList.add('big');
+        dragLayer.appendChild(ghost);
+      }
+    }
+    if(!dragging || !ghost) return;
+    const area = $('#desktopArea').getBoundingClientRect();
+    ghost.style.left = (e.clientX - area.left - 20) + 'px';
+    ghost.style.top = (e.clientY - area.top - 20) + 'px';
+  };
+
+  const onPointerUp = (e)=>{
+    if(pointerId !== null && e.pointerId !== pointerId) return;
+    down = false;
+    try{ itemEl.releasePointerCapture(e.pointerId); } catch {}
+    itemEl.removeEventListener('pointermove', onPointerMove);
+    itemEl.removeEventListener('pointerup', onPointerUp);
+    itemEl.removeEventListener('pointercancel', onPointerUp);
+
+    if(ghost && dragLayer){
+      ghost.remove();
+      dragLayer.classList.remove('active');
+      ghost = null;
+    }
+
+    if(dragging && isOverDesktopArea(e.clientX, e.clientY) && !isOverGamesWindow(e.clientX, e.clientY)){
+      removeFromFolder('games', [id]);
+      const area = $('#desktopArea').getBoundingClientRect();
+      const x = clamp(Math.round(e.clientX - area.left - ICON_SIZE.w / 2), 0, area.width - ICON_SIZE.w - 6);
+      const y = clamp(Math.round(e.clientY - area.top - ICON_SIZE.h / 2), 0, area.height - ICON_SIZE.h - 6);
+      setIconPosition(id, x, y);
+      renderIcons();
+      renderGamesWindow();
+    }
+
+    dragging = false;
+    pointerId = null;
+  };
+
+  itemEl.addEventListener('pointerdown', onPointerDown);
 }
 
 function loadYouTubeApiKey(){
@@ -3187,6 +3531,12 @@ function applyScanlines(){
   updateScanlinesButtons();
 }
 
+function applyRetroGlow(){
+  document.body.classList.toggle('retro-glow', state.settings.retroGlow);
+  saveRetroGlow();
+  updateRetroGlowButtons();
+}
+
 function applyDarkMode(){
   document.body.classList.toggle('dark', state.settings.darkMode);
   saveDarkMode();
@@ -3308,12 +3658,14 @@ function closeCtxMenu(){
 
 function handleCtxAction(action){
   if(action === 'open' && ctxState.target === 'icon' && ctxState.appId){
-    openApp(ctxState.appId);
+    openIconById(ctxState.appId);
   }
   if(action === 'rename' && ctxState.target === 'icon' && ctxState.appId && ctxState.appId !== 'trash'){
-    const app = APPS.find(a => a.id === ctxState.appId);
-    if(!app) return;
-    const current = state.iconLabels[app.id] || t(app.titleKey);
+    const app = getAppById(ctxState.appId);
+    const virtual = getVirtualIconById(ctxState.appId);
+    const key = app ? app.titleKey : (virtual ? virtual.titleKey : null);
+    if(!key) return;
+    const current = state.iconLabels[ctxState.appId] || t(key);
     showInputDialog({
       titleKey: 'dialog.rename.title',
       descKey: 'dialog.rename.desc',
@@ -3322,9 +3674,9 @@ function handleCtxAction(action){
       onConfirm: (val)=>{
         const next = String(val || '').trim();
         if(next){
-          state.iconLabels[app.id] = next;
+          state.iconLabels[ctxState.appId] = next;
         } else {
-          delete state.iconLabels[app.id];
+          delete state.iconLabels[ctxState.appId];
         }
         saveIconLabels();
         renderIcons();
@@ -3452,6 +3804,10 @@ function installLongPress(el, getTarget){
           'app.mediaplayer': 'BLISS Media Player',
           'games.snake': 'Snake',
           'games.back': 'Back',
+          'games.viewGrid': 'Grid view',
+          'games.viewList': 'List view',
+          'games.bigIcons': 'Bigger Icons',
+          'games.empty': 'No games yet.',
           'snake.title': 'Snake',
           'snake.start': 'Start',
           'snake.restart': 'Restart',
@@ -3510,6 +3866,10 @@ function installLongPress(el, getTarget){
           'settings.darkMode.desc': 'Makes BLISS 98 darker and easier on the eyes.',
           'settings.darkMode.on': 'On',
           'settings.darkMode.off': 'Off',
+          'settings.retro.title': 'Retro Glow',
+          'settings.retro.desc': 'Add a soft glow to windows and icons.',
+          'settings.retro.on': 'On',
+          'settings.retro.off': 'Off',
           'settings.animationsTab': 'Animations',
           'settings.animationsDesc': 'Toggle window animations.',
           'settings.animations.on': 'On',
@@ -3810,6 +4170,10 @@ function installLongPress(el, getTarget){
           'app.mediaplayer': 'BLISS Media Player',
           'games.snake': 'Snake',
           'games.back': 'Voltar',
+          'games.viewGrid': 'Grade',
+          'games.viewList': 'Lista',
+          'games.bigIcons': 'Ícones grandes',
+          'games.empty': 'Sem jogos ainda.',
           'snake.title': 'Snake',
           'snake.start': 'Iniciar',
           'snake.restart': 'Reiniciar',
@@ -3868,6 +4232,10 @@ function installLongPress(el, getTarget){
           'settings.darkMode.desc': 'Deixa o BLISS 98 mais escuro e confortável.',
           'settings.darkMode.on': 'Ligado',
           'settings.darkMode.off': 'Desligado',
+          'settings.retro.title': 'Brilho Retro',
+          'settings.retro.desc': 'Adicione um brilho suave nas janelas e ícones.',
+          'settings.retro.on': 'Ligado',
+          'settings.retro.off': 'Desligado',
           'settings.animationsTab': 'Animações',
           'settings.animationsDesc': 'Ative ou desative as animações das janelas.',
           'settings.animations.on': 'Ligado',
@@ -4153,6 +4521,7 @@ function installLongPress(el, getTarget){
         updateTitlebarButtons(root);
         updateThemeButtons(root);
         updateThemeThumbs(root);
+        updateRetroGlowButtons(root);
       }
 
       function applyI18n(){
@@ -5642,15 +6011,41 @@ Eu sou o buffalo branco extinto`
               </div>
             `;
           }
+          const items = (state.folders.games || []).map(id => {
+            if(id === 'snake'){
+              return `
+                <button class="games-item" type="button" data-game-id="snake">
+                  <div class="games-icon pixel">
+                    <img class="pixel" src="/assets/icons/snake.png" width="32" height="32" alt="${t('games.snake')}" style="display:block;" />
+                  </div>
+                  <span data-i18n="games.snake">Snake</span>
+                </button>
+              `;
+            }
+            const app = getAppById(id);
+            if(!app) return '';
+            const label = t(app.titleKey);
+            const iconFile = typeof app.iconFile === 'function' ? app.iconFile() : app.iconFile;
+            const iconHtml = iconFile
+              ? `<img class="pixel" src="${iconFile}" width="32" height="32" alt="${label}" style="display:block;" />`
+              : iconSVG(app.icon);
+            return `
+              <button class="games-item" type="button" data-game-id="${id}">
+                <div class="games-icon pixel">${iconHtml}</div>
+                <span>${label}</span>
+              </button>
+            `;
+          }).join('');
+
           return `
             <h2>BLISS — ${t('app.games')}</h2>
-            <div class="games-grid">
-              <button class="games-item" type="button" data-game-id="snake">
-                <div class="pixel" style="width:34px;height:34px;display:flex;align-items:center;justify-content:center;">
-                  <img class="pixel" src="/assets/icons/snake.png" width="32" height="32" alt="${t('games.snake')}" style="display:block;" />
-                </div>
-                <span data-i18n="games.snake">Snake</span>
-              </button>
+            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:10px;">
+              <button class="btn bevel" type="button" data-games-view="grid" data-i18n="games.viewGrid">Grid view</button>
+              <button class="btn bevel" type="button" data-games-view="list" data-i18n="games.viewList">List view</button>
+              <button class="btn bevel" type="button" data-games-big="toggle" data-i18n="games.bigIcons">Bigger Icons</button>
+            </div>
+            <div id="gamesList" class="${state.games.layout === 'list' ? 'games-list' : 'games-grid'}${state.games.bigIcons && state.games.layout === 'grid' ? ' games-big' : ''}">
+              ${items || `<div class="tiny" data-i18n="games.empty">${t('games.empty')}</div>`}
             </div>
           `;
         },
@@ -5898,6 +6293,14 @@ Eu sou o buffalo branco extinto`
                   <div class="settings-actions">
                     <button class="btn bevel" type="button" data-set-darkmode="on"><span data-i18n="settings.darkMode.on">On</span></button>
                     <button class="btn bevel" type="button" data-set-darkmode="off"><span data-i18n="settings.darkMode.off">Off</span></button>
+                  </div>
+                </div>
+                <div class="settings-block" id="settingsRetro">
+                  <strong data-i18n="settings.retro.title">Retro Glow</strong>
+                  <p style="margin:6px 0 10px 0;" data-i18n="settings.retro.desc">Add a soft glow to windows and icons.</p>
+                  <div class="settings-actions">
+                    <button class="btn bevel" type="button" data-set-retro="on"><span data-i18n="settings.retro.on">On</span></button>
+                    <button class="btn bevel" type="button" data-set-retro="off"><span data-i18n="settings.retro.off">Off</span></button>
                   </div>
                 </div>
                 <div class="settings-block" id="settingsWallpaper">
@@ -6603,43 +7006,50 @@ Eu sou o buffalo branco extinto`
         });
       }
 
-      function renderIcons(){
-        const grid = $('#iconGrid');
-        grid.innerHTML = '';
+function renderIcons(){
+  const grid = $('#iconGrid');
+  grid.innerHTML = '';
 
-        const saved = loadIconPositions();
-        const metrics = getGridMetrics();
-        const occupied = new Map();
-        let needsSave = false;
-        const defaultLayout = getDefaultIconLayout();
+  const saved = loadIconPositions();
+  const metrics = getGridMetrics();
+  const occupied = new Map();
+  let needsSave = false;
+  const defaultLayout = getDefaultIconLayout();
 
-        APPS.filter(app => app.showOnDesktop !== false).forEach((app, idx) => {
-          if(app.id !== 'trash' && state.trash.has(app.id)) return;
-          const el = document.createElement('div');
-          el.className = 'icon';
-          el.dataset.appId = app.id;
+  const desktopItems = [
+    ...APPS.filter(app => app.showOnDesktop !== false).map(app => ({ type:'app', item: app })),
+    ...VIRTUAL_ICONS.map(v => ({ type:'virtual', item: v }))
+  ];
 
-          const def = defaultLayout[app.id] || legacyDefaultIconPos(idx);
-          const pos = (saved && saved[app.id]) ? saved[app.id] : def;
-          const placed = placeOnFreeCell(pos.x, pos.y, occupied, metrics);
-          el.style.left = placed.x + 'px';
-          el.style.top = placed.y + 'px';
-          if(placed.changed || !saved[app.id]){
-            saved[app.id] = { x: placed.x, y: placed.y };
-            needsSave = true;
-          }
+  desktopItems.forEach(({ type, item }, idx) => {
+    const id = item.id;
+    if(id !== 'trash' && state.trash.has(id)) return;
+    if(isInFolder(id)) return;
+    const el = document.createElement('div');
+    el.className = 'icon';
+    el.dataset.appId = id;
 
-          const label = getIconLabel(app);
-          const iconFile = typeof app.iconFile === 'function' ? app.iconFile() : app.iconFile;
-          const iconHtml = iconFile
-            ? `<img class="pixel" src="${iconFile}" width="32" height="32" alt="${label}" style="display:block;" />`
-            : iconSVG(app.icon);
+    const def = defaultLayout[id] || legacyDefaultIconPos(idx);
+    const pos = (saved && saved[id]) ? saved[id] : def;
+    const placed = placeOnFreeCell(pos.x, pos.y, occupied, metrics);
+    el.style.left = placed.x + 'px';
+    el.style.top = placed.y + 'px';
+    if(placed.changed || !saved[id]){
+      saved[id] = { x: placed.x, y: placed.y };
+      needsSave = true;
+    }
+
+    const label = (type === 'virtual') ? t(item.titleKey) : getIconLabel(item);
+    const iconFile = type === 'virtual' ? item.iconFile : (typeof item.iconFile === 'function' ? item.iconFile() : item.iconFile);
+    const iconHtml = iconFile
+      ? `<img class="pixel" src="${iconFile}" width="32" height="32" alt="${label}" style="display:block;" />`
+      : iconSVG(item.icon);
 
           el.innerHTML = `
             <div class="pixel" style="width:34px;height:34px;display:flex;align-items:center;justify-content:center;">${iconHtml}</div>
             <span>${label}</span>
           `;
-          if(state.trash.has(app.id)) el.classList.add('trashed');
+    if(state.trash.has(id)) el.classList.add('trashed');
 
           // Click select
           el.addEventListener('click', (e)=>{
@@ -6649,24 +7059,24 @@ Eu sou o buffalo branco extinto`
               el.dataset.dragged = '0';
               return;
             }
-            selectIcon(app.id);
-          });
+      selectIcon(id);
+    });
 
           // Double click open
           el.addEventListener('dblclick', (e)=>{
             e.stopPropagation();
-            openApp(app.id);
-          });
+      openIconById(id);
+    });
 
-          makeIconDraggable(el);
-          el.addEventListener('contextmenu', (ev)=>{
-            ev.preventDefault();
-            ev.stopPropagation();
-            openCtxMenu(ev.clientX, ev.clientY, 'icon', app.id);
-          });
-          installLongPress(el, ()=>({ target:'icon', appId: app.id }));
-          grid.appendChild(el);
-        });
+    makeIconDraggable(el);
+    el.addEventListener('contextmenu', (ev)=>{
+      ev.preventDefault();
+      ev.stopPropagation();
+      openCtxMenu(ev.clientX, ev.clientY, 'icon', id);
+    });
+    installLongPress(el, ()=>({ target:'icon', appId: id }));
+    grid.appendChild(el);
+  });
         if(needsSave) saveIconPositions(saved);
       }
       function selectIcon(id){
@@ -6678,6 +7088,7 @@ Eu sou o buffalo branco extinto`
         let down = false;
         let dragging = false;
         let pointerId = null;
+        let movedToLayer = false;
 
         let startX = 0, startY = 0;
         let group = [];
@@ -6686,6 +7097,7 @@ Eu sou o buffalo branco extinto`
         // group bounds + allowed delta range
         let dxMin = 0, dxMax = 0, dyMin = 0, dyMax = 0;
 
+        const dragLayer = $('#dragLayer');
         const onPointerDown = (e)=>{
           if($('#desktop').classList.contains('hidden')) return;
           if(e.pointerType === 'mouse' && e.button !== 0) return;
@@ -6710,6 +7122,7 @@ Eu sou o buffalo branco extinto`
           pointerId = e.pointerId;
           startX = e.clientX;
           startY = e.clientY;
+          movedToLayer = false;
 
           // Snapshot starting positions
           startPositions = group.map(el => ({
@@ -6748,6 +7161,27 @@ Eu sou o buffalo branco extinto`
           e.preventDefault();
         };
 
+        const moveGroupToLayer = ()=>{
+          if(movedToLayer || !dragLayer) return;
+          dragLayer.classList.add('active');
+          group.forEach(el => {
+            dragLayer.appendChild(el);
+            el.style.zIndex = '9999';
+          });
+          movedToLayer = true;
+        };
+
+        const restoreGroupLayer = ()=>{
+          if(!movedToLayer) return;
+          const grid = $('#iconGrid');
+          group.forEach(el => {
+            grid.appendChild(el);
+            el.style.zIndex = '';
+          });
+          if(dragLayer) dragLayer.classList.remove('active');
+          movedToLayer = false;
+        };
+
         const onPointerMove = (e)=>{
           if(!down) return;
           if(pointerId !== null && e.pointerId !== pointerId) return;
@@ -6757,6 +7191,7 @@ Eu sou o buffalo branco extinto`
 
           if(!dragging && (Math.abs(dxRaw) + Math.abs(dyRaw) > 4)){
             dragging = true;
+            moveGroupToLayer();
           }
           if(!dragging) return;
 
@@ -6787,43 +7222,54 @@ Eu sou o buffalo branco extinto`
           document.body.classList.remove('dragging');
 
           if(dragging){
-            // Save all moved positions in one write
-            const saved = loadIconPositions();
-            const metrics = getGridMetrics();
-            const movedIds = new Set(startPositions.map(p => p.id));
-            const occupied = new Map();
+            const ids = startPositions.map(p => p.id);
+            if(isOverTrashWindow(e.clientX, e.clientY) || isOverTrash(e.clientX, e.clientY)){
+              restoreGroupLayer();
+              moveIconsToTrash(ids);
+            } else if(isOverGamesWindow(e.clientX, e.clientY)){
+              addToFolder('games', ids);
+              const saved = loadIconPositions();
+              ids.forEach(id => { delete saved[id]; });
+              saveIconPositions(saved);
+              restoreGroupLayer();
+              renderIcons();
+              renderGamesWindow();
+            } else {
+              restoreGroupLayer();
+              // Save all moved positions in one write
+              const saved = loadIconPositions();
+              const metrics = getGridMetrics();
+              const movedIds = new Set(ids);
+              const occupied = new Map();
 
-            APPS.forEach((app, idx) => {
-              if(movedIds.has(app.id)) return;
-              const base = saved[app.id] || defaultIconPos(idx);
-              const placed = placeOnFreeCell(base.x, base.y, occupied, metrics);
-              if(placed.changed || !saved[app.id]){
-                saved[app.id] = { x: placed.x, y: placed.y };
-              }
-            });
+              APPS.forEach((app, idx) => {
+                if(movedIds.has(app.id)) return;
+                const base = saved[app.id] || defaultIconPos(idx);
+                const placed = placeOnFreeCell(base.x, base.y, occupied, metrics);
+                if(placed.changed || !saved[app.id]){
+                  saved[app.id] = { x: placed.x, y: placed.y };
+                }
+              });
 
-            startPositions.forEach(p => {
-              let x = parseInt(p.el.style.left || '0', 10);
-              let y = parseInt(p.el.style.top || '0', 10);
+              startPositions.forEach(p => {
+                let x = parseInt(p.el.style.left || '0', 10);
+                let y = parseInt(p.el.style.top || '0', 10);
 
-              if(state.gridSnap){
-                const snapped = snapToGrid(x, y);
-                x = snapped.x;
-                y = snapped.y;
-              }
+                if(state.gridSnap){
+                  const snapped = snapToGrid(x, y);
+                  x = snapped.x;
+                  y = snapped.y;
+                }
 
-              const placed = placeOnFreeCell(x, y, occupied, metrics);
-              p.el.style.left = placed.x + 'px';
-              p.el.style.top = placed.y + 'px';
-              saved[p.id] = { x: placed.x, y: placed.y };
-              p.el.dataset.dragged = '1';
-            });
-            saveIconPositions(saved);
+                const placed = placeOnFreeCell(x, y, occupied, metrics);
+                p.el.style.left = placed.x + 'px';
+                p.el.style.top = placed.y + 'px';
+                saved[p.id] = { x: placed.x, y: placed.y };
+                p.el.dataset.dragged = '1';
+              });
+              saveIconPositions(saved);
+            }
           }
-
-        if(dragging && isOverTrash(e.clientX, e.clientY)){
-          moveIconsToTrash(startPositions.map(p => p.id));
-        }
 
           dragging = false;
           pointerId = null;
@@ -7810,6 +8256,10 @@ Eu sou o buffalo branco extinto`
         if(darkBtn && darkBtn.dataset && darkBtn.dataset.setDarkmode){
           setDarkMode(darkBtn.dataset.setDarkmode === 'on');
         }
+        const retroBtn = e.target.closest && e.target.closest('[data-set-retro]');
+        if(retroBtn && retroBtn.dataset && retroBtn.dataset.setRetro){
+          setRetroGlow(retroBtn.dataset.setRetro === 'on');
+        }
         const titleBtn = e.target.closest && e.target.closest('[data-set-titlebar]');
         if(titleBtn && titleBtn.dataset && titleBtn.dataset.setTitlebar){
           setTitlebarTheme(titleBtn.dataset.setTitlebar);
@@ -7827,6 +8277,18 @@ Eu sou o buffalo branco extinto`
           if(act === 'load'){
             if(!themeCustomBtn.classList.contains('disabled')) applyCustomTheme();
           }
+        }
+        const gamesViewBtn = e.target.closest && e.target.closest('[data-games-view]');
+        if(gamesViewBtn && gamesViewBtn.dataset && gamesViewBtn.dataset.gamesView){
+          state.games.layout = gamesViewBtn.dataset.gamesView;
+          saveGamesLayout();
+          renderGamesWindow();
+        }
+        const gamesBigBtn = e.target.closest && e.target.closest('[data-games-big]');
+        if(gamesBigBtn && gamesBigBtn.dataset && gamesBigBtn.dataset.gamesBig){
+          state.games.bigIcons = !state.games.bigIcons;
+          saveGamesBigIcons();
+          renderGamesWindow();
         }
         const videosAction = e.target.closest && e.target.closest('[data-videos-action]');
         if(videosAction && videosAction.dataset && videosAction.dataset.videosAction){
@@ -7896,6 +8358,7 @@ Eu sou o buffalo branco extinto`
         state.animations = loadAnimations();
         state.settings.scanlines = loadScanlines();
         state.settings.darkMode = loadDarkMode();
+        state.settings.retroGlow = loadRetroGlow();
         state.theme.preset = loadThemePreset();
         state.theme.titlebar = loadTitlebarTheme();
         if(state.theme.titlebar === 'transparent') state.theme.titlebar = 'blank';
@@ -7904,6 +8367,9 @@ Eu sou o buffalo branco extinto`
         if(state.theme.preset === 'custom' && customTheme && customTheme.palette){
           state.theme.palette = customTheme.palette;
         }
+        state.games.layout = loadGamesLayout();
+        state.games.bigIcons = loadGamesBigIcons();
+        state.folders = loadFolders();
         state.snake.highScore = loadSnakeHighScore();
         state.trash = new Set(loadTrash());
         state.iconLabels = loadIconLabels();
@@ -7920,6 +8386,7 @@ Eu sou o buffalo branco extinto`
         applyI18n();
         applyDarkMode();
         applyScanlines();
+        applyRetroGlow();
         updateTrashIconUI();
 
         initSfx();
