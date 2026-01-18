@@ -35,6 +35,32 @@
         --kbd-bg:#ffffff;
         --kbd-border:#999999;
       }
+      body.theme-xp98{
+        --shadow-dark:#2b3f5f;
+        --shadow-mid:#7f9db9;
+        --shadow-light:#f2f6ff;
+        --shadow-white:#ffffff;
+        --task:#d6e5ff;
+        --text:#000000;
+        --menu:#ece9d8;
+        --select:#316ac5;
+        --select-text:#ffffff;
+        --content-bg:#ffffff;
+        --content-text:#000000;
+        --panel-bg:#ece9d8;
+        --panel-in:#ffffff;
+        --panel-border:#7f9db9;
+        --input-bg:#ffffff;
+        --input-text:#000000;
+        --menu-text:#000000;
+        --link:#1b4f9c;
+        --sep:#9fb3d1;
+        --sep-light:#ffffff;
+        --selection-bg:#cfe2ff;
+        --selection-border:#316ac5;
+        --kbd-bg:#f7f7f7;
+        --kbd-border:#7f9db9;
+      }
       body.dark{
         --shadow-dark:#000000;
         --shadow-mid:#1c1c1c;
@@ -1385,6 +1411,14 @@
           labelKey: 'wallpaper.matrix',
           className: 'wallpaper-matrix'
         },
+        {
+          id: 'xp98bliss',
+          labelKey: 'wallpaper.xp98bliss',
+          background: 'url("/assets/wallpapers/bliss98.png")',
+          size: 'cover',
+          repeat: 'no-repeat',
+          position: 'center'
+        },
       ];
 
       const TITLEBAR_THEMES = {
@@ -1395,12 +1429,14 @@
         greenDark: { bar1:'#1b4a2a', bar2:'#0e2e1a', text:'#f1f1f1' },
         redDark: { bar1:'#5a1a1a', bar2:'#2f0b0b', text:'#f1f1f1' },
         transparent: { bar1:'rgba(0,0,0,0.3)', bar2:'rgba(0,0,0,0.3)', text:'#f1f1f1' },
+        xpBlue: { bar1:'#0a246a', bar2:'#3a6ea5', text:'#ffffff' },
       };
 
       const THEME_PRESETS = [
         { id:'default', nameKey:'theme.default', titlebarColor:'defaultBlue', wallpaperId:'classic', darkMode:false },
         { id:'totvers', nameKey:'theme.totvers', titlebarColor:'pinkLight', wallpaperId:'tot', darkMode:false },
         { id:'matrix', nameKey:'theme.matrix', titlebarColor:'greenDark', wallpaperId:'matrix', darkMode:true },
+        { id:'xp98', nameKey:'theme.xp98', titlebarColor:'xpBlue', wallpaperId:'xp98bliss', darkMode:false },
       ];
 
       function initSfx(){
@@ -2590,10 +2626,15 @@ function updateThemeButtons(root=document){
   }
 }
 
+function applyThemePalette(){
+  document.body.classList.toggle('theme-xp98', state.theme.preset === 'xp98');
+}
+
 function setThemePresetCustom(){
   if(state.theme.preset !== 'custom'){
     state.theme.preset = 'custom';
     saveThemePreset();
+    applyThemePalette();
     updateThemeButtons();
   }
 }
@@ -2609,10 +2650,12 @@ function applyWallpaper(id){
       desktop.style.background = '';
       desktop.style.backgroundSize = '';
       desktop.style.backgroundRepeat = '';
+      desktop.style.backgroundPosition = '';
     } else {
       desktop.style.background = wp.background;
       desktop.style.backgroundSize = wp.size || 'auto';
       desktop.style.backgroundRepeat = wp.repeat || 'repeat';
+      desktop.style.backgroundPosition = wp.position || 'top left';
     }
   }
   try{ localStorage.setItem(WALLPAPER_KEY, wp.id); } catch {}
@@ -2647,6 +2690,7 @@ function setThemePreset(id, opts={}){
   themeApplying = true;
   state.theme.preset = id;
   saveThemePreset();
+  applyThemePalette();
   setDarkMode(preset.darkMode, true);
   applyWallpaper(preset.wallpaperId);
   setTitlebarTheme(preset.titlebarColor, true);
@@ -3040,9 +3084,11 @@ function installLongPress(el, getTarget){
           'titlebar.greenDark': 'Dark Green',
           'titlebar.redDark': 'Dark Red',
           'titlebar.transparent': 'Transparent',
+          'titlebar.xpBlue': 'XP Blue',
           'theme.default': 'Default',
           'theme.totvers': 'Totvers',
           'theme.matrix': 'Matrix',
+          'theme.xp98': 'XP98',
           'theme.custom': 'Custom',
           'poetry.title': 'Poetry Library',
           'poetry.back': 'Back',
@@ -3208,6 +3254,7 @@ function installLongPress(el, getTarget){
           'wallpaper.diev': 'Grid',
           'wallpaper.tot': 'Tot (Pink)',
           'wallpaper.matrix': 'Matrix',
+          'wallpaper.xp98bliss': 'XP Bliss 98',
 
           'music.title': 'BLISS — Music',
           'music.subtitle': 'Listen everywhere:',
@@ -3382,9 +3429,11 @@ function installLongPress(el, getTarget){
           'titlebar.greenDark': 'Verde escuro',
           'titlebar.redDark': 'Vermelho escuro',
           'titlebar.transparent': 'Transparente',
+          'titlebar.xpBlue': 'Azul XP',
           'theme.default': 'Padrão',
           'theme.totvers': 'Totvers',
           'theme.matrix': 'Matrix',
+          'theme.xp98': 'XP98',
           'theme.custom': 'Personalizado',
           'poetry.title': 'Biblioteca de Poesias',
           'poetry.back': 'Voltar',
@@ -3550,6 +3599,7 @@ function installLongPress(el, getTarget){
           'wallpaper.diev': 'Grid',
           'wallpaper.tot': 'Tot (Rosa)',
           'wallpaper.matrix': 'Matrix',
+          'wallpaper.xp98bliss': 'XP Bliss 98',
 
           'music.title': 'BLISS — Música',
           'music.subtitle': 'Ouça em todas as plataformas:',
@@ -5261,6 +5311,7 @@ Eu sou o buffalo branco extinto`
                     <button class="btn bevel" type="button" data-set-theme="default"><span data-i18n="theme.default">Default</span></button>
                     <button class="btn bevel" type="button" data-set-theme="totvers"><span data-i18n="theme.totvers">Totvers</span></button>
                     <button class="btn bevel" type="button" data-set-theme="matrix"><span data-i18n="theme.matrix">Matrix</span></button>
+                    <button class="btn bevel" type="button" data-set-theme="xp98"><span data-i18n="theme.xp98">XP98</span></button>
                   </div>
                   <div class="tiny" style="margin-top:6px;"><span data-i18n="settings.themes.current">Current theme:</span> <span data-theme-current></span></div>
                 </div>
@@ -5295,6 +5346,10 @@ Eu sou o buffalo branco extinto`
                     <button class="btn bevel" type="button" data-set-titlebar="transparent">
                       <span class="titlebar-swatch" style="background:repeating-linear-gradient(45deg,#666 0 2px,#999 2px 4px);"></span>
                       <span data-i18n="titlebar.transparent">Transparent</span>
+                    </button>
+                    <button class="btn bevel" type="button" data-set-titlebar="xpBlue">
+                      <span class="titlebar-swatch" style="background:linear-gradient(90deg,#0a246a,#3a6ea5);"></span>
+                      <span data-i18n="titlebar.xpBlue">XP Blue</span>
                     </button>
                   </div>
                 </div>
@@ -5333,6 +5388,10 @@ Eu sou o buffalo branco extinto`
                     <button class="btn bevel" type="button" data-set-wallpaper="matrix">
                       <span class="wallpaper-swatch" style="background:repeating-linear-gradient(90deg, rgba(0,255,90,0.6) 0 2px, transparent 2px 5px), linear-gradient(180deg, #000 0%, #0a1a0f 100%);"></span>
                       <span data-i18n="wallpaper.matrix">Matrix</span>
+                    </button>
+                    <button class="btn bevel" type="button" data-set-wallpaper="xp98bliss">
+                      <span class="wallpaper-swatch" style="background:url('/assets/wallpapers/bliss98.png') center/cover no-repeat;"></span>
+                      <span data-i18n="wallpaper.xp98bliss">XP Bliss 98</span>
                     </button>
                   </div>
                 </div>
@@ -7159,6 +7218,7 @@ Eu sou o buffalo branco extinto`
         if(state.theme.preset && state.theme.preset !== 'custom'){
           setThemePreset(state.theme.preset, { init:true });
         } else {
+          applyThemePalette();
           applyTitlebarTheme();
         }
 
