@@ -111,6 +111,32 @@
         --btn-text:#e0e0e0;
         --muted-text:#b9b9b9;
       }
+      body.titlebar-blank .titlebar{
+        background:transparent !important;
+        background-image:none !important;
+        box-shadow:none !important;
+        color:var(--titlebar-text);
+        text-shadow:1px 1px 0 rgba(0,0,0,0.55);
+        border-top:1px solid var(--shadow-white);
+        border-left:1px solid var(--shadow-white);
+        border-right:1px solid var(--shadow-dark);
+        border-bottom:1px solid var(--shadow-dark);
+      }
+      body.titlebar-blank .modal-titlebar{
+        background:transparent !important;
+        background-image:none !important;
+        box-shadow:none !important;
+        color:var(--titlebar-text);
+        text-shadow:1px 1px 0 rgba(0,0,0,0.55);
+        border-top:1px solid var(--shadow-white);
+        border-left:1px solid var(--shadow-white);
+        border-right:1px solid var(--shadow-dark);
+        border-bottom:1px solid var(--shadow-dark);
+      }
+      body.titlebar-blank .start-side{
+        background:var(--task);
+        color:var(--text);
+      }
 
       html,body{height:100%;margin:0;}
       body{
@@ -1008,6 +1034,64 @@
         object-fit:contain;
         display:block;
       }
+      .theme-grid{
+        display:grid;
+        grid-template-columns:repeat(auto-fill, minmax(140px, 1fr));
+        gap:10px;
+        margin-top:8px;
+      }
+      .theme-thumb{
+        display:flex;
+        flex-direction:column;
+        gap:6px;
+        padding:6px;
+        text-align:left;
+        background:var(--content-bg);
+        color:var(--content-text);
+        border:1px solid var(--panel-border);
+        cursor:pointer;
+      }
+      .theme-thumb .theme-preview{
+        height:60px;
+        border:1px solid var(--panel-border);
+        display:flex;
+        flex-direction:column;
+        background:var(--panel-bg);
+      }
+      .theme-preview-bar{
+        height:14px;
+      }
+      .theme-preview-body{
+        flex:1;
+        background:var(--content-bg);
+      }
+      .theme-thumb.selected{
+        outline:1px dotted var(--selection-border);
+        background:var(--selection-bg);
+      }
+      .theme-thumb.disabled{
+        opacity:0.6;
+        cursor:default;
+      }
+      .theme-preview-default .theme-preview-bar{
+        background:linear-gradient(90deg, #000080, #1084d0);
+      }
+      .theme-preview-totvers .theme-preview-bar{
+        background:linear-gradient(90deg, #f6a6cf, #e46aa9);
+      }
+      .theme-preview-matrix .theme-preview-bar{
+        background:linear-gradient(90deg, #1b4a2a, #0e2e1a);
+      }
+      .theme-preview-xp98 .theme-preview-bar{
+        background:linear-gradient(90deg, #0a2e8f, #4f86d8);
+      }
+      .theme-preview-blank .theme-preview-bar{
+        background:transparent;
+        border-bottom:1px solid var(--panel-border);
+      }
+      .theme-preview-custom .theme-preview-bar{
+        background:linear-gradient(90deg, #666, #999);
+      }
       .settings-logo{
         width:96px;
         height:72px;
@@ -1469,6 +1553,7 @@
         theme: {
           preset: 'default',
           titlebar: 'defaultBlue',
+          palette: 'default',
         },
         games: {
           view: 'list',
@@ -1507,6 +1592,7 @@
       const SNAKE_HIGH_KEY = 'bliss98_snake_highscore';
       const TITLEBAR_KEY = 'bliss98_titlebar_theme';
       const THEME_PRESET_KEY = 'bliss98_theme_preset';
+      const THEME_CUSTOM_KEY = 'bliss98_theme_custom';
       const YOUTUBE_KEY = 'bliss98_youtube_api_key';
       const SFX = {
         boot: {
@@ -1581,7 +1667,7 @@
         offWhite: { bar1:'#e6e6e6', bar2:'#cfcfcf', text:'#1a1a1a' },
         greenDark: { bar1:'#1b4a2a', bar2:'#0e2e1a', text:'#f1f1f1' },
         redDark: { bar1:'#5a1a1a', bar2:'#2f0b0b', text:'#f1f1f1' },
-        blank: { bar1:'#b6b6b6', bar2:'#c9c9c9', text:'#1a1a1a' },
+        blank: { bar1:'#b6b6b6', bar2:'#c9c9c9', text:'#f1f1f1' },
         xpBlue: { bar1:'#0a2e8f', bar2:'#4f86d8', text:'#ffffff' },
       };
 
@@ -1590,6 +1676,7 @@
         { id:'totvers', nameKey:'theme.totvers', titlebarColor:'pinkLight', wallpaperId:'tot', darkMode:false },
         { id:'matrix', nameKey:'theme.matrix', titlebarColor:'greenDark', wallpaperId:'matrix', darkMode:true },
         { id:'xp98', nameKey:'theme.xp98', titlebarColor:'xpBlue', wallpaperId:'xp98bliss', darkMode:false },
+        { id:'blank', nameKey:'theme.blank', titlebarColor:'blank', wallpaperId:'classic', darkMode:false },
       ];
 
       function initSfx(){
@@ -2781,7 +2868,8 @@ function updateThemeButtons(root=document){
 }
 
 function applyThemePalette(){
-  document.body.classList.toggle('theme-xp98', state.theme.preset === 'xp98');
+  const palette = state.theme.palette || (state.theme.preset === 'xp98' ? 'xp98' : 'default');
+  document.body.classList.toggle('theme-xp98', palette === 'xp98');
 }
 
 function setThemePresetCustom(){
@@ -2790,6 +2878,7 @@ function setThemePresetCustom(){
     saveThemePreset();
     applyThemePalette();
     updateThemeButtons();
+    updateThemeThumbs();
   }
 }
 
@@ -2828,6 +2917,7 @@ function setTitlebarTheme(id, fromPreset=false){
 
 function applyTitlebarTheme(){
   const cur = TITLEBAR_THEMES[state.theme.titlebar] || TITLEBAR_THEMES.defaultBlue;
+  document.body.classList.toggle('titlebar-blank', state.theme.titlebar === 'blank');
   document.body.style.setProperty('--title', cur.bar1);
   document.body.style.setProperty('--title2', cur.bar2);
   document.body.style.setProperty('--titlebar-text', cur.text);
@@ -2838,6 +2928,7 @@ function setThemePreset(id, opts={}){
   if(!preset) return;
   themeApplying = true;
   state.theme.preset = id;
+  state.theme.palette = (id === 'xp98') ? 'xp98' : 'default';
   saveThemePreset();
   applyThemePalette();
   setDarkMode(preset.darkMode, true);
@@ -2845,7 +2936,67 @@ function setThemePreset(id, opts={}){
   setTitlebarTheme(preset.titlebarColor, true);
   themeApplying = false;
   updateThemeButtons();
+  updateThemeThumbs();
   if(!opts.init) renderCtxMenu();
+}
+
+function loadCustomTheme(){
+  try{
+    const raw = localStorage.getItem(THEME_CUSTOM_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveCustomTheme(data){
+  try{
+    localStorage.setItem(THEME_CUSTOM_KEY, JSON.stringify(data));
+  } catch {}
+}
+
+function updateThemeThumbs(root=document){
+  $$('[data-theme-thumb]', root).forEach(btn => {
+    btn.classList.toggle('selected', btn.dataset.themeThumb === state.theme.preset);
+  });
+  const customBtn = root.querySelector('[data-theme-custom="load"]');
+  if(customBtn){
+    const hasCustom = !!loadCustomTheme();
+    customBtn.classList.toggle('disabled', !hasCustom);
+    const label = customBtn.querySelector('[data-theme-custom-label]');
+    if(label) label.textContent = hasCustom ? t('theme.custom') : t('theme.customEmpty');
+  }
+}
+
+function saveCustomThemeFromState(){
+  const data = {
+    wallpaper: state.wallpaper,
+    titlebar: state.theme.titlebar,
+    darkMode: state.settings.darkMode,
+    scanlines: state.settings.scanlines,
+    palette: state.theme.palette || 'default'
+  };
+  saveCustomTheme(data);
+  updateThemeThumbs();
+}
+
+function applyCustomTheme(){
+  const data = loadCustomTheme();
+  if(!data) return;
+  themeApplying = true;
+  state.theme.preset = 'custom';
+  state.theme.palette = data.palette || 'default';
+  saveThemePreset();
+  applyThemePalette();
+  setDarkMode(!!data.darkMode, true);
+  applyWallpaper(data.wallpaper || WALLPAPERS[0].id);
+  setTitlebarTheme(data.titlebar || 'defaultBlue', true);
+  state.settings.scanlines = !!data.scanlines;
+  applyScanlines();
+  themeApplying = false;
+  updateThemeButtons();
+  updateThemeThumbs();
+  renderCtxMenu();
 }
 
 function applyMusicState(winEl){
@@ -3381,7 +3532,10 @@ function installLongPress(el, getTarget){
           'theme.totvers': 'Totvers',
           'theme.matrix': 'Matrix',
           'theme.xp98': 'XP98',
+          'theme.blank': 'Blank',
           'theme.custom': 'Custom',
+          'theme.customEmpty': 'Empty',
+          'theme.save': 'Save Custom',
           'poetry.title': 'Poetry Library',
           'poetry.back': 'Back',
           'poetry.language': 'Language',
@@ -3736,7 +3890,10 @@ function installLongPress(el, getTarget){
           'theme.totvers': 'Totvers',
           'theme.matrix': 'Matrix',
           'theme.xp98': 'XP98',
+          'theme.blank': 'Vazio',
           'theme.custom': 'Personalizado',
+          'theme.customEmpty': 'Vazio',
+          'theme.save': 'Salvar personalizado',
           'poetry.title': 'Biblioteca de Poesias',
           'poetry.back': 'Voltar',
           'poetry.language': 'Idioma',
@@ -3995,6 +4152,7 @@ function installLongPress(el, getTarget){
         updateDarkModeButtons(root);
         updateTitlebarButtons(root);
         updateThemeButtons(root);
+        updateThemeThumbs(root);
       }
 
       function applyI18n(){
@@ -5647,13 +5805,54 @@ Eu sou o buffalo branco extinto`
                 <div class="settings-block" id="settingsThemes">
                   <strong data-i18n="settings.themes.title">Themes</strong>
                   <p style="margin:6px 0 10px 0;" data-i18n="settings.themes.desc">Select a theme to change wallpaper, title color, and dark mode.</p>
-                  <div class="settings-actions">
-                    <button class="btn bevel" type="button" data-set-theme="default"><span data-i18n="theme.default">Default</span></button>
-                    <button class="btn bevel" type="button" data-set-theme="totvers"><span data-i18n="theme.totvers">Totvers</span></button>
-                    <button class="btn bevel" type="button" data-set-theme="matrix"><span data-i18n="theme.matrix">Matrix</span></button>
-                    <button class="btn bevel" type="button" data-set-theme="xp98"><span data-i18n="theme.xp98">XP98</span></button>
+                  <div class="theme-grid">
+                    <button class="theme-thumb bevel" type="button" data-set-theme="default" data-theme-thumb="default">
+                      <div class="theme-preview theme-preview-default">
+                        <div class="theme-preview-bar"></div>
+                        <div class="theme-preview-body"></div>
+                      </div>
+                      <span data-i18n="theme.default">Default</span>
+                    </button>
+                    <button class="theme-thumb bevel" type="button" data-set-theme="totvers" data-theme-thumb="totvers">
+                      <div class="theme-preview theme-preview-totvers">
+                        <div class="theme-preview-bar"></div>
+                        <div class="theme-preview-body"></div>
+                      </div>
+                      <span data-i18n="theme.totvers">Totvers</span>
+                    </button>
+                    <button class="theme-thumb bevel" type="button" data-set-theme="matrix" data-theme-thumb="matrix">
+                      <div class="theme-preview theme-preview-matrix">
+                        <div class="theme-preview-bar"></div>
+                        <div class="theme-preview-body" style="background:linear-gradient(180deg, #000 0%, #0a1a0f 100%);"></div>
+                      </div>
+                      <span data-i18n="theme.matrix">Matrix</span>
+                    </button>
+                    <button class="theme-thumb bevel" type="button" data-set-theme="xp98" data-theme-thumb="xp98">
+                      <div class="theme-preview theme-preview-xp98">
+                        <div class="theme-preview-bar"></div>
+                        <div class="theme-preview-body" style="background:url('/assets/wallpapers/bliss98.png') center/cover no-repeat;"></div>
+                      </div>
+                      <span data-i18n="theme.xp98">XP98</span>
+                    </button>
+                    <button class="theme-thumb bevel" type="button" data-set-theme="blank" data-theme-thumb="blank">
+                      <div class="theme-preview theme-preview-blank">
+                        <div class="theme-preview-bar"></div>
+                        <div class="theme-preview-body"></div>
+                      </div>
+                      <span data-i18n="theme.blank">Blank</span>
+                    </button>
+                    <button class="theme-thumb bevel" type="button" data-theme-custom="load" data-theme-thumb="custom">
+                      <div class="theme-preview theme-preview-custom">
+                        <div class="theme-preview-bar"></div>
+                        <div class="theme-preview-body"></div>
+                      </div>
+                      <span data-theme-custom-label data-i18n="theme.custom">Custom</span>
+                    </button>
                   </div>
-                  <div class="tiny" style="margin-top:6px;"><span data-i18n="settings.themes.current">Current theme:</span> <span data-theme-current></span></div>
+                  <div style="display:flex; gap:8px; margin-top:8px; align-items:center; flex-wrap:wrap;">
+                    <button class="btn bevel" type="button" data-theme-custom="save" data-i18n="theme.save">Save Custom</button>
+                    <div class="tiny"><span data-i18n="settings.themes.current">Current theme:</span> <span data-theme-current></span></div>
+                  </div>
                 </div>
                 <div class="settings-block" id="settingsTitlebar">
                   <strong data-i18n="settings.titlebar.title">Window Title Color</strong>
@@ -7619,6 +7818,16 @@ Eu sou o buffalo branco extinto`
         if(themeBtn && themeBtn.dataset && themeBtn.dataset.setTheme){
           setThemePreset(themeBtn.dataset.setTheme);
         }
+        const themeCustomBtn = e.target.closest && e.target.closest('[data-theme-custom]');
+        if(themeCustomBtn && themeCustomBtn.dataset && themeCustomBtn.dataset.themeCustom){
+          const act = themeCustomBtn.dataset.themeCustom;
+          if(act === 'save'){
+            saveCustomThemeFromState();
+          }
+          if(act === 'load'){
+            if(!themeCustomBtn.classList.contains('disabled')) applyCustomTheme();
+          }
+        }
         const videosAction = e.target.closest && e.target.closest('[data-videos-action]');
         if(videosAction && videosAction.dataset && videosAction.dataset.videosAction){
           const act = videosAction.dataset.videosAction;
@@ -7690,6 +7899,11 @@ Eu sou o buffalo branco extinto`
         state.theme.preset = loadThemePreset();
         state.theme.titlebar = loadTitlebarTheme();
         if(state.theme.titlebar === 'transparent') state.theme.titlebar = 'blank';
+        const customTheme = loadCustomTheme();
+        state.theme.palette = (state.theme.preset === 'xp98') ? 'xp98' : 'default';
+        if(state.theme.preset === 'custom' && customTheme && customTheme.palette){
+          state.theme.palette = customTheme.palette;
+        }
         state.snake.highScore = loadSnakeHighScore();
         state.trash = new Set(loadTrash());
         state.iconLabels = loadIconLabels();
