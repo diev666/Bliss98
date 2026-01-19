@@ -1216,6 +1216,114 @@
         box-shadow:var(--skate-shadow);
         touch-action:none;
       }
+      .game-mobile-overlay{
+        position:absolute;
+        inset:0;
+        pointer-events:none;
+        display:none;
+        z-index:6;
+      }
+      #win_games.mobile-game .game-mobile-overlay{
+        display:block;
+      }
+      .mobile-shoulders{
+        position:absolute;
+        top:8px;
+        left:8px;
+        right:8px;
+        display:flex;
+        justify-content:space-between;
+        gap:8px;
+      }
+      .mobile-shoulder-group{
+        display:flex;
+        gap:8px;
+        pointer-events:auto;
+      }
+      .mobile-shoulder{
+        min-width:46px;
+        height:24px;
+        border-radius:999px;
+        border:1px solid rgba(255,255,255,0.35);
+        background:rgba(10,14,20,0.35);
+        color:#f4f6fb;
+        font-size:11px;
+        letter-spacing:0.3px;
+      }
+      .mobile-stick{
+        position:absolute;
+        left:12px;
+        bottom:14px;
+        width:110px;
+        height:110px;
+        border-radius:50%;
+        border:1px solid rgba(255,255,255,0.35);
+        background:rgba(10,14,20,0.2);
+        box-shadow:0 8px 18px rgba(0,0,0,0.25);
+        pointer-events:auto;
+        touch-action:none;
+      }
+      .mobile-stick-knob{
+        position:absolute;
+        left:50%;
+        top:50%;
+        width:48px;
+        height:48px;
+        border-radius:50%;
+        border:1px solid rgba(255,255,255,0.4);
+        background:rgba(255,255,255,0.08);
+        transform:translate(-50%, -50%);
+        box-shadow:0 0 16px rgba(255,255,255,0.15);
+      }
+      .mobile-face{
+        position:absolute;
+        right:14px;
+        bottom:14px;
+        width:150px;
+        height:150px;
+        pointer-events:auto;
+      }
+      .mobile-btn{
+        position:absolute;
+        width:52px;
+        height:52px;
+        border-radius:50%;
+        border:1px solid rgba(255,255,255,0.45);
+        background:rgba(10,14,20,0.25);
+        color:#f4f6fb;
+        font-weight:600;
+        letter-spacing:0.3px;
+        text-align:center;
+        line-height:52px;
+        font-size:12px;
+        box-shadow:0 6px 18px rgba(0,0,0,0.25);
+        pointer-events:auto;
+        touch-action:none;
+      }
+      .mobile-btn.small{
+        width:auto;
+        height:28px;
+        border-radius:999px;
+        padding:0 10px;
+        line-height:28px;
+        font-size:11px;
+      }
+      .mobile-btn[data-btn="triangle"]{ left:48px; top:0; }
+      .mobile-btn[data-btn="circle"]{ right:0; top:48px; }
+      .mobile-btn[data-btn="cross"]{ left:48px; bottom:0; }
+      .mobile-btn[data-btn="square"]{ left:0; top:48px; }
+      .mobile-center{
+        position:absolute;
+        left:50%;
+        bottom:14px;
+        transform:translateX(-50%);
+        display:flex;
+        gap:10px;
+        pointer-events:auto;
+      }
+      .game-mobile-overlay[data-game="snake"] .mobile-face{
+        display:none;
+      }
       .skate-canvas-wrap{
         display:flex;
         align-items:center;
@@ -1232,6 +1340,52 @@
         border-radius:12px;
         border:1px solid #1f2a36;
         touch-action:none;
+      }
+      #win_games.mobile-game .content{
+        padding:0;
+        height:100%;
+        overflow:hidden;
+      }
+      #win_games.mobile-game .skate-shell{
+        height:100%;
+      }
+      #win_games.mobile-game .skate-body{
+        flex-direction:column;
+        flex:1;
+      }
+      #win_games.mobile-game .skate-screen{
+        flex:1;
+        padding:4px;
+      }
+      #win_games.mobile-game .skate-canvas-wrap{
+        min-height:auto;
+      }
+      #win_games.mobile-game #skateCanvas{
+        width:100%;
+        height:auto;
+      }
+      #win_games.mobile-game .skate-controls{
+        display:none;
+      }
+      #win_games.mobile-game .snake-layout{
+        flex-direction:column;
+        align-items:stretch;
+        height:100%;
+      }
+      #win_games.mobile-game .snake-side,
+      #win_games.mobile-game .snake-instructions{
+        display:none;
+      }
+      #win_games.mobile-game .snake-board{
+        width:100%;
+        height:auto;
+        min-width:0;
+        min-height:0;
+        padding:6px;
+      }
+      #win_games.mobile-game .snake-board canvas{
+        width:100%;
+        height:auto;
       }
       .skate-hud{
         position:absolute;
@@ -1465,6 +1619,13 @@
         background:rgba(70,194,255,0.16);
         transform:translateY(-2px);
       }
+      .skate-shop-item.preview{
+        border-color:rgba(255,209,102,0.7);
+        box-shadow:0 0 0 1px rgba(255,209,102,0.25);
+      }
+      .skate-preview-status{
+        color:var(--skate-muted);
+      }
       .skate-shop-item.flash{
         animation:skateFlash 0.6s ease;
       }
@@ -1515,6 +1676,15 @@
       }
       .skate-btn.subtle{
         background:rgba(255,255,255,0.08);
+      }
+      .skate-select{
+        width:100%;
+        margin-top:4px;
+        padding:6px 8px;
+        border-radius:10px;
+        border:1px solid var(--skate-border);
+        background:var(--skate-panel);
+        color:var(--skate-text);
       }
       .skate-control{
         min-width:90px;
@@ -2199,6 +2369,12 @@
         },
         dopeSkate: {
           highScore: 0,
+          preview: {
+            active: false,
+            loadout: {},
+            selectedCategory: null,
+            selectedItemId: null,
+          },
         },
         trash: new Set(),
         iconLabels: {},
@@ -2740,6 +2916,12 @@ function renderGamesWindow(){
   if(!content) return;
   content.innerHTML = CONTENT.games();
   applyI18nTo(win);
+  const mobileGameView = isMobileGameMode() && (state.games.view === 'dope-skate' || state.games.view === 'snake');
+  if(state.games.view === 'dope-skate' || state.games.view === 'snake'){
+    enterMobileFullscreen(state.games.view, win);
+  } else {
+    win.classList.remove('mobile-game');
+  }
 
   if(state.games.view === 'list'){
     const firstId = getFirstGameId();
@@ -2784,11 +2966,13 @@ function renderGamesWindow(){
 
   if(state.games.view === 'dope-skate'){
     DopeSkateGame.mount(win);
+    mountMobileGameOverlay('dope-skate', win);
   }
   if(state.games.view === 'snake'){
     initSnakeInWindow(win);
+    mountMobileGameOverlay('snake', win);
   }
-  autoFitWindow(win, 'games');
+  if(!mobileGameView) autoFitWindow(win, 'games');
 }
 
 function initGamesWindow(){
@@ -2798,6 +2982,196 @@ function initGamesWindow(){
 function getFirstGameId(){
   const items = state.folders.games || [];
   return items[0] || null;
+}
+
+const MOBILE_GAME_DEBUG = new URLSearchParams(window.location.search).get('mobile') === '1';
+const MOBILE_GAME_MQ = window.matchMedia('(max-width: 520px)');
+const MOBILE_GAME_COARSE = window.matchMedia('(pointer: coarse)');
+
+function isMobileGameMode(){
+  return MOBILE_GAME_DEBUG || MOBILE_GAME_MQ.matches || MOBILE_GAME_COARSE.matches;
+}
+
+function enterMobileFullscreen(gameId, winEl){
+  if(!winEl) return;
+  const mobile = isMobileGameMode();
+  winEl.classList.toggle('mobile-game', mobile);
+  if(!mobile) return;
+
+  const area = $('#desktopArea').getBoundingClientRect();
+  const margin = 6;
+  const newW = Math.max(240, Math.floor(area.width - margin * 2));
+  const newH = Math.max(200, Math.floor(area.height - margin * 2));
+  winEl.style.left = `${margin}px`;
+  winEl.style.top = `${margin}px`;
+  winEl.style.width = `${newW}px`;
+  winEl.style.height = `${newH}px`;
+
+  const w = state.windows.get('games');
+  if(w){
+    w.left = margin;
+    w.top = margin;
+    w.width = newW;
+    w.height = newH;
+  }
+
+  armMobileFullscreen(winEl);
+}
+
+let mobileFullscreenArmed = false;
+function armMobileFullscreen(winEl){
+  if(mobileFullscreenArmed) return;
+  mobileFullscreenArmed = true;
+  const handler = ()=>{
+    if(document.fullscreenElement){
+      mobileFullscreenArmed = false;
+      return;
+    }
+    const target = winEl || document.documentElement;
+    if(target.requestFullscreen){
+      target.requestFullscreen().catch(()=>{});
+    }
+    mobileFullscreenArmed = false;
+  };
+  winEl.addEventListener('pointerdown', handler, { once:true });
+}
+
+function mountMobileGameOverlay(gameId, winEl){
+  if(!winEl) return;
+  const mobile = isMobileGameMode();
+  const container = gameId === 'snake' ? winEl.querySelector('#snakeBoard') : winEl.querySelector('#skateScreen');
+  if(!container) return;
+  let overlay = container.querySelector(`.game-mobile-overlay[data-game="${gameId}"]`);
+  if(!mobile){
+    if(overlay) overlay.remove();
+    return;
+  }
+  if(!overlay){
+    overlay = document.createElement('div');
+    overlay.className = 'game-mobile-overlay';
+    overlay.dataset.game = gameId;
+    overlay.innerHTML = `
+      <div class="mobile-shoulders">
+        <div class="mobile-shoulder-group">
+          <button class="mobile-shoulder" type="button" data-mobile-action="l1">L1</button>
+          <button class="mobile-shoulder" type="button" data-mobile-action="l2">L2</button>
+        </div>
+        <div class="mobile-shoulder-group">
+          <button class="mobile-shoulder" type="button" data-mobile-action="r1">R1</button>
+          <button class="mobile-shoulder" type="button" data-mobile-action="r2">R2</button>
+        </div>
+      </div>
+      <div class="mobile-stick" data-mobile-stick="left" aria-label="Joystick">
+        <div class="mobile-stick-knob"></div>
+      </div>
+      <div class="mobile-face">
+        <button class="mobile-btn" type="button" data-mobile-action="trick2" data-btn="triangle" aria-label="Trick 2">Tri</button>
+        <button class="mobile-btn" type="button" data-mobile-action="trick3" data-btn="circle" aria-label="Trick 3">Cir</button>
+        <button class="mobile-btn" type="button" data-mobile-action="jump" data-btn="cross" aria-label="Jump">X</button>
+        <button class="mobile-btn" type="button" data-mobile-action="trick1" data-btn="square" aria-label="Trick 1">Sq</button>
+      </div>
+      <div class="mobile-center">
+        <button class="mobile-btn small" type="button" data-mobile-action="select">Select</button>
+        <button class="mobile-btn small" type="button" data-mobile-action="start">Start</button>
+      </div>
+    `;
+    container.appendChild(overlay);
+  }
+  if(overlay.dataset.bound !== '1'){
+    bindMobileOverlay(gameId, overlay);
+    overlay.dataset.bound = '1';
+  }
+}
+
+function bindMobileOverlay(gameId, overlay){
+  const stick = overlay.querySelector('[data-mobile-stick="left"]');
+  if(stick){
+    const knob = stick.querySelector('.mobile-stick-knob');
+    const radius = 36;
+    let pointerId = null;
+    let center = { x: 0, y: 0 };
+    let lastDir = '';
+
+    const updateStick = (dx, dy)=>{
+      const dist = Math.min(radius, Math.hypot(dx, dy));
+      const angle = Math.atan2(dy, dx);
+      const cx = Math.cos(angle) * dist;
+      const cy = Math.sin(angle) * dist;
+      if(knob) knob.style.transform = `translate(calc(-50% + ${cx}px), calc(-50% + ${cy}px))`;
+      const normX = cx / radius;
+      const normY = cy / radius;
+      if(gameId === 'dope-skate' && isDopeSkateActive()){
+        dopeSkate.inputs.left = normX < -0.35;
+        dopeSkate.inputs.right = normX > 0.35;
+      }
+      if(gameId === 'snake' && isSnakeActive()){
+        if(Math.abs(normX) > Math.abs(normY)){
+          if(normX > 0.45 && lastDir !== 'r'){ snakeHandleDirection(1, 0); lastDir = 'r'; }
+          if(normX < -0.45 && lastDir !== 'l'){ snakeHandleDirection(-1, 0); lastDir = 'l'; }
+        } else {
+          if(normY > 0.45 && lastDir !== 'd'){ snakeHandleDirection(0, 1); lastDir = 'd'; }
+          if(normY < -0.45 && lastDir !== 'u'){ snakeHandleDirection(0, -1); lastDir = 'u'; }
+        }
+      }
+    };
+
+    const resetStick = ()=>{
+      if(knob) knob.style.transform = 'translate(-50%, -50%)';
+      if(gameId === 'dope-skate'){
+        dopeSkate.inputs.left = false;
+        dopeSkate.inputs.right = false;
+      }
+    };
+
+    stick.addEventListener('pointerdown', (e)=>{
+      if(e.pointerType === 'mouse' && e.button !== 0) return;
+      e.preventDefault();
+      e.stopPropagation();
+      pointerId = e.pointerId;
+      const rect = stick.getBoundingClientRect();
+      center = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+      stick.setPointerCapture(pointerId);
+      updateStick(e.clientX - center.x, e.clientY - center.y);
+    });
+
+    stick.addEventListener('pointermove', (e)=>{
+      if(pointerId === null || e.pointerId !== pointerId) return;
+      e.preventDefault();
+      e.stopPropagation();
+      updateStick(e.clientX - center.x, e.clientY - center.y);
+    });
+
+    const endPointer = (e)=>{
+      if(pointerId === null || e.pointerId !== pointerId) return;
+      pointerId = null;
+      e.stopPropagation();
+      resetStick();
+      try{ stick.releasePointerCapture(e.pointerId); } catch {}
+    };
+    stick.addEventListener('pointerup', endPointer);
+    stick.addEventListener('pointercancel', endPointer);
+  }
+
+  overlay.querySelectorAll('[data-mobile-action]').forEach(btn => {
+    btn.addEventListener('pointerdown', (e)=>{
+      e.preventDefault();
+      e.stopPropagation();
+      if(gameId === 'dope-skate' && isDopeSkateActive()){
+        const action = btn.dataset.mobileAction;
+        if(action === 'jump') dopeSkateRegisterJump();
+        if(action === 'trick1') dopeSkateRegisterTrick('trick1');
+        if(action === 'trick2') dopeSkateRegisterTrick('trick2');
+        if(action === 'trick3') dopeSkateRegisterTrick('trick3');
+        if(action === 'start') dopeSkateShowMenu('play');
+        if(action === 'select') dopeSkateHideMenu();
+      }
+      if(gameId === 'snake' && isSnakeActive()){
+        const action = btn.dataset.mobileAction;
+        if(action === 'start') snakeStartGame();
+        if(action === 'select') snakeTogglePause();
+      }
+    });
+  });
 }
 
 function openGameFromHub(id){
@@ -3253,6 +3627,13 @@ const DOPE_SKATE_GRINDS = [
   { id:'noseslide', name:'Noseslide', pointsPerSec: 160 },
 ];
 
+// Difficulty knobs: speed affects base/max speed, spawn affects obstacle gaps, score affects base/combo points.
+const DOPE_SKATE_DIFFICULTY = {
+  easy: { speed: 0.85, spawn: 1.35, score: 0.7 },
+  medium: { speed: 1.0, spawn: 1.0, score: 1.0 },
+  hard: { speed: 1.2, spawn: 0.8, score: 1.35 },
+};
+
 const DOPE_SKATE_SHOP = {
   ground: [
     { id:'classic', name:'Classic Asphalt', cost: 0, asset:'ground' },
@@ -3356,6 +3737,10 @@ let dopeSkate = {
   shopCategory: 'skater',
   equippedAssets: null,
   equippedDirty: true,
+  preview: null,
+  difficulty: 'medium',
+  spawnMultiplier: 1,
+  scoreMultiplier: 1,
   lastComboHtml: '',
   lastBlissKey: '',
   startQueued: false,
@@ -3396,6 +3781,10 @@ function getDopeSkateDefaultData(){
       board: 'classic',
       wheels: 'black',
     },
+    settings: {
+      difficulty: 'medium',
+      sfx: true,
+    },
   };
 }
 
@@ -3422,6 +3811,9 @@ function normalizeDopeSkateData(data){
   out.wallet = typeof out.wallet === 'number' && Number.isFinite(out.wallet) ? out.wallet : defaults.wallet;
   out.owned = out.owned && typeof out.owned === 'object' ? out.owned : {};
   out.equipped = out.equipped && typeof out.equipped === 'object' ? out.equipped : {};
+  out.settings = out.settings && typeof out.settings === 'object' ? out.settings : {};
+  out.settings.difficulty = ['easy', 'medium', 'hard'].includes(out.settings.difficulty) ? out.settings.difficulty : defaults.settings.difficulty;
+  out.settings.sfx = typeof out.settings.sfx === 'boolean' ? out.settings.sfx : defaults.settings.sfx;
 
   Object.keys(defaults.owned).forEach(cat => {
     if(!Array.isArray(out.owned[cat]) || out.owned[cat].length === 0){
@@ -3435,6 +3827,48 @@ function normalizeDopeSkateData(data){
     }
   });
   return out;
+}
+
+function getDopeSkatePreviewState(){
+  if(!state.dopeSkate.preview){
+    state.dopeSkate.preview = { active: false, loadout: {}, selectedCategory: null, selectedItemId: null };
+  }
+  return state.dopeSkate.preview;
+}
+
+function dopeSkateClearPreview(){
+  const preview = getDopeSkatePreviewState();
+  preview.active = false;
+  preview.loadout = {};
+  preview.selectedCategory = null;
+  preview.selectedItemId = null;
+}
+
+function dopeSkateSetPreview(category, itemId){
+  const preview = getDopeSkatePreviewState();
+  preview.active = true;
+  preview.selectedCategory = category;
+  preview.selectedItemId = itemId;
+  preview.loadout = { ...preview.loadout, [category]: itemId };
+}
+
+function dopeSkateGetDifficultySettings(){
+  const data = dopeSkate.data || getDopeSkateDefaultData();
+  const difficulty = data.settings && data.settings.difficulty ? data.settings.difficulty : 'medium';
+  return DOPE_SKATE_DIFFICULTY[difficulty] || DOPE_SKATE_DIFFICULTY.medium;
+}
+
+function dopeSkateApplySettings(){
+  const settings = dopeSkateGetDifficultySettings();
+  const difficulty = dopeSkate.data && dopeSkate.data.settings ? dopeSkate.data.settings.difficulty : 'medium';
+  dopeSkate.difficulty = difficulty;
+  dopeSkate.spawnMultiplier = settings.spawn;
+  dopeSkate.scoreMultiplier = settings.score;
+}
+
+function dopeSkateIsSfxEnabled(){
+  if(!dopeSkate.data || !dopeSkate.data.settings) return true;
+  return !!dopeSkate.data.settings.sfx;
 }
 
 function isDopeSkateActive(){
@@ -3516,10 +3950,14 @@ function initDopeSkateInWindow(winEl){
     wallet: winEl.querySelector('[data-skate-wallet]'),
     shopList: winEl.querySelector('[data-skate-shop-list]'),
     previewStage: winEl.querySelector('[data-skate-preview-stage]'),
+    previewStatus: winEl.querySelector('[data-skate-preview-status]'),
+    previewReset: winEl.querySelector('[data-skate-preview-reset]'),
     equippedList: winEl.querySelector('[data-skate-equipped-list]'),
     balance: winEl.querySelector('#skateBalance'),
     balanceIndicator: winEl.querySelector('[data-skate-balance-indicator]'),
     bliss: winEl.querySelector('[data-skate-bliss]'),
+    difficultySelect: winEl.querySelector('[data-skate-setting="difficulty"]'),
+    sfxToggle: winEl.querySelector('[data-skate-setting="sfx"]'),
     shopTabs: Array.from(winEl.querySelectorAll('[data-skate-shop-tab]')),
     backBtn: winEl.querySelector('[data-games-action="back"]'),
     tabs: Array.from(winEl.querySelectorAll('[data-skate-tab]')),
@@ -3535,6 +3973,8 @@ function initDopeSkateInWindow(winEl){
     saveDopeSkateData(dopeSkate.data);
   }
   dopeSkate.equippedDirty = true;
+  dopeSkate.preview = getDopeSkatePreviewState();
+  dopeSkateApplySettings();
 
   if(dopeSkate.els.backBtn){
     dopeSkate.els.backBtn.addEventListener('click', (e)=>{
@@ -3565,6 +4005,9 @@ function initDopeSkateInWindow(winEl){
         dopeSkateShowMenu('play');
       } else if(action === 'resume'){
         dopeSkateHideMenu();
+      } else if(action === 'revert-preview'){
+        dopeSkateClearPreview();
+        dopeSkateRenderShop();
       } else if(action === 'jump'){
         dopeSkateRegisterJump();
       } else if(action === 'trick1'){
@@ -3576,6 +4019,26 @@ function initDopeSkateInWindow(winEl){
       }
     });
   });
+
+  if(dopeSkate.els.difficultySelect){
+    dopeSkate.els.difficultySelect.addEventListener('change', ()=>{
+      if(!dopeSkate.data) return;
+      dopeSkate.data.settings = dopeSkate.data.settings || {};
+      dopeSkate.data.settings.difficulty = dopeSkate.els.difficultySelect.value;
+      saveDopeSkateData(dopeSkate.data);
+      dopeSkateApplySettings();
+    });
+  }
+  if(dopeSkate.els.sfxToggle){
+    dopeSkate.els.sfxToggle.addEventListener('click', ()=>{
+      if(!dopeSkate.data) return;
+      dopeSkate.data.settings = dopeSkate.data.settings || {};
+      dopeSkate.data.settings.sfx = !dopeSkate.data.settings.sfx;
+      dopeSkate.els.sfxToggle.dataset.enabled = dopeSkate.data.settings.sfx ? '1' : '0';
+      dopeSkate.els.sfxToggle.textContent = dopeSkate.data.settings.sfx ? t('skate.settings.sfxOn') : t('skate.settings.sfxOff');
+      saveDopeSkateData(dopeSkate.data);
+    });
+  }
 
   screen.addEventListener('touchstart', (e)=>{ if(!dopeSkateIsInteractiveTarget(e.target)) e.preventDefault(); }, { passive:false });
   screen.addEventListener('touchmove', (e)=>{ if(!dopeSkateIsInteractiveTarget(e.target)) e.preventDefault(); }, { passive:false });
@@ -3605,6 +4068,8 @@ function initDopeSkateInWindow(winEl){
 
 function dopeSkateResetWorld(){
   const groundY = dopeSkate.height - dopeSkate.groundHeight;
+  dopeSkateApplySettings();
+  const diff = dopeSkateGetDifficultySettings();
   dopeSkate.player = {
     x: 130,
     y: groundY - 58,
@@ -3634,7 +4099,9 @@ function dopeSkateResetWorld(){
   dopeSkate.lastObstacleDist = 0;
   dopeSkate.lastRailDist = 0;
   dopeSkate.lastObstacleLane = 0;
-  dopeSkate.speed = 240;
+  // Difficulty tuning: speed/spawn/score multipliers live in DOPE_SKATE_DIFFICULTY.
+  dopeSkate.speed = 240 * diff.speed;
+  dopeSkate.maxSpeed = 420 * diff.speed;
   dopeSkate.scoreBase = 0;
   dopeSkate.comboBank = 0;
   dopeSkate.scoreTotal = 0;
@@ -3670,6 +4137,7 @@ function dopeSkateStartRun(){
     dopeSkateLoadAssets();
     return;
   }
+  dopeSkateClearPreview();
   dopeSkateResetWorld();
   dopeSkate.running = true;
   dopeSkate.paused = false;
@@ -3699,6 +4167,7 @@ function dopeSkateShowMenu(panel){
 
 function dopeSkateHideMenu(){
   if(!dopeSkate.started || dopeSkate.gameOver) return;
+  dopeSkateClearPreview();
   dopeSkate.paused = false;
   dopeSkate.running = true;
   if(dopeSkate.els && dopeSkate.els.menuOverlay){
@@ -3716,6 +4185,8 @@ function dopeSkateSetPanel(panel){
   panels.forEach(p => p.classList.toggle('active', p.dataset.skatePanel === panel));
   if(panel === 'shop'){
     dopeSkateRenderShop();
+  } else {
+    dopeSkateClearPreview();
   }
 }
 
@@ -3842,7 +4313,7 @@ function dopeSkateUpdate(dt){
 
   dopeSkate.speed = Math.min(dopeSkate.maxSpeed, dopeSkate.speed + dopeSkate.accel * dt);
   dopeSkate.distance += dopeSkate.speed * dt;
-  dopeSkate.scoreBase = Math.max(dopeSkate.scoreBase, Math.floor(dopeSkate.distance / 7));
+  dopeSkate.scoreBase = Math.max(dopeSkate.scoreBase, Math.floor((dopeSkate.distance / 7) * dopeSkate.scoreMultiplier));
   dopeSkate.scoreTotal = dopeSkate.scoreBase + dopeSkate.comboBank;
 
   dopeSkateHandleSpawns();
@@ -3903,7 +4374,7 @@ function dopeSkateGetObstacleGap(){
   const baseGap = Math.max(200, dopeSkate.speed * (jumpTime * 0.8 + 0.2));
   const difficulty = Math.min(1, (dopeSkate.speed - 240) / 180);
   const minGap = Math.max(180, baseGap * (0.92 - difficulty * 0.2));
-  return minGap + Math.random() * (200 - difficulty * 60);
+  return (minGap + Math.random() * (200 - difficulty * 60)) * dopeSkate.spawnMultiplier;
 }
 
 function dopeSkateSpawnObstacle(){
@@ -4198,6 +4669,14 @@ function updateDopeSkateUI(){
   if(dopeSkate.els.overBest) dopeSkate.els.overBest.textContent = String(state.dopeSkate.highScore || 0);
   if(dopeSkate.els.wallet && dopeSkate.data) dopeSkate.els.wallet.textContent = `CD ${dopeSkate.data.wallet || 0}`;
   if(dopeSkate.els.globalBest) dopeSkate.els.globalBest.textContent = '—';
+  if(dopeSkate.els.difficultySelect && dopeSkate.data && dopeSkate.data.settings){
+    dopeSkate.els.difficultySelect.value = dopeSkate.data.settings.difficulty || 'medium';
+  }
+  if(dopeSkate.els.sfxToggle && dopeSkate.data && dopeSkate.data.settings){
+    const enabled = !!dopeSkate.data.settings.sfx;
+    dopeSkate.els.sfxToggle.dataset.enabled = enabled ? '1' : '0';
+    dopeSkate.els.sfxToggle.textContent = enabled ? t('skate.settings.sfxOn') : t('skate.settings.sfxOff');
+  }
   if(dopeSkate.els.resumeButtons){
     const showResume = dopeSkate.started && !dopeSkate.gameOver;
     dopeSkate.els.resumeButtons.forEach(btn => btn.classList.toggle('hidden', !showResume));
@@ -4385,7 +4864,7 @@ function dopeSkatePickTrick(slot){
 
 function dopeSkateResolveCombo(){
   if(dopeSkate.combo.points <= 0) return;
-  const bonus = Math.floor(dopeSkate.combo.points * dopeSkate.combo.multiplier);
+  const bonus = Math.floor(dopeSkate.combo.points * dopeSkate.combo.multiplier * dopeSkate.scoreMultiplier);
   dopeSkate.comboBank += bonus;
   dopeSkate.combo.points = 0;
   dopeSkate.combo.tricks = [];
@@ -4689,11 +5168,31 @@ function dopeSkateGetEquippedAssets(){
   return dopeSkate.equippedAssets;
 }
 
+function dopeSkateGetAssetsForLoadout(loadout){
+  const assets = dopeSkate.assets || {};
+  const getAsset = (cat, fallbackKey) => {
+    const id = loadout && loadout[cat];
+    const item = (DOPE_SKATE_SHOP[cat] || []).find(entry => entry.id === id);
+    return assets[item ? item.asset : fallbackKey];
+  };
+  return {
+    sky: getAsset('sky', 'sky'),
+    background: getAsset('background', 'city'),
+    ground: getAsset('ground', 'ground'),
+    skater: getAsset('skater', 'body'),
+    hat: getAsset('hat', 'hat'),
+    board: getAsset('board', 'board'),
+    wheels: getAsset('wheels', 'wheels'),
+  };
+}
+
 function dopeSkateRenderShop(){
   if(!dopeSkate.els || !dopeSkate.els.shopList || !dopeSkate.data) return;
   const wallet = dopeSkate.data.wallet || 0;
   dopeSkate.els.wallet.textContent = `CD ${wallet}`;
   const equipped = dopeSkate.data.equipped || {};
+  const preview = getDopeSkatePreviewState();
+  const previewLoadout = preview.active ? { ...equipped, ...preview.loadout } : equipped;
 
   const currentCat = DOPE_SKATE_SHOP[dopeSkate.shopCategory] ? dopeSkate.shopCategory : 'skater';
   dopeSkate.shopCategory = currentCat;
@@ -4715,16 +5214,17 @@ function dopeSkateRenderShop(){
   const html = (DOPE_SKATE_SHOP[currentCat] || []).map(item => {
     const cat = currentCat;
     const label = labelMap[cat] || cat;
-      const owned = (dopeSkate.data.owned[cat] || []).includes(item.id);
-      const active = equipped[cat] === item.id;
-      const actionLabel = owned ? (active ? t('skate.shop.equipped') : t('skate.shop.equip')) : `${t('skate.shop.buy')} CD ${item.cost}`;
-      return `
-        <div class="skate-shop-item ${active ? 'active' : ''}" data-skate-item="${item.id}" data-skate-cat="${cat}">
-          <strong>${label}: ${item.name}</strong>
-          <span class="tiny">${owned ? t('skate.shop.owned') : `CD ${item.cost}`}</span>
-          <button class="skate-btn ghost" type="button" data-skate-shop-action>${actionLabel}</button>
-        </div>
-      `;
+    const owned = (dopeSkate.data.owned[cat] || []).includes(item.id);
+    const isEquipped = equipped[cat] === item.id;
+    const isPreview = preview.active && preview.selectedCategory === cat && preview.selectedItemId === item.id;
+    const actionLabel = owned ? (isEquipped ? t('skate.shop.equipped') : t('skate.shop.equip')) : `${t('skate.shop.buy')} CD ${item.cost}`;
+    return `
+      <div class="skate-shop-item ${isEquipped ? 'active' : ''} ${isPreview ? 'preview' : ''}" data-skate-item="${item.id}" data-skate-cat="${cat}">
+        <strong>${label}: ${item.name}</strong>
+        <span class="tiny">${isPreview ? t('skate.shop.previewing') : (owned ? t('skate.shop.owned') : `CD ${item.cost}`)}</span>
+        <button class="skate-btn ghost" type="button" data-skate-shop-action>${actionLabel}</button>
+      </div>
+    `;
   }).join('');
   dopeSkate.els.shopList.innerHTML = html;
 
@@ -4733,10 +5233,23 @@ function dopeSkateRenderShop(){
       const card = e.target.closest('[data-skate-item]');
       if(!card) return;
       dopeSkateHandleShopAction(card.dataset.skateCat, card.dataset.skateItem, card);
+      e.stopPropagation();
+    });
+  });
+  dopeSkate.els.shopList.querySelectorAll('[data-skate-item]').forEach(card => {
+    card.addEventListener('click', ()=>{
+      dopeSkateSetPreview(card.dataset.skateCat, card.dataset.skateItem);
+      dopeSkateRenderShop();
     });
   });
 
-  dopeSkateRenderPreview();
+  dopeSkateRenderPreview(previewLoadout);
+  if(dopeSkate.els.previewStatus){
+    dopeSkate.els.previewStatus.textContent = preview.active ? t('skate.shop.previewActive') : t('skate.shop.previewNone');
+  }
+  if(dopeSkate.els.previewReset){
+    dopeSkate.els.previewReset.classList.toggle('hidden', !preview.active);
+  }
 }
 
 function dopeSkateHandleShopAction(cat, itemId, cardEl){
@@ -4744,6 +5257,7 @@ function dopeSkateHandleShopAction(cat, itemId, cardEl){
   const item = (DOPE_SKATE_SHOP[cat] || []).find(entry => entry.id === itemId);
   if(!item) return;
   const owned = dopeSkate.data.owned[cat] || [];
+  const isEquipped = dopeSkate.data.equipped[cat] === itemId;
   if(!owned.includes(itemId)){
     if((dopeSkate.data.wallet || 0) < item.cost){
       if(cardEl){
@@ -4757,11 +5271,11 @@ function dopeSkateHandleShopAction(cat, itemId, cardEl){
     owned.push(itemId);
     dopeSkate.data.owned[cat] = owned;
     dopeSkatePlaySound('collect');
-  } else {
+  } else if(!isEquipped){
     dopeSkatePlaySound('trick');
+    dopeSkate.data.equipped[cat] = itemId;
+    dopeSkate.equippedDirty = true;
   }
-  dopeSkate.data.equipped[cat] = itemId;
-  dopeSkate.equippedDirty = true;
   saveDopeSkateData(dopeSkate.data);
   if(cardEl){
     cardEl.classList.add('flash');
@@ -4770,9 +5284,10 @@ function dopeSkateHandleShopAction(cat, itemId, cardEl){
   dopeSkateRenderShop();
 }
 
-function dopeSkateRenderPreview(){
+function dopeSkateRenderPreview(loadout){
   if(!dopeSkate.els || !dopeSkate.els.previewStage) return;
-  const assets = dopeSkateGetEquippedAssets();
+  const effectiveLoadout = loadout || (dopeSkate.data ? dopeSkate.data.equipped : {});
+  const assets = dopeSkateGetAssetsForLoadout(effectiveLoadout);
   dopeSkate.els.previewStage.innerHTML = '';
   const stage = dopeSkate.els.previewStage;
   const makeImg = (src, style) => {
@@ -4810,6 +5325,7 @@ function dopeSkateUnlockAudio(){
 }
 
 function dopeSkatePlaySound(name){
+  if(!dopeSkateIsSfxEnabled()) return;
   if(!dopeSkate.audio.unlocked || !dopeSkate.audio.ctx) return;
   const ctx = dopeSkate.audio.ctx;
   const osc = ctx.createOscillator();
@@ -6067,8 +6583,13 @@ function installLongPress(el, getTarget){
           'skate.settings.cameraDesc': 'Classic side view',
           'skate.settings.speed': 'Speed',
           'skate.settings.speedDesc': 'Auto runner',
-          'skate.settings.sound': 'Sound',
-          'skate.settings.soundDesc': 'Soon',
+          'skate.settings.difficulty': 'Difficulty',
+          'skate.settings.difficultyEasy': 'Easy',
+          'skate.settings.difficultyMedium': 'Medium',
+          'skate.settings.difficultyHard': 'Hard',
+          'skate.settings.sfx': 'Sound effects',
+          'skate.settings.sfxOn': 'On',
+          'skate.settings.sfxOff': 'Off',
           'skate.shop.ground': 'Ground',
           'skate.shop.background': 'Background',
           'skate.shop.sky': 'Sky',
@@ -6081,14 +6602,23 @@ function installLongPress(el, getTarget){
           'skate.shop.buy': 'Buy',
           'skate.shop.equip': 'Equip',
           'skate.shop.equipped': 'Equipped',
-          'skate.howto.body': 'Jump over obstacles. Keep moving to raise your score. On mobile, use the big buttons.',
-          'skate.howto.jump': 'Jump',
-          'skate.howto.trick': 'Trick',
-          'skate.howto.grind': 'Grind',
-          'skate.howto.tricksList': 'Ollie, Kickflip, Shuv-it, Hardflip, Heelflip, Varial Kickflip',
-          'skate.howto.grindsList': '50-50, Boardslide, Noseslide',
-          'skate.howto.balance': 'Balance',
-          'skate.howto.balanceDesc': 'Hold left/right to stay on the rail.',
+          'skate.shop.previewing': 'Previewing',
+          'skate.shop.previewActive': 'Preview active',
+          'skate.shop.previewNone': 'Use equipped',
+          'skate.shop.useEquipped': 'Use equipped',
+          'skate.howto.body': 'Jump, throw tricks in the air, and link combos before you land.',
+          'skate.howto.controls': 'Controls',
+          'skate.howto.controlsDesc': 'Jump: Space/Up/X. Tricks: Z/X/C or Square/Triangle/Circle.',
+          'skate.howto.trick1': 'Trick 1',
+          'skate.howto.trick1Desc': 'Kickflip in the air. Hold Left/Right for Heelflip.',
+          'skate.howto.trick2': 'Trick 2',
+          'skate.howto.trick2Desc': 'Shuv-it in the air. Hold Left/Right for Varial Kickflip.',
+          'skate.howto.trick3': 'Trick 3',
+          'skate.howto.trick3Desc': 'Hardflip in the air or on a grind.',
+          'skate.howto.combo': 'Combos',
+          'skate.howto.comboDesc': 'Tricks only count in air or grind. Chain tricks before landing to raise the multiplier.',
+          'skate.howto.grind': 'Grinds',
+          'skate.howto.grindDesc': 'Jump onto a rail, balance with Left/Right, and press Jump to exit.',
           'skate.leaderboard.body': 'Local and global records will show here.',
           'skate.leaderboard.local': 'Local best',
           'skate.leaderboard.global': 'Global best',
@@ -6487,12 +7017,13 @@ function installLongPress(el, getTarget){
           'skate.hud.cds': 'CDs',
           'skate.gameOver': 'Game Over',
           'skate.grind.balance': 'Equilibrio',
-          'skate.settings.camera': 'Camera',
-          'skate.settings.cameraDesc': 'Visao lateral classica',
-          'skate.settings.speed': 'Velocidade',
-          'skate.settings.speedDesc': 'Runner automatico',
-          'skate.settings.sound': 'Som',
-          'skate.settings.soundDesc': 'Em breve',
+          'skate.settings.difficulty': 'Dificuldade',
+          'skate.settings.difficultyEasy': 'Fácil',
+          'skate.settings.difficultyMedium': 'Média',
+          'skate.settings.difficultyHard': 'Difícil',
+          'skate.settings.sfx': 'Efeitos sonoros',
+          'skate.settings.sfxOn': 'Ligado',
+          'skate.settings.sfxOff': 'Desligado',
           'skate.shop.ground': 'Chao',
           'skate.shop.background': 'Fundo',
           'skate.shop.sky': 'Ceu',
@@ -6505,14 +7036,23 @@ function installLongPress(el, getTarget){
           'skate.shop.buy': 'Comprar',
           'skate.shop.equip': 'Equipar',
           'skate.shop.equipped': 'Equipado',
-          'skate.howto.body': 'Pule os obstaculos. Continue correndo para aumentar o score. No mobile, use os botoes grandes.',
-          'skate.howto.jump': 'Pulo',
-          'skate.howto.trick': 'Trick',
-          'skate.howto.grind': 'Grind',
-          'skate.howto.tricksList': 'Ollie, Kickflip, Shuv-it, Hardflip, Heelflip, Varial Kickflip',
-          'skate.howto.grindsList': '50-50, Boardslide, Noseslide',
-          'skate.howto.balance': 'Equilibrio',
-          'skate.howto.balanceDesc': 'Segure esquerda/direita para manter no rail.',
+          'skate.shop.previewing': 'Preview',
+          'skate.shop.previewActive': 'Preview ativo',
+          'skate.shop.previewNone': 'Usar equipado',
+          'skate.shop.useEquipped': 'Usar equipado',
+          'skate.howto.body': 'Pule, mande tricks no ar e mantenha o combo antes de aterrissar.',
+          'skate.howto.controls': 'Controles',
+          'skate.howto.controlsDesc': 'Pulo: Espaco/Seta cima/X. Tricks: Z/X/C ou Quadrado/Triangulo/Circulo.',
+          'skate.howto.trick1': 'Trick 1',
+          'skate.howto.trick1Desc': 'Kickflip no ar. Segure Esquerda/Direita para Heelflip.',
+          'skate.howto.trick2': 'Trick 2',
+          'skate.howto.trick2Desc': 'Shuv-it no ar. Segure Esquerda/Direita para Varial Kickflip.',
+          'skate.howto.trick3': 'Trick 3',
+          'skate.howto.trick3Desc': 'Hardflip no ar ou no grind.',
+          'skate.howto.combo': 'Combos',
+          'skate.howto.comboDesc': 'Tricks so contam no ar ou no grind. Encadeie antes de aterrissar para subir o multiplicador.',
+          'skate.howto.grind': 'Grinds',
+          'skate.howto.grindDesc': 'Pule em um rail, equilibre com Esquerda/Direita e aperte Pulo para sair.',
           'skate.leaderboard.body': 'Records locais e globais aparecem aqui.',
           'skate.leaderboard.local': 'Recorde local',
           'skate.leaderboard.global': 'Recorde global',
@@ -8377,16 +8917,16 @@ Eu sou o buffalo branco extinto`
                             <div class="skate-panel-title" data-i18n="skate.menu.settings">Settings</div>
                             <div class="skate-shop-grid">
                               <div class="skate-shop-item">
-                                <strong data-i18n="skate.settings.camera">Camera</strong>
-                                <span class="tiny" data-i18n="skate.settings.cameraDesc">Classic side view</span>
+                                <strong data-i18n="skate.settings.difficulty">Difficulty</strong>
+                                <select class="skate-select" data-skate-setting="difficulty">
+                                  <option value="easy" data-i18n="skate.settings.difficultyEasy">Easy</option>
+                                  <option value="medium" data-i18n="skate.settings.difficultyMedium">Medium</option>
+                                  <option value="hard" data-i18n="skate.settings.difficultyHard">Hard</option>
+                                </select>
                               </div>
                               <div class="skate-shop-item">
-                                <strong data-i18n="skate.settings.speed">Speed</strong>
-                                <span class="tiny" data-i18n="skate.settings.speedDesc">Auto runner</span>
-                              </div>
-                              <div class="skate-shop-item">
-                                <strong data-i18n="skate.settings.sound">Sound</strong>
-                                <span class="tiny" data-i18n="skate.settings.soundDesc">Soon</span>
+                                <strong data-i18n="skate.settings.sfx">Sound effects</strong>
+                                <button class="skate-btn ghost" type="button" data-skate-setting="sfx" data-i18n="skate.settings.sfxOn">On</button>
                               </div>
                             </div>
                             <div class="skate-panel-actions">
@@ -8412,33 +8952,43 @@ Eu sou o buffalo branco extinto`
                               <div class="skate-shop-shelves" data-skate-shop-list></div>
                               <div class="skate-shop-preview">
                                 <div class="skate-preview-stage" data-skate-preview-stage></div>
+                                <div class="tiny skate-preview-status" data-skate-preview-status></div>
                                 <div class="tiny" data-i18n="skate.shop.equipped">Equipped</div>
                                 <div class="tiny" data-skate-equipped-list></div>
                               </div>
                             </div>
                             <div class="skate-panel-actions">
+                              <button class="skate-btn ghost hidden" type="button" data-skate-action="revert-preview" data-skate-preview-reset data-i18n="skate.shop.useEquipped">Use equipped</button>
                               <button class="skate-btn ghost" type="button" data-skate-action="menu" data-i18n="skate.action.back">Back to menu</button>
                             </div>
                           </div>
                           <div class="skate-panel" data-skate-panel="howto">
                             <div class="skate-panel-title" data-i18n="skate.menu.howto">How to play</div>
-                            <p class="skate-panel-text" data-i18n="skate.howto.body">Jump over obstacles. Keep moving to raise your score. On mobile, use the big buttons.</p>
+                            <p class="skate-panel-text" data-i18n="skate.howto.body">Jump, throw tricks in the air, and link combos before you land.</p>
                             <div class="skate-shop-grid">
                               <div class="skate-shop-item">
-                                <strong data-i18n="skate.howto.jump">Jump</strong>
-                                <span class="tiny">Space / ↑ / Tap</span>
+                                <strong data-i18n="skate.howto.controls">Controls</strong>
+                                <span class="tiny" data-i18n="skate.howto.controlsDesc">Jump: Space/Up/X. Tricks: Z/X/C or Square/Triangle/Circle.</span>
                               </div>
                               <div class="skate-shop-item">
-                                <strong data-i18n="skate.howto.trick">Trick</strong>
-                                <span class="tiny" data-i18n="skate.howto.tricksList">Ollie, Kickflip, Shuv-it, Hardflip, Heelflip, Varial Kickflip</span>
+                                <strong data-i18n="skate.howto.trick1">Trick 1</strong>
+                                <span class="tiny" data-i18n="skate.howto.trick1Desc">Kickflip in the air. Hold Left/Right for Heelflip.</span>
                               </div>
                               <div class="skate-shop-item">
-                                <strong data-i18n="skate.howto.grind">Grind</strong>
-                                <span class="tiny" data-i18n="skate.howto.grindsList">50-50, Boardslide, Noseslide</span>
+                                <strong data-i18n="skate.howto.trick2">Trick 2</strong>
+                                <span class="tiny" data-i18n="skate.howto.trick2Desc">Shuv-it in the air. Hold Left/Right for Varial Kickflip.</span>
                               </div>
                               <div class="skate-shop-item">
-                                <strong data-i18n="skate.howto.balance">Balance</strong>
-                                <span class="tiny" data-i18n="skate.howto.balanceDesc">Hold left/right to stay on the rail.</span>
+                                <strong data-i18n="skate.howto.trick3">Trick 3</strong>
+                                <span class="tiny" data-i18n="skate.howto.trick3Desc">Hardflip in the air or on a grind.</span>
+                              </div>
+                              <div class="skate-shop-item">
+                                <strong data-i18n="skate.howto.combo">Combos</strong>
+                                <span class="tiny" data-i18n="skate.howto.comboDesc">Tricks only count in air or grind. Chain tricks before landing to raise the multiplier.</span>
+                              </div>
+                              <div class="skate-shop-item">
+                                <strong data-i18n="skate.howto.grind">Grinds</strong>
+                                <span class="tiny" data-i18n="skate.howto.grindDesc">Jump onto a rail, balance with Left/Right, and press Jump to exit.</span>
                               </div>
                             </div>
                             <div class="skate-panel-actions">
