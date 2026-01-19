@@ -1012,27 +1012,37 @@
         display:flex;
         flex-direction:column;
         gap:8px;
+        font-family:"Segoe UI", "Helvetica Neue", Arial, sans-serif;
+        color:#f5f7fb;
+        --skate-bg:#0f141a;
+        --skate-panel:#151c24;
+        --skate-panel-2:#1b2430;
+        --skate-accent:#46c2ff;
+        --skate-accent-2:#6effb2;
+        --skate-text:#f5f7fb;
+        --skate-muted:#a9b6c7;
+        --skate-border:#2a3544;
+        --skate-shadow:0 12px 28px rgba(0,0,0,0.25);
       }
       .skate-topbar{
         display:flex;
         align-items:center;
-        gap:10px;
-        flex-wrap:wrap;
+        gap:12px;
+        justify-content:space-between;
+        padding:6px 10px;
+        background:linear-gradient(90deg, #101722, #141f2c);
+        border:1px solid var(--skate-border);
+        border-radius:10px;
       }
       .skate-title{
         margin:0;
         font-size:16px;
         font-weight:700;
+        letter-spacing:0.4px;
       }
-      .skate-menubar{
+      .skate-topbar-actions{
         display:flex;
-        gap:6px;
-        padding:4px;
-        flex-wrap:wrap;
-      }
-      .skate-menu-btn{
-        height:22px;
-        padding:0 10px;
+        gap:8px;
       }
       .skate-body{
         display:flex;
@@ -1045,7 +1055,10 @@
         flex:1 1 520px;
         min-width:260px;
         padding:6px;
-        background:var(--panel-in);
+        background:var(--skate-panel);
+        border-radius:14px;
+        border:1px solid var(--skate-border);
+        box-shadow:var(--skate-shadow);
         touch-action:none;
       }
       .skate-canvas-wrap{
@@ -1060,7 +1073,9 @@
         display:block;
         width:640px;
         height:360px;
-        background:#2f2f2f;
+        background:#0f141a;
+        border-radius:12px;
+        border:1px solid #1f2a36;
         touch-action:none;
       }
       .skate-hud{
@@ -1070,10 +1085,12 @@
         display:flex;
         gap:10px;
         flex-wrap:wrap;
-        padding:4px 6px;
-        background:rgba(233,233,233,0.88);
-        border:1px solid var(--panel-border);
+        padding:6px 8px;
+        background:rgba(12,16,22,0.78);
+        border:1px solid rgba(70,194,255,0.25);
+        border-radius:10px;
         font-size:12px;
+        color:var(--skate-text);
         max-width:90%;
       }
       .skate-combo-list{
@@ -1082,41 +1099,54 @@
         flex-wrap:wrap;
       }
       .skate-combo-item{
-        padding:0 4px;
-        border:1px dotted var(--panel-border);
-        background:var(--panel-bg);
+        padding:2px 6px;
+        border-radius:999px;
+        background:rgba(70,194,255,0.16);
+        border:1px solid rgba(70,194,255,0.4);
       }
-      body.dark .skate-hud{
-        background:rgba(24,24,24,0.88);
+      .skate-combo-meter{
+        width:90px;
+        height:6px;
+        border-radius:999px;
+        background:rgba(255,255,255,0.1);
+        overflow:hidden;
+        border:1px solid rgba(255,255,255,0.12);
+      }
+      .skate-combo-meter span{
+        display:block;
+        height:100%;
+        width:100%;
+        background:linear-gradient(90deg, #46c2ff, #6effb2);
+        transition:width 0.1s linear;
       }
       .skate-balance{
         position:absolute;
         right:12px;
         top:12px;
-        padding:4px 6px;
-        background:rgba(233,233,233,0.88);
-        border:1px solid var(--panel-border);
+        padding:6px 8px;
+        background:rgba(12,16,22,0.78);
+        border:1px solid rgba(110,255,178,0.35);
+        border-radius:10px;
         font-size:12px;
         display:flex;
         flex-direction:column;
         gap:4px;
         min-width:90px;
       }
-      body.dark .skate-balance{
-        background:rgba(24,24,24,0.88);
-      }
       .skate-balance-bar{
         height:6px;
-        background:var(--panel-in);
-        border:1px solid var(--panel-border);
+        background:#0e131a;
+        border:1px solid rgba(110,255,178,0.35);
         position:relative;
+        border-radius:999px;
       }
       .skate-balance-indicator{
         position:absolute;
         top:-2px;
         width:4px;
         height:10px;
-        background:var(--title);
+        background:var(--skate-accent-2);
+        border-radius:999px;
       }
       .skate-overlay{
         position:absolute;
@@ -1124,22 +1154,53 @@
         display:flex;
         align-items:center;
         justify-content:center;
-        background:rgba(233,233,233,0.92);
-      }
-      body.dark .skate-overlay{
-        background:rgba(16,16,16,0.9);
+        background:rgba(7,10,14,0.82);
+        backdrop-filter:blur(8px);
       }
       .skate-menu{
         display:flex;
-        gap:12px;
-        width:min(760px, 96%);
-        padding:10px;
-      }
-      .skate-menu-list{
-        display:flex;
         flex-direction:column;
-        gap:6px;
-        min-width:150px;
+        gap:12px;
+        width:min(860px, 96%);
+        padding:18px;
+        background:var(--skate-panel);
+        border:1px solid var(--skate-border);
+        border-radius:16px;
+        box-shadow:var(--skate-shadow);
+      }
+      .skate-menu-header{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:10px;
+      }
+      .skate-menu-title{
+        font-size:20px;
+        font-weight:700;
+        letter-spacing:0.4px;
+      }
+      .skate-menu-actions{
+        display:flex;
+        gap:8px;
+      }
+      .skate-tabs{
+        display:flex;
+        gap:8px;
+        flex-wrap:wrap;
+      }
+      .skate-tab{
+        padding:8px 12px;
+        border-radius:999px;
+        border:1px solid transparent;
+        background:var(--skate-panel-2);
+        color:var(--skate-text);
+        cursor:pointer;
+        transition:all 0.2s ease;
+      }
+      .skate-tab.active{
+        border-color:rgba(70,194,255,0.6);
+        background:rgba(70,194,255,0.2);
+        color:#eaf7ff;
       }
       .skate-menu-panels{
         flex:1;
@@ -1147,9 +1208,14 @@
       .skate-panel{
         display:none;
         min-height:220px;
+        opacity:0;
+        transform:translateY(8px);
+        transition:opacity 0.25s ease, transform 0.25s ease;
       }
       .skate-panel.active{
         display:block;
+        opacity:1;
+        transform:translateY(0);
       }
       .skate-panel-title{
         font-weight:700;
@@ -1158,6 +1224,18 @@
       .skate-panel-text{
         margin:0 0 12px 0;
         line-height:1.4;
+        color:var(--skate-muted);
+      }
+      .skate-panel-actions{
+        display:flex;
+        gap:10px;
+        flex-wrap:wrap;
+        margin-top:12px;
+      }
+      .skate-shop-grid{
+        display:grid;
+        grid-template-columns:repeat(auto-fill, minmax(140px, 1fr));
+        gap:8px;
       }
       .skate-shop-header{
         display:flex;
@@ -1165,6 +1243,9 @@
         align-items:center;
         gap:10px;
         margin-bottom:8px;
+      }
+      .skate-shop-tabs{
+        margin-bottom:10px;
       }
       .skate-shop-layout{
         display:flex;
@@ -1184,11 +1265,23 @@
         flex-direction:column;
         gap:8px;
       }
+      .skate-bliss-letter{
+        padding:2px 6px;
+        border-radius:8px;
+        border:1px solid rgba(255,255,255,0.2);
+        color:var(--skate-muted);
+      }
+      .skate-bliss-letter.active{
+        background:var(--skate-accent-2);
+        color:#0d1511;
+        border-color:transparent;
+      }
       .skate-preview-stage{
         position:relative;
         height:180px;
-        background:var(--panel-bg);
-        border:1px solid var(--panel-border);
+        background:linear-gradient(180deg, #141b24 0%, #10151d 100%);
+        border:1px solid var(--skate-border);
+        border-radius:14px;
         display:flex;
         align-items:flex-end;
         justify-content:center;
@@ -1200,39 +1293,73 @@
       }
       .skate-shop-item{
         padding:8px;
-        border:1px solid var(--panel-border);
-        background:var(--panel-bg);
+        border:1px solid var(--skate-border);
+        background:var(--skate-panel-2);
+        border-radius:12px;
         display:flex;
         flex-direction:column;
         gap:6px;
         min-height:70px;
+        transition:transform 0.2s ease, border-color 0.2s ease;
       }
       .skate-shop-item button{
         align-self:flex-start;
       }
       .skate-shop-item.active{
-        border:1px solid var(--selection-border);
-        background:var(--selection-bg);
+        border:1px solid rgba(70,194,255,0.6);
+        background:rgba(70,194,255,0.16);
+        transform:translateY(-2px);
       }
-      .skate-shop-grid{
-        display:grid;
-        grid-template-columns:repeat(auto-fill, minmax(120px, 1fr));
-        gap:8px;
+      .skate-shop-item.flash{
+        animation:skateFlash 0.6s ease;
       }
-      .skate-shop-item{
-        padding:8px;
-        border:1px solid var(--panel-border);
-        background:var(--panel-bg);
-        display:flex;
-        flex-direction:column;
-        gap:6px;
-        min-height:70px;
+      .skate-shop-item.locked{
+        border-color:rgba(255,120,120,0.6);
+        animation:skateShake 0.3s ease;
+      }
+      @keyframes skateShake{
+        0%{ transform:translateX(0); }
+        25%{ transform:translateX(-4px); }
+        50%{ transform:translateX(4px); }
+        75%{ transform:translateX(-2px); }
+        100%{ transform:translateX(0); }
+      }
+      @keyframes skateFlash{
+        0%{ box-shadow:0 0 0 rgba(70,194,255,0.0); }
+        30%{ box-shadow:0 0 18px rgba(70,194,255,0.45); }
+        100%{ box-shadow:0 0 0 rgba(70,194,255,0.0); }
       }
       .skate-controls{
         display:flex;
         gap:8px;
         flex-wrap:wrap;
         justify-content:center;
+      }
+      .skate-btn{
+        appearance:none;
+        border:none;
+        border-radius:999px;
+        padding:8px 14px;
+        background:linear-gradient(180deg, #1b2a3a 0%, #111823 100%);
+        color:var(--skate-text);
+        cursor:pointer;
+        font-weight:600;
+        letter-spacing:0.2px;
+        transition:transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
+      }
+      .skate-btn:hover{
+        transform:translateY(-1px);
+        box-shadow:0 8px 16px rgba(0,0,0,0.2);
+      }
+      .skate-btn.primary{
+        background:linear-gradient(180deg, #42b3ff 0%, #1a6db6 100%);
+      }
+      .skate-btn.ghost{
+        background:transparent;
+        border:1px solid rgba(255,255,255,0.2);
+      }
+      .skate-btn.subtle{
+        background:rgba(255,255,255,0.08);
       }
       .skate-control{
         min-width:90px;
@@ -1250,6 +1377,10 @@
         padding:4px 8px;
         gap:10px;
         flex-wrap:wrap;
+        color:var(--skate-muted);
+        border-radius:10px;
+        border:1px solid var(--skate-border);
+        background:var(--skate-panel);
       }
       .skate-over-box{
         display:flex;
@@ -1259,6 +1390,9 @@
         align-items:center;
         text-align:center;
         padding:10px 12px;
+        background:var(--skate-panel);
+        border:1px solid var(--skate-border);
+        border-radius:14px;
       }
       @media (max-width: 520px){
         .music-grid{
@@ -1294,11 +1428,6 @@
         }
         .skate-menu{
           flex-direction:column;
-        }
-        .skate-menu-list{
-          flex-direction:row;
-          flex-wrap:wrap;
-          min-width:0;
         }
         .skate-canvas-wrap{
           min-height:260px;
@@ -2051,7 +2180,7 @@
 
       const VIRTUAL_ICONS = [
         { id:'snake', titleKey:'games.snake', iconFile:'/assets/icons/snake.png' },
-        { id:'dope-skate', titleKey:'games.dopeSkate', iconFile:'/assets/icons/dope-skate.svg' }
+        { id:'dope-skate', titleKey:'games.dopeSkate', iconFile:'/assets/icons/dope-skate.png' }
       ];
 
       function initSfx(){
@@ -2512,7 +2641,7 @@ function renderGamesWindow(){
   }
 
   if(state.games.view === 'dope-skate'){
-    initDopeSkateInWindow(win);
+    DopeSkateGame.mount(win);
   }
   if(state.games.view === 'snake'){
     initSnakeInWindow(win);
@@ -2550,7 +2679,7 @@ function backToGamesHub(){
   state.games.view = 'list';
   state.games.selectedId = getFirstGameId();
   snakeStop();
-  dopeSkateStop();
+  DopeSkateGame.unmount();
   renderGamesWindow();
 }
 
@@ -2994,6 +3123,7 @@ let dopeSkate = {
   },
   lastObstacleDist: 0,
   lastRailDist: 0,
+  lastObstacleLane: 0,
   speed: 240,
   maxSpeed: 420,
   accel: 8,
@@ -3013,6 +3143,7 @@ let dopeSkate = {
     multiplier: 1,
     active: false,
   },
+  comboWindow: 1.8,
   running: false,
   paused: false,
   gameOver: false,
@@ -3027,6 +3158,7 @@ let dopeSkate = {
   lastGroundedAt: 0,
   lastTrickAt: 0,
   lastTrickId: null,
+  cameraShake: 0,
   gamepad: {
     jump: false,
     trick1: false,
@@ -3039,6 +3171,11 @@ let dopeSkate = {
     enabled: false,
     unlocked: false,
   },
+  shopCategory: 'skater',
+  equippedAssets: null,
+  equippedDirty: true,
+  lastComboHtml: '',
+  lastBlissKey: '',
 };
 
 function loadDopeSkateHighScore(){
@@ -3138,6 +3275,7 @@ function initDopeSkateInWindow(winEl){
     cds: winEl.querySelector('[data-skate-cds]'),
     combo: winEl.querySelector('[data-skate-combo]'),
     comboList: winEl.querySelector('[data-skate-combo-list]'),
+    comboMeter: winEl.querySelector('[data-skate-combo-meter]'),
     overScore: winEl.querySelector('[data-skate-over-score]'),
     overBase: winEl.querySelector('[data-skate-over-base]'),
     overCombo: winEl.querySelector('[data-skate-over-combo]'),
@@ -3153,10 +3291,12 @@ function initDopeSkateInWindow(winEl){
     equippedList: winEl.querySelector('[data-skate-equipped-list]'),
     balance: winEl.querySelector('#skateBalance'),
     balanceIndicator: winEl.querySelector('[data-skate-balance-indicator]'),
+    bliss: winEl.querySelector('[data-skate-bliss]'),
+    shopTabs: Array.from(winEl.querySelectorAll('[data-skate-shop-tab]')),
     backBtn: winEl.querySelector('[data-games-action="back"]'),
-    menuButtons: Array.from(winEl.querySelectorAll('[data-skate-menu]')),
-    panelButtons: Array.from(winEl.querySelectorAll('[data-skate-panel]')),
+    tabs: Array.from(winEl.querySelectorAll('[data-skate-tab]')),
     actionButtons: Array.from(winEl.querySelectorAll('[data-skate-action]')),
+    resumeButtons: Array.from(winEl.querySelectorAll('[data-skate-action="resume"]')),
   };
 
   if(typeof state.dopeSkate.highScore !== 'number' || Number.isNaN(state.dopeSkate.highScore)){
@@ -3165,6 +3305,7 @@ function initDopeSkateInWindow(winEl){
   if(!dopeSkate.data){
     dopeSkate.data = loadDopeSkateData();
   }
+  dopeSkate.equippedDirty = true;
 
   if(dopeSkate.els.backBtn){
     dopeSkate.els.backBtn.addEventListener('click', (e)=>{
@@ -3173,15 +3314,14 @@ function initDopeSkateInWindow(winEl){
     });
   }
 
-  dopeSkate.els.menuButtons.forEach(btn => {
+  dopeSkate.els.tabs.forEach(btn => {
     btn.addEventListener('click', ()=>{
-      dopeSkateShowMenu(btn.dataset.skateMenu || 'play');
+      dopeSkateSetPanel(btn.dataset.skateTab || 'play');
     });
   });
-
-  dopeSkate.els.panelButtons.forEach(btn => {
+  dopeSkate.els.shopTabs.forEach(btn => {
     btn.addEventListener('click', ()=>{
-      dopeSkateSetPanel(btn.dataset.skatePanel || 'play');
+      dopeSkateSetShopCategory(btn.dataset.skateShopTab || 'skater');
     });
   });
 
@@ -3194,6 +3334,8 @@ function initDopeSkateInWindow(winEl){
         dopeSkateStartRun();
       } else if(action === 'menu'){
         dopeSkateShowMenu('play');
+      } else if(action === 'resume'){
+        dopeSkateHideMenu();
       } else if(action === 'jump'){
         dopeSkateRegisterJump();
       } else if(action === 'trick1'){
@@ -3233,6 +3375,7 @@ function initDopeSkateInWindow(winEl){
   dopeSkateResetWorld();
   dopeSkateShowMenu('play');
   updateDopeSkateUI();
+  dopeSkateSetShopCategory(dopeSkate.shopCategory);
   dopeSkateRenderShop();
   dopeSkateStartLoop();
 }
@@ -3247,6 +3390,12 @@ function dopeSkateResetWorld(){
     vy: 0,
     onGround: true,
     mode: 'ground',
+    wheelAngle: 0,
+    boardAngle: 0,
+    boardSpin: 0,
+    bodyLean: 0,
+    squash: 0,
+    trickAnim: null,
   };
   dopeSkate.obstacles = [];
   dopeSkate.rails = [];
@@ -3260,6 +3409,7 @@ function dopeSkateResetWorld(){
   };
   dopeSkate.lastObstacleDist = 0;
   dopeSkate.lastRailDist = 0;
+  dopeSkate.lastObstacleLane = 0;
   dopeSkate.speed = 240;
   dopeSkate.scoreBase = 0;
   dopeSkate.comboBank = 0;
@@ -3284,6 +3434,9 @@ function dopeSkateResetWorld(){
   dopeSkate.lastGroundedAt = 0;
   dopeSkate.lastTrickAt = 0;
   dopeSkate.lastTrickId = null;
+  dopeSkate.cameraShake = 0;
+  dopeSkate.lastComboHtml = '';
+  dopeSkate.lastBlissKey = '';
   dopeSkate.time = 0;
 }
 
@@ -3303,8 +3456,8 @@ function dopeSkateStartRun(){
 }
 
 function dopeSkateShowMenu(panel){
-  dopeSkate.paused = true;
-  dopeSkate.running = false;
+  dopeSkate.paused = dopeSkate.started && !dopeSkate.gameOver;
+  dopeSkate.running = dopeSkate.started && !dopeSkate.gameOver;
   if(dopeSkate.els && dopeSkate.els.menuOverlay){
     dopeSkate.els.menuOverlay.classList.remove('hidden');
   }
@@ -3314,24 +3467,40 @@ function dopeSkateShowMenu(panel){
   dopeSkateSetPanel(panel);
 }
 
+function dopeSkateHideMenu(){
+  if(!dopeSkate.started || dopeSkate.gameOver) return;
+  dopeSkate.paused = false;
+  dopeSkate.running = true;
+  if(dopeSkate.els && dopeSkate.els.menuOverlay){
+    dopeSkate.els.menuOverlay.classList.add('hidden');
+  }
+}
+
 function dopeSkateSetPanel(panel){
   if(!dopeSkate.els) return;
-  dopeSkate.els.panelButtons.forEach(btn => {
-    const active = btn.dataset.skatePanel === panel;
-    btn.classList.toggle('pressed', active);
+  dopeSkate.els.tabs.forEach(btn => {
+    const active = btn.dataset.skateTab === panel;
+    btn.classList.toggle('active', active);
   });
   const panels = Array.from(dopeSkate.els.menuOverlay.querySelectorAll('[data-skate-panel]'));
   panels.forEach(p => p.classList.toggle('active', p.dataset.skatePanel === panel));
-  dopeSkate.els.menuButtons.forEach(btn => {
-    btn.classList.toggle('pressed', btn.dataset.skateMenu === panel);
-  });
   if(panel === 'shop'){
     dopeSkateRenderShop();
   }
 }
 
+function dopeSkateSetShopCategory(category){
+  dopeSkate.shopCategory = category;
+  if(dopeSkate.els && dopeSkate.els.shopTabs){
+    dopeSkate.els.shopTabs.forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.skateShopTab === category);
+    });
+  }
+  dopeSkateRenderShop();
+}
+
 function dopeSkateRegisterJump(){
-  if(!dopeSkate.running || dopeSkate.gameOver) return;
+  if(!dopeSkate.running || dopeSkate.paused || dopeSkate.gameOver) return;
   dopeSkate.jumpBufferUntil = dopeSkate.time + 0.12;
   dopeSkateUnlockAudio();
   dopeSkatePlaySound('jump');
@@ -3353,12 +3522,13 @@ function dopeSkateTryJump(){
     player.vy = dopeSkate.jumpVel;
     player.onGround = false;
     player.mode = 'air';
+    player.squash = 0.25;
     dopeSkateAddTrickById('ollie');
   }
 }
 
 function dopeSkateRegisterTrick(slot){
-  if(!dopeSkate.running || dopeSkate.gameOver) return;
+  if(!dopeSkate.running || dopeSkate.paused || dopeSkate.gameOver) return;
   dopeSkateUnlockAudio();
   dopeSkateHandleTrick(slot);
 }
@@ -3386,6 +3556,11 @@ function dopeSkateStop(){
   dopeSkate.canvas = null;
   dopeSkate.ctx = null;
 }
+
+const DopeSkateGame = {
+  mount: initDopeSkateInWindow,
+  unmount: dopeSkateStop,
+};
 
 function dopeSkateLoop(ts){
   if(!dopeSkate.ctx) return;
@@ -3419,6 +3594,9 @@ function dopeSkateUpdate(dt){
     player.onGround = true;
     player.mode = 'ground';
     dopeSkate.lastGroundedAt = dopeSkate.time;
+    if(!wasOnGround){
+      player.squash = 0.35;
+    }
   } else if(player.mode !== 'grind'){
     player.onGround = false;
   }
@@ -3428,6 +3606,9 @@ function dopeSkateUpdate(dt){
   }
 
   dopeSkateTryJump();
+  if(dopeSkate.combo.active && player.mode === 'air' && (dopeSkate.time - dopeSkate.lastTrickAt) > dopeSkate.comboWindow){
+    dopeSkateResolveCombo();
+  }
 
   dopeSkate.speed = Math.min(dopeSkate.maxSpeed, dopeSkate.speed + dopeSkate.accel * dt);
   dopeSkate.distance += dopeSkate.speed * dt;
@@ -3445,6 +3626,8 @@ function dopeSkateUpdate(dt){
 
   dopeSkateCheckCollisions();
   dopeSkateUpdateParticles(dt);
+  dopeSkateUpdateAnimations(dt);
+  dopeSkate.cameraShake = Math.max(0, dopeSkate.cameraShake - dt * 20);
 
   dopeSkateUpdateOffsets(dt);
   dopeSkateCheckGamepad();
@@ -3501,12 +3684,15 @@ function dopeSkateSpawnObstacle(){
     { key: 'cone', w: 28, h: 40 },
   ];
   const pick = types[Math.floor(Math.random() * types.length)];
+  const lanes = [0, -6];
+  const lane = lanes[Math.floor(Math.random() * lanes.length)];
+  dopeSkate.lastObstacleLane = lane;
   dopeSkate.obstacles.push({
     type: pick.key,
     w: pick.w,
     h: pick.h,
     x: dopeSkate.width + 40,
-    y: groundY - pick.h,
+    y: groundY - pick.h + lane,
   });
   dopeSkate.lastObstacleDist = dopeSkate.distance;
 }
@@ -3567,6 +3753,11 @@ function dopeSkateDraw(){
   const groundY = h - dopeSkate.groundHeight;
 
   ctx.clearRect(0, 0, w, h);
+  ctx.save();
+  if(dopeSkate.cameraShake > 0){
+    const shake = dopeSkate.cameraShake;
+    ctx.translate((Math.random() - 0.5) * shake, (Math.random() - 0.5) * shake);
+  }
   const equipped = dopeSkateGetEquippedAssets();
   dopeSkateDrawLayer(equipped.sky, dopeSkate.offsets.sky, 0, h);
   dopeSkateDrawLayer(equipped.background, dopeSkate.offsets.city, 40, h - 80);
@@ -3627,6 +3818,7 @@ function dopeSkateDraw(){
 
   dopeSkateDrawParticles();
   dopeSkateDrawSkater();
+  ctx.restore();
 }
 
 function dopeSkateDrawLayer(img, offset, y, height){
@@ -3662,21 +3854,43 @@ function dopeSkateDrawSkater(){
   const wheelsW = 32;
   const wheelsH = 10;
 
+  const boardX = p.x - 6;
+  const boardY = p.y + bodyH - 4;
+  const boardCx = boardX + boardW / 2;
+  const boardCy = boardY + boardH / 2;
+
+  ctx.save();
+  ctx.translate(boardCx, boardCy);
+  ctx.rotate(p.boardSpin + p.boardAngle);
   if(board){
-    ctx.drawImage(board, p.x - 6, p.y + bodyH - 4, boardW, boardH);
+    ctx.drawImage(board, -boardW / 2, -boardH / 2, boardW, boardH);
   } else {
     ctx.fillStyle = '#c28b2f';
-    ctx.fillRect(p.x - 6, p.y + bodyH - 4, boardW, boardH);
+    ctx.fillRect(-boardW / 2, -boardH / 2, boardW, boardH);
   }
+  ctx.restore();
+
+  const wheelX = boardX + 8;
+  const wheelY = boardY + boardH - 2;
+  ctx.save();
+  ctx.translate(wheelX + wheelsW / 2, wheelY + wheelsH / 2);
+  ctx.rotate(p.wheelAngle);
   if(wheels){
-    ctx.drawImage(wheels, p.x + 2, p.y + bodyH + 6, wheelsW, wheelsH);
+    ctx.drawImage(wheels, -wheelsW / 2, -wheelsH / 2, wheelsW, wheelsH);
   } else {
     ctx.fillStyle = '#222';
-    ctx.fillRect(p.x + 2, p.y + bodyH + 6, wheelsW, wheelsH);
+    ctx.fillRect(-wheelsW / 2, -wheelsH / 2, wheelsW, wheelsH);
   }
+  ctx.restore();
 
   if(body){
-    ctx.drawImage(body, p.x, p.y, bodyW, bodyH);
+    ctx.save();
+    ctx.translate(p.x + bodyW / 2, p.y + bodyH / 2);
+    ctx.rotate(p.bodyLean);
+    const squash = 1 - p.squash * 0.3;
+    ctx.scale(1 + p.squash * 0.2, squash);
+    ctx.drawImage(body, -bodyW / 2, -bodyH / 2, bodyW, bodyH);
+    ctx.restore();
   } else {
     ctx.fillStyle = '#2f6b9a';
     ctx.fillRect(p.x, p.y + 12, bodyW, bodyH - 12);
@@ -3684,7 +3898,11 @@ function dopeSkateDrawSkater(){
     ctx.fillRect(p.x + 12, p.y, 18, 18);
   }
   if(hat){
-    ctx.drawImage(hat, p.x + 6, p.y - 6, 30, 16);
+    ctx.save();
+    ctx.translate(p.x + 18, p.y + 6);
+    ctx.rotate(p.bodyLean * 0.8);
+    ctx.drawImage(hat, -12, -12, 30, 16);
+    ctx.restore();
   }
 }
 
@@ -3738,7 +3956,17 @@ function updateDopeSkateUI(){
   if(dopeSkate.els.overBest) dopeSkate.els.overBest.textContent = String(state.dopeSkate.highScore || 0);
   if(dopeSkate.els.wallet && dopeSkate.data) dopeSkate.els.wallet.textContent = `CD ${dopeSkate.data.wallet || 0}`;
   if(dopeSkate.els.globalBest) dopeSkate.els.globalBest.textContent = '—';
+  if(dopeSkate.els.resumeButtons){
+    const showResume = dopeSkate.started && !dopeSkate.gameOver;
+    dopeSkate.els.resumeButtons.forEach(btn => btn.classList.toggle('hidden', !showResume));
+  }
+  if(dopeSkate.els.comboMeter){
+    const elapsed = Math.max(0, dopeSkate.time - dopeSkate.lastTrickAt);
+    const ratio = dopeSkate.combo.active ? Math.max(0, 1 - elapsed / dopeSkate.comboWindow) : 0;
+    dopeSkate.els.comboMeter.style.width = `${Math.floor(ratio * 100)}%`;
+  }
   dopeSkateRenderComboList();
+  dopeSkateRenderBlissHUD();
   dopeSkateUpdateBalanceUI();
 }
 
@@ -3749,7 +3977,9 @@ function dopeSkateHandleKey(e){
 
   const key = e.key.toLowerCase();
   let handled = true;
-  if(key === 'arrowleft' || key === 'a'){
+  if(key === 'escape'){
+    dopeSkateShowMenu('play');
+  } else if(key === 'arrowleft' || key === 'a'){
     dopeSkate.inputs.left = true;
   } else if(key === 'arrowright' || key === 'd'){
     dopeSkate.inputs.right = true;
@@ -3802,7 +4032,95 @@ function dopeSkateHandleTrick(slot){
   dopeSkate.combo.tricks.push(trick.name);
   dopeSkate.combo.unique.add(trick.id);
   dopeSkate.combo.multiplier = Math.max(1, dopeSkate.combo.unique.size);
+  dopeSkateStartTrickAnim(trick.id);
+  dopeSkateSpawnTrickText(trick.name);
+  dopeSkate.cameraShake = Math.max(dopeSkate.cameraShake, 4);
   dopeSkatePlaySound('trick');
+}
+
+function dopeSkateStartTrickAnim(trickId){
+  const player = dopeSkate.player;
+  if(!player) return;
+  const durationMap = {
+    ollie: 0.3,
+    kickflip: 0.45,
+    heelflip: 0.45,
+    shuvit: 0.4,
+    hardflip: 0.5,
+    varial: 0.5,
+  };
+  player.trickAnim = {
+    id: trickId,
+    t: 0,
+    duration: durationMap[trickId] || 0.4,
+  };
+}
+
+function dopeSkateUpdateAnimations(dt){
+  const player = dopeSkate.player;
+  if(!player) return;
+  player.wheelAngle += dopeSkate.speed * dt * 0.08;
+  player.squash = Math.max(0, player.squash - dt * 2.8);
+  const leanFromVel = Math.max(-0.25, Math.min(0.25, -player.vy / 800));
+  const grindLean = player.mode === 'grind' && player.grind ? (player.grind.balance - 0.5) * 0.6 : 0;
+  player.bodyLean = leanFromVel + grindLean;
+
+  if(player.trickAnim){
+    player.trickAnim.t += dt;
+    const progress = Math.min(1, player.trickAnim.t / player.trickAnim.duration);
+    const swing = Math.sin(progress * Math.PI);
+    player.boardSpin = 0;
+    player.boardAngle = 0;
+    switch(player.trickAnim.id){
+      case 'kickflip':
+        player.boardAngle = swing * Math.PI;
+        break;
+      case 'heelflip':
+        player.boardAngle = -swing * Math.PI;
+        break;
+      case 'shuvit':
+        player.boardSpin = progress * Math.PI * 2;
+        player.boardAngle = swing * 0.3;
+        break;
+      case 'hardflip':
+        player.boardSpin = progress * Math.PI * 2;
+        player.boardAngle = swing * Math.PI;
+        break;
+      case 'varial':
+        player.boardSpin = progress * Math.PI * 1.5;
+        player.boardAngle = swing * Math.PI;
+        break;
+      case 'ollie':
+      default:
+        player.boardAngle = -swing * 0.35;
+        break;
+    }
+    if(progress >= 1){
+      player.trickAnim = null;
+    }
+  } else {
+    player.boardAngle *= 0.92;
+    player.boardSpin *= 0.92;
+  }
+  if(player.mode === 'grind'){
+    player.boardAngle = (player.grind.balance - 0.5) * 0.4;
+  }
+}
+
+function dopeSkateSpawnTrickText(text){
+  if(dopeSkate.particles.length > 120) return;
+  const player = dopeSkate.player;
+  const x = player ? player.x + 30 : 160;
+  const y = player ? player.y - 8 : 140;
+  dopeSkate.particles.push({
+    type: 'text',
+    text,
+    x,
+    y,
+    vx: -10 + Math.random() * 20,
+    vy: -40 - Math.random() * 30,
+    life: 0.8,
+  });
 }
 
 function dopeSkatePickTrick(slot){
@@ -3843,6 +4161,8 @@ function dopeSkateAddTrickById(id){
   dopeSkate.combo.multiplier = Math.max(1, dopeSkate.combo.unique.size);
   dopeSkate.lastTrickAt = dopeSkate.time;
   dopeSkate.lastTrickId = trick.id;
+  dopeSkateStartTrickAnim(trick.id);
+  dopeSkateSpawnTrickText(trick.name);
 }
 
 function dopeSkateAddCustomTrick(id, name, points){
@@ -3853,6 +4173,8 @@ function dopeSkateAddCustomTrick(id, name, points){
   dopeSkate.combo.multiplier = Math.max(1, dopeSkate.combo.unique.size);
   dopeSkate.lastTrickAt = dopeSkate.time;
   dopeSkate.lastTrickId = id;
+  dopeSkateSpawnTrickText(name);
+  dopeSkate.cameraShake = Math.max(dopeSkate.cameraShake, 3);
 }
 
 function dopeSkatePickBlissLetter(){
@@ -3915,6 +4237,7 @@ function dopeSkateStartGrind(rail){
   };
   player.grind.rate = player.grind.trick.rate;
   dopeSkateAddCustomTrick(player.grind.trick.id, player.grind.trick.name, player.grind.trick.points);
+  dopeSkate.cameraShake = Math.max(dopeSkate.cameraShake, 5);
   dopeSkatePlaySound('grind');
 }
 
@@ -3976,10 +4299,10 @@ function dopeSkateCollect(item){
 function dopeSkateGetPlayerHitbox(){
   const p = dopeSkate.player;
   return {
-    x: p.x + 8,
-    y: p.y + 10,
-    w: p.w - 16,
-    h: p.h - 12,
+    x: p.x + 6,
+    y: p.y + 6,
+    w: p.w - 12,
+    h: p.h - 8,
   };
 }
 
@@ -3991,10 +4314,35 @@ function dopeSkateRenderComboList(){
   if(!dopeSkate.els || !dopeSkate.els.comboList) return;
   const list = dopeSkate.combo.tricks.slice(-4);
   if(list.length === 0){
-    dopeSkate.els.comboList.innerHTML = '';
+    if(dopeSkate.lastComboHtml !== ''){
+      dopeSkate.els.comboList.innerHTML = '';
+      dopeSkate.lastComboHtml = '';
+    }
     return;
   }
-  dopeSkate.els.comboList.innerHTML = list.map(name => `<span class="skate-combo-item">${name}</span>`).join('');
+  const html = list.map(name => `<span class="skate-combo-item">${name}</span>`).join('');
+  if(html !== dopeSkate.lastComboHtml){
+    dopeSkate.els.comboList.innerHTML = html;
+    dopeSkate.lastComboHtml = html;
+  }
+}
+
+function dopeSkateRenderBlissHUD(){
+  if(!dopeSkate.els || !dopeSkate.els.bliss) return;
+  const counts = dopeSkate.blissCounts;
+  const key = `${counts.B}${counts.L}${counts.I}${counts.S}`;
+  if(key === dopeSkate.lastBlissKey) return;
+  const letters = [
+    { letter:'B', active: counts.B > 0 },
+    { letter:'L', active: counts.L > 0 },
+    { letter:'I', active: counts.I > 0 },
+    { letter:'S', active: counts.S > 0 },
+    { letter:'S', active: counts.S > 1 },
+  ];
+  dopeSkate.els.bliss.innerHTML = letters.map(item => (
+    `<span class="skate-bliss-letter${item.active ? ' active' : ''}">${item.letter}</span>`
+  )).join('');
+  dopeSkate.lastBlissKey = key;
 }
 
 function dopeSkateUpdateBalanceUI(){
@@ -4044,6 +4392,16 @@ function dopeSkateUpdateParticles(dt){
 function dopeSkateDrawParticles(){
   const ctx = dopeSkate.ctx;
   dopeSkate.particles.forEach(p => {
+    if(p.type === 'text'){
+      ctx.fillStyle = '#f8fffd';
+      ctx.font = '12px "Segoe UI", Arial, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.globalAlpha = Math.max(0, Math.min(1, p.life));
+      ctx.fillText(p.text, p.x, p.y);
+      ctx.globalAlpha = 1;
+      return;
+    }
     ctx.fillStyle = '#ffd27d';
     ctx.fillRect(p.x, p.y, 2, 2);
   });
@@ -4065,9 +4423,12 @@ function dopeSkateFinalizeScore(){
 }
 
 function dopeSkateGetEquippedAssets(){
+  if(dopeSkate.equippedAssets && !dopeSkate.equippedDirty){
+    return dopeSkate.equippedAssets;
+  }
   const assets = dopeSkate.assets || {};
   const eq = (dopeSkate.data && dopeSkate.data.equipped) ? dopeSkate.data.equipped : {};
-  return {
+  dopeSkate.equippedAssets = {
     sky: assets[DOPE_SKATE_SHOP.sky.find(item => item.id === eq.sky)?.asset || 'sky'],
     background: assets[DOPE_SKATE_SHOP.background.find(item => item.id === eq.background)?.asset || 'city'],
     ground: assets[DOPE_SKATE_SHOP.ground.find(item => item.id === eq.ground)?.asset || 'ground'],
@@ -4076,6 +4437,8 @@ function dopeSkateGetEquippedAssets(){
     board: assets[DOPE_SKATE_SHOP.board.find(item => item.id === eq.board)?.asset || 'board'],
     wheels: assets[DOPE_SKATE_SHOP.wheels.find(item => item.id === eq.wheels)?.asset || 'wheels'],
   };
+  dopeSkate.equippedDirty = false;
+  return dopeSkate.equippedAssets;
 }
 
 function dopeSkateRenderShop(){
@@ -4084,9 +4447,26 @@ function dopeSkateRenderShop(){
   dopeSkate.els.wallet.textContent = `CD ${wallet}`;
   const equipped = dopeSkate.data.equipped || {};
 
-  const html = Object.entries(DOPE_SKATE_SHOP).map(([cat, items]) => {
-    const label = cat.charAt(0).toUpperCase() + cat.slice(1);
-    const cards = items.map(item => {
+  const currentCat = DOPE_SKATE_SHOP[dopeSkate.shopCategory] ? dopeSkate.shopCategory : 'skater';
+  dopeSkate.shopCategory = currentCat;
+  if(dopeSkate.els.shopTabs){
+    dopeSkate.els.shopTabs.forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.skateShopTab === currentCat);
+    });
+  }
+
+  const labelMap = {
+    ground: t('skate.shop.ground'),
+    background: t('skate.shop.background'),
+    sky: t('skate.shop.sky'),
+    skater: t('skate.shop.skater'),
+    hat: t('skate.shop.hat'),
+    board: t('skate.shop.board'),
+    wheels: t('skate.shop.wheels'),
+  };
+  const html = (DOPE_SKATE_SHOP[currentCat] || []).map(item => {
+    const cat = currentCat;
+    const label = labelMap[cat] || cat;
       const owned = (dopeSkate.data.owned[cat] || []).includes(item.id);
       const active = equipped[cat] === item.id;
       const actionLabel = owned ? (active ? t('skate.shop.equipped') : t('skate.shop.equip')) : `${t('skate.shop.buy')} CD ${item.cost}`;
@@ -4094,11 +4474,9 @@ function dopeSkateRenderShop(){
         <div class="skate-shop-item ${active ? 'active' : ''}" data-skate-item="${item.id}" data-skate-cat="${cat}">
           <strong>${label}: ${item.name}</strong>
           <span class="tiny">${owned ? t('skate.shop.owned') : `CD ${item.cost}`}</span>
-          <button class="btn bevel" type="button" data-skate-shop-action>${actionLabel}</button>
+          <button class="skate-btn ghost" type="button" data-skate-shop-action>${actionLabel}</button>
         </div>
       `;
-    }).join('');
-    return cards;
   }).join('');
   dopeSkate.els.shopList.innerHTML = html;
 
@@ -4106,26 +4484,41 @@ function dopeSkateRenderShop(){
     btn.addEventListener('click', (e)=>{
       const card = e.target.closest('[data-skate-item]');
       if(!card) return;
-      dopeSkateHandleShopAction(card.dataset.skateCat, card.dataset.skateItem);
+      dopeSkateHandleShopAction(card.dataset.skateCat, card.dataset.skateItem, card);
     });
   });
 
   dopeSkateRenderPreview();
 }
 
-function dopeSkateHandleShopAction(cat, itemId){
+function dopeSkateHandleShopAction(cat, itemId, cardEl){
   if(!dopeSkate.data) return;
   const item = (DOPE_SKATE_SHOP[cat] || []).find(entry => entry.id === itemId);
   if(!item) return;
   const owned = dopeSkate.data.owned[cat] || [];
   if(!owned.includes(itemId)){
-    if((dopeSkate.data.wallet || 0) < item.cost) return;
+    if((dopeSkate.data.wallet || 0) < item.cost){
+      if(cardEl){
+        cardEl.classList.add('locked');
+        cardEl.addEventListener('animationend', ()=>{ cardEl.classList.remove('locked'); }, { once:true });
+      }
+      dopeSkatePlaySound('crash');
+      return;
+    }
     dopeSkate.data.wallet -= item.cost;
     owned.push(itemId);
     dopeSkate.data.owned[cat] = owned;
+    dopeSkatePlaySound('collect');
+  } else {
+    dopeSkatePlaySound('trick');
   }
   dopeSkate.data.equipped[cat] = itemId;
+  dopeSkate.equippedDirty = true;
   saveDopeSkateData(dopeSkate.data);
+  if(cardEl){
+    cardEl.classList.add('flash');
+    cardEl.addEventListener('animationend', ()=>{ cardEl.classList.remove('flash'); }, { once:true });
+  }
   dopeSkateRenderShop();
 }
 
@@ -5409,6 +5802,8 @@ function installLongPress(el, getTarget){
           'skate.action.start': 'Start run',
           'skate.action.retry': 'Retry',
           'skate.action.menu': 'Menu',
+          'skate.action.resume': 'Resume',
+          'skate.action.back': 'Back to menu',
           'skate.action.jump': 'Jump',
           'skate.action.trick1': 'Trick 1',
           'skate.action.trick2': 'Trick 2',
@@ -5832,6 +6227,8 @@ function installLongPress(el, getTarget){
           'skate.action.start': 'Iniciar run',
           'skate.action.retry': 'Tentar de novo',
           'skate.action.menu': 'Menu',
+          'skate.action.resume': 'Voltar ao jogo',
+          'skate.action.back': 'Voltar ao menu',
           'skate.action.jump': 'Pular',
           'skate.action.trick1': 'Trick 1',
           'skate.action.trick2': 'Trick 2',
@@ -7683,18 +8080,14 @@ Eu sou o buffalo branco extinto`
             return `
               <div class="skate-shell">
                 <div class="skate-topbar">
-                  <button class="btn bevel" type="button" data-games-action="back" data-i18n="games.back">Back</button>
-                  <h2 class="skate-title">BLISS — ${t('games.dopeSkate')}</h2>
-                </div>
-                <div class="skate-menubar bevel">
-                  <button class="btn bevel skate-menu-btn" type="button" data-skate-menu="play" data-i18n="skate.menu.play">Play</button>
-                  <button class="btn bevel skate-menu-btn" type="button" data-skate-menu="settings" data-i18n="skate.menu.settings">Settings</button>
-                  <button class="btn bevel skate-menu-btn" type="button" data-skate-menu="shop" data-i18n="skate.menu.shop">Shop</button>
-                  <button class="btn bevel skate-menu-btn" type="button" data-skate-menu="howto" data-i18n="skate.menu.howto">How to play</button>
-                  <button class="btn bevel skate-menu-btn" type="button" data-skate-menu="leaderboard" data-i18n="skate.menu.leaderboard">Leaderboard</button>
+                  <button class="skate-btn ghost" type="button" data-games-action="back" data-i18n="games.back">Back</button>
+                  <h2 class="skate-title" data-i18n="games.dopeSkate">Dope Skate</h2>
+                  <div class="skate-topbar-actions">
+                    <button class="skate-btn subtle" type="button" data-skate-action="menu" data-i18n="skate.action.menu">Menu</button>
+                  </div>
                 </div>
                 <div class="skate-body">
-                  <div class="skate-screen bevel-in" id="skateScreen">
+                  <div class="skate-screen" id="skateScreen">
                     <div class="skate-canvas-wrap">
                       <canvas id="skateCanvas" class="pixel" width="640" height="360"></canvas>
                     </div>
@@ -7702,6 +8095,8 @@ Eu sou o buffalo branco extinto`
                       <div><span data-i18n="skate.hud.score">Score</span>: <strong data-skate-score>0</strong></div>
                       <div><span data-i18n="skate.hud.combo">Combo</span>: <strong data-skate-combo>1x</strong></div>
                       <div class="skate-combo-list" data-skate-combo-list></div>
+                      <div class="skate-combo-meter"><span data-skate-combo-meter></span></div>
+                      <div class="skate-combo-list" data-skate-bliss></div>
                       <div><span data-i18n="skate.hud.best">Best</span>: <strong data-skate-best>0</strong></div>
                       <div><span data-i18n="skate.hud.cds">CDs</span>: <strong data-skate-cds>0</strong></div>
                     </div>
@@ -7710,19 +8105,28 @@ Eu sou o buffalo branco extinto`
                       <div class="skate-balance-bar"><span class="skate-balance-indicator" data-skate-balance-indicator></span></div>
                     </div>
                     <div class="skate-overlay" id="skateMenuOverlay">
-                      <div class="skate-menu bevel">
-                        <div class="skate-menu-list">
-                          <button class="btn bevel" type="button" data-skate-panel="play" data-i18n="skate.menu.play">Play</button>
-                          <button class="btn bevel" type="button" data-skate-panel="settings" data-i18n="skate.menu.settings">Settings</button>
-                          <button class="btn bevel" type="button" data-skate-panel="shop" data-i18n="skate.menu.shop">Shop</button>
-                          <button class="btn bevel" type="button" data-skate-panel="howto" data-i18n="skate.menu.howto">How to play</button>
-                          <button class="btn bevel" type="button" data-skate-panel="leaderboard" data-i18n="skate.menu.leaderboard">Leaderboard</button>
+                      <div class="skate-menu">
+                        <div class="skate-menu-header">
+                          <div class="skate-menu-title" data-i18n="games.dopeSkate">Dope Skate</div>
+                          <div class="skate-menu-actions">
+                            <button class="skate-btn ghost" type="button" data-skate-action="resume" data-i18n="skate.action.resume">Resume</button>
+                          </div>
+                        </div>
+                        <div class="skate-tabs">
+                          <button class="skate-tab" type="button" data-skate-tab="play" data-i18n="skate.menu.play">Play</button>
+                          <button class="skate-tab" type="button" data-skate-tab="settings" data-i18n="skate.menu.settings">Settings</button>
+                          <button class="skate-tab" type="button" data-skate-tab="shop" data-i18n="skate.menu.shop">Shop</button>
+                          <button class="skate-tab" type="button" data-skate-tab="howto" data-i18n="skate.menu.howto">How to play</button>
+                          <button class="skate-tab" type="button" data-skate-tab="leaderboard" data-i18n="skate.menu.leaderboard">Leaderboard</button>
                         </div>
                         <div class="skate-menu-panels">
                           <div class="skate-panel active" data-skate-panel="play">
                             <div class="skate-panel-title" data-i18n="skate.menu.play">Play</div>
                             <p class="skate-panel-text" data-i18n="skate.menu.playDesc">Endless run through the city. Jump obstacles, keep the combo alive.</p>
-                            <button class="btn bevel" type="button" data-skate-action="start" data-i18n="skate.action.start">Start run</button>
+                            <div class="skate-panel-actions">
+                              <button class="skate-btn primary" type="button" data-skate-action="start" data-i18n="skate.action.start">Start run</button>
+                              <button class="skate-btn ghost" type="button" data-skate-action="resume" data-i18n="skate.action.resume">Resume</button>
+                            </div>
                           </div>
                           <div class="skate-panel" data-skate-panel="settings">
                             <div class="skate-panel-title" data-i18n="skate.menu.settings">Settings</div>
@@ -7740,9 +8144,21 @@ Eu sou o buffalo branco extinto`
                                 <span class="tiny" data-i18n="skate.settings.soundDesc">Soon</span>
                               </div>
                             </div>
+                            <div class="skate-panel-actions">
+                              <button class="skate-btn ghost" type="button" data-skate-action="menu" data-i18n="skate.action.back">Back to menu</button>
+                            </div>
                           </div>
                           <div class="skate-panel" data-skate-panel="shop">
                             <div class="skate-panel-title" data-i18n="skate.menu.shop">Shop</div>
+                            <div class="skate-tabs skate-shop-tabs">
+                              <button class="skate-tab" type="button" data-skate-shop-tab="skater" data-i18n="skate.shop.skater">Skater</button>
+                              <button class="skate-tab" type="button" data-skate-shop-tab="hat" data-i18n="skate.shop.hat">Hat</button>
+                              <button class="skate-tab" type="button" data-skate-shop-tab="board" data-i18n="skate.shop.board">Skate</button>
+                              <button class="skate-tab" type="button" data-skate-shop-tab="wheels" data-i18n="skate.shop.wheels">Wheels</button>
+                              <button class="skate-tab" type="button" data-skate-shop-tab="ground" data-i18n="skate.shop.ground">Ground</button>
+                              <button class="skate-tab" type="button" data-skate-shop-tab="background" data-i18n="skate.shop.background">Background</button>
+                              <button class="skate-tab" type="button" data-skate-shop-tab="sky" data-i18n="skate.shop.sky">Sky</button>
+                            </div>
                             <div class="skate-shop-header">
                               <div class="tiny" data-i18n="skate.shop.wallet">Wallet</div>
                               <strong data-skate-wallet>0</strong>
@@ -7754,6 +8170,9 @@ Eu sou o buffalo branco extinto`
                                 <div class="tiny" data-i18n="skate.shop.equipped">Equipped</div>
                                 <div class="tiny" data-skate-equipped-list></div>
                               </div>
+                            </div>
+                            <div class="skate-panel-actions">
+                              <button class="skate-btn ghost" type="button" data-skate-action="menu" data-i18n="skate.action.back">Back to menu</button>
                             </div>
                           </div>
                           <div class="skate-panel" data-skate-panel="howto">
@@ -7777,6 +8196,9 @@ Eu sou o buffalo branco extinto`
                                 <span class="tiny" data-i18n="skate.howto.balanceDesc">Hold left/right to stay on the rail.</span>
                               </div>
                             </div>
+                            <div class="skate-panel-actions">
+                              <button class="skate-btn ghost" type="button" data-skate-action="menu" data-i18n="skate.action.back">Back to menu</button>
+                            </div>
                           </div>
                           <div class="skate-panel" data-skate-panel="leaderboard">
                             <div class="skate-panel-title" data-i18n="skate.menu.leaderboard">Leaderboard</div>
@@ -7789,12 +8211,15 @@ Eu sou o buffalo branco extinto`
                               <strong data-i18n="skate.leaderboard.global">Global best</strong>
                               <span class="tiny" data-skate-global-best>—</span>
                             </div>
+                            <div class="skate-panel-actions">
+                              <button class="skate-btn ghost" type="button" data-skate-action="menu" data-i18n="skate.action.back">Back to menu</button>
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
                     <div class="skate-overlay hidden" id="skateOverOverlay">
-                      <div class="skate-over-box bevel">
+                      <div class="skate-over-box">
                         <strong data-i18n="skate.gameOver">Game Over</strong>
                         <div class="tiny"><span data-i18n="skate.over.base">Base</span>: <span data-skate-over-base>0</span></div>
                         <div class="tiny"><span data-i18n="skate.over.combo">Combo bonus</span>: <span data-skate-over-combo>0</span></div>
@@ -7803,19 +8228,19 @@ Eu sou o buffalo branco extinto`
                         <div class="tiny"><span data-i18n="skate.over.cds">CDs</span>: <span data-skate-over-cds>0</span></div>
                         <div class="tiny"><span data-i18n="skate.over.money">Money</span>: <span data-skate-over-money>0</span></div>
                         <div class="tiny"><span data-i18n="skate.hud.best">Best</span>: <span data-skate-over-best>0</span></div>
-                        <button class="btn bevel" type="button" data-skate-action="retry" data-i18n="skate.action.retry">Retry</button>
-                        <button class="btn bevel" type="button" data-skate-action="menu" data-i18n="skate.action.menu">Menu</button>
+                        <button class="skate-btn primary" type="button" data-skate-action="retry" data-i18n="skate.action.retry">Retry</button>
+                        <button class="skate-btn ghost" type="button" data-skate-action="menu" data-i18n="skate.action.menu">Menu</button>
                       </div>
                     </div>
                   </div>
                 </div>
                 <div class="skate-controls">
-                  <button class="btn bevel skate-control" type="button" data-skate-action="jump" data-i18n="skate.action.jump">Jump</button>
-                  <button class="btn bevel skate-control" type="button" data-skate-action="trick1" data-i18n="skate.action.trick1">Trick 1</button>
-                  <button class="btn bevel skate-control" type="button" data-skate-action="trick2" data-i18n="skate.action.trick2">Trick 2</button>
-                  <button class="btn bevel skate-control" type="button" data-skate-action="trick3" data-i18n="skate.action.trick3">Trick 3</button>
+                  <button class="skate-btn skate-control" type="button" data-skate-action="jump" data-i18n="skate.action.jump">Jump</button>
+                  <button class="skate-btn skate-control" type="button" data-skate-action="trick1" data-i18n="skate.action.trick1">Trick 1</button>
+                  <button class="skate-btn skate-control" type="button" data-skate-action="trick2" data-i18n="skate.action.trick2">Trick 2</button>
+                  <button class="skate-btn skate-control" type="button" data-skate-action="trick3" data-i18n="skate.action.trick3">Trick 3</button>
                 </div>
-                <div class="skate-statusbar bevel">
+                <div class="skate-statusbar">
                   <span class="tiny" data-i18n="skate.status.ready">Ready to roll</span>
                   <span class="tiny" data-i18n="skate.status.controls">Jump: Space / Tap</span>
                 </div>
@@ -7874,7 +8299,7 @@ Eu sou o buffalo branco extinto`
               return `
                 <button class="games-item" type="button" data-game-id="dope-skate">
                   <div class="games-icon pixel">
-                    <img class="pixel" src="/assets/icons/dope-skate.svg" width="32" height="32" alt="${t('games.dopeSkate')}" style="display:block;" />
+                    <img class="pixel" src="/assets/icons/dope-skate.png" width="32" height="32" alt="${t('games.dopeSkate')}" style="display:block;" />
                   </div>
                   <span data-i18n="games.dopeSkate">Dope Skate</span>
                 </button>
@@ -9425,7 +9850,7 @@ function renderIcons(){
         if(!w) return;
         if(appId === 'games'){
           snakeStop();
-          dopeSkateStop();
+          DopeSkateGame.unmount();
           state.games.view = 'list';
           state.games.selectedId = null;
         }
