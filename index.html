@@ -4,11 +4,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>BLISS 98</title>
-    <link rel="icon" href="/assets/favicon/favicon.ico" sizes="any" />
-    <link rel="icon" type="image/png" href="/assets/favicon/favicon-32.png" sizes="32x32" />
-    <link rel="icon" type="image/png" href="/assets/favicon/favicon-16.png" sizes="16x16" />
-    <link rel="apple-touch-icon" href="/assets/favicon/apple-touch-icon.png" />
-    <link rel="manifest" href="/assets/favicon/site.webmanifest" />
+    <link rel="icon" href="./assets/favicon/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" href="./assets/favicon/favicon-32.png" sizes="32x32" />
+    <link rel="icon" type="image/png" href="./assets/favicon/favicon-16.png" sizes="16x16" />
+    <link rel="apple-touch-icon" href="./assets/favicon/apple-touch-icon.png" />
+    <link rel="manifest" href="./assets/favicon/site.webmanifest" />
     <style>
       :root{
         --bg:#008080;
@@ -2003,7 +2003,7 @@
         <div class="login-panel bevel">
           <div class="login-title">
             <div class="login-left">
-              <img class="logo pixel" src="/assets/icons/bliss.png" width="34" height="34" alt="" style="display:block;" />
+              <img class="logo pixel" src="./assets/icons/bliss.png" width="34" height="34" alt="" style="display:block;" />
               <div>
                 <h1>BLISS 98</h1>
                 <p class="login-sub" data-i18n="login.sub">Enter your name to login</p>
@@ -2046,7 +2046,7 @@
         <div class="taskbar bevel" id="taskbar">
           <div class="task-left">
             <div id="startBtn" class="btn bevel" title="Menu" data-i18n-title="start.menu">
-              <img class="pixel" src="/assets/icons/bliss.png" width="16" height="16" alt="" style="display:block;" />
+              <img class="pixel" src="./assets/icons/bliss.png" width="16" height="16" alt="" style="display:block;" />
               <strong>Bliss</strong>
             </div>
           </div>
@@ -2193,7 +2193,7 @@
       const YOUTUBE_KEY = 'bliss98_youtube_api_key';
       const SFX = {
         boot: {
-          src: '/assets/audio/boot.mp3',
+          src: './assets/audio/boot.mp3',
           audio: null,
           played: false,
           pending: false,
@@ -2201,7 +2201,7 @@
           playing: false,
         },
         logoff: {
-          src: '/assets/audio/logoff.mp3',
+          src: './assets/audio/logoff.mp3',
           audio: null,
           playing: false,
         }
@@ -2250,7 +2250,7 @@
         {
           id: 'xp98bliss',
           labelKey: 'wallpaper.xp98bliss',
-          background: 'url("/assets/wallpapers/bliss98.png")',
+          background: 'url("./assets/wallpapers/bliss98.png")',
           size: 'cover',
           repeat: 'no-repeat',
           position: 'center'
@@ -2277,8 +2277,8 @@
       ];
 
       const VIRTUAL_ICONS = [
-        { id:'snake', titleKey:'games.snake', iconFile:'/assets/icons/snake.png' },
-        { id:'dope-skate', titleKey:'games.dopeSkate', iconFile:'/assets/icons/dope-skate.png' }
+        { id:'snake', titleKey:'games.snake', iconFile:'./assets/icons/snake.png' },
+        { id:'dope-skate', titleKey:'games.dopeSkate', iconFile:'./assets/icons/dope-skate.png' }
       ];
 
       function initSfx(){
@@ -2518,8 +2518,8 @@ function getIconLabel(app){
 
 function getTrashIconFile(){
   return state.trash && state.trash.size > 0
-    ? '/assets/icons/trash2.png'
-    : '/assets/icons/trash1.png';
+    ? './assets/icons/trash2.png'
+    : './assets/icons/trash1.png';
 }
 
 function updateTrashIconUI(){
@@ -3172,19 +3172,19 @@ function updateSnakeUI(){
 }
 
 const DOPE_SKATE_ASSETS = {
-  sky: '/assets/skate/sky/sky.svg',
-  city: '/assets/skate/background/city.svg',
-  ground: '/assets/skate/ground/ground.svg',
-  body: '/assets/skate/skater/body.svg',
-  hat: '/assets/skate/hat/hat.svg',
-  board: '/assets/skate/board/board.svg',
-  wheels: '/assets/skate/wheels/wheels.svg',
-  vodka: '/assets/skate/obstacles/vodka.svg',
-  trash: '/assets/skate/obstacles/trash.svg',
-  cone: '/assets/skate/obstacles/cone.svg',
-  rail: '/assets/skate/obstacles/rail.svg',
-  cd: '/assets/skate/collectibles/cd.svg',
-  bliss: '/assets/skate/collectibles/bliss-letter.svg',
+  sky: './assets/skate/sky/sky.svg',
+  city: './assets/skate/background/city.svg',
+  ground: './assets/skate/ground/ground.svg',
+  body: './assets/skate/skater/body.svg',
+  hat: './assets/skate/hat/hat.svg',
+  board: './assets/skate/board/board.svg',
+  wheels: './assets/skate/wheels/wheels.svg',
+  vodka: './assets/skate/obstacles/vodka.svg',
+  trash: './assets/skate/obstacles/trash.svg',
+  cone: './assets/skate/obstacles/cone.svg',
+  rail: './assets/skate/obstacles/rail.svg',
+  cd: './assets/skate/collectibles/cd.svg',
+  bliss: './assets/skate/collectibles/bliss-letter.svg',
 };
 
 const DOPE_SKATE_DATA_KEY = 'bliss98_dope_skate_data';
@@ -4786,7 +4786,7 @@ function renderClothesItems(winEl, items){
   const alt = t('clothes.thumbAlt');
   grid.innerHTML = items.map(item => {
     const href = item.url || profile;
-    const img = item.img || '/assets/icons/Clothes.png';
+    const img = item.img || './assets/icons/Clothes.png';
     return `
       <a class="clothes-item" href="${href}" target="_blank" rel="noopener noreferrer" aria-label="${alt}">
         <img class="clothes-thumb" src="${img}" alt="${alt}" loading="lazy" />
@@ -7680,17 +7680,17 @@ function installLongPress(el, getTarget){
 
       const APPS = [
         { id:'trash', titleKey:'app.trash', icon:'trash', iconFile:getTrashIconFile, showInStart:false },
-        { id:'poetry', titleKey:'app.poetry', icon:'file', iconFile:'/assets/icons/poetry.png' },
-        { id:'clothes', titleKey:'app.clothes', icon:'folder', iconFile:'/assets/icons/Clothes.png' },
-        { id:'music', titleKey:'app.music', icon:'music', iconFile:'/assets/icons/Music.png' },
-        { id:'mediaplayer', titleKey:'app.mediaplayer', icon:'music', iconFile:'/assets/icons/BLISS%20mediaplayer.png' },
-        { id:'art', titleKey:'app.art', icon:'art', iconFile:'/assets/icons/Art.png' },
-        { id:'games', titleKey:'app.games', icon:'game', iconFile:'/assets/icons/Games.png' },
-        { id:'videos', titleKey:'app.videos', icon:'video', iconFile:'/assets/icons/Videos.png' },
-        { id:'about', titleKey:'app.about', icon:'info', iconFile:'/assets/icons/About.png' },
-        { id:'contact', titleKey:'app.contact', icon:'mail', iconFile:'/assets/icons/Contact.png' },
-        { id:'diev', titleKey:'app.diev', icon:'user', iconFile:'/assets/icons/DIEV.png' },
-        { id:'settings', titleKey:'app.settings', icon:'settings', iconFile:'/assets/icons/Settings.png' },
+        { id:'poetry', titleKey:'app.poetry', icon:'file', iconFile:'./assets/icons/poetry.png' },
+        { id:'clothes', titleKey:'app.clothes', icon:'folder', iconFile:'./assets/icons/Clothes.png' },
+        { id:'music', titleKey:'app.music', icon:'music', iconFile:'./assets/icons/Music.png' },
+        { id:'mediaplayer', titleKey:'app.mediaplayer', icon:'music', iconFile:'./assets/icons/BLISS%20mediaplayer.png' },
+        { id:'art', titleKey:'app.art', icon:'art', iconFile:'./assets/icons/Art.png' },
+        { id:'games', titleKey:'app.games', icon:'game', iconFile:'./assets/icons/Games.png' },
+        { id:'videos', titleKey:'app.videos', icon:'video', iconFile:'./assets/icons/Videos.png' },
+        { id:'about', titleKey:'app.about', icon:'info', iconFile:'./assets/icons/About.png' },
+        { id:'contact', titleKey:'app.contact', icon:'mail', iconFile:'./assets/icons/Contact.png' },
+        { id:'diev', titleKey:'app.diev', icon:'user', iconFile:'./assets/icons/DIEV.png' },
+        { id:'settings', titleKey:'app.settings', icon:'settings', iconFile:'./assets/icons/Settings.png' },
       ];
 
       const MUSIC_LINKS = [
@@ -7698,48 +7698,48 @@ function installLongPress(el, getTarget){
           id: 'spotify',
           label: 'Spotify',
           url: 'https://open.spotify.com/artist/6bjnHKF2yjUlKyYD15cNGq',
-          icon: '/assets/icons/spotify.png'
+          icon: './assets/icons/spotify.png'
         },
         {
           id: 'youtubemusic',
           label: 'YouTube Music',
           url: 'https://music.youtube.com/channel/UCSjAU7hceaYUQPZml7HUFgA',
-          icon: '/assets/icons/youtubemusic.png'
+          icon: './assets/icons/youtubemusic.png'
         },
         {
           id: 'applemusic',
           label: 'Apple Music',
           url: 'https://music.apple.com/us/artist/diev/1586153318',
-          icon: '/assets/icons/applemusic.png'
+          icon: './assets/icons/applemusic.png'
         },
         {
           id: 'amazonmusic',
           label: 'Amazon Music',
           url: 'https://music.amazon.com.br/artists/B00F5I7CC6/diev',
-          icon: '/assets/icons/amazonmusic.png'
+          icon: './assets/icons/amazonmusic.png'
         },
         {
           id: 'soundcloud',
           label: 'SoundCloud',
           url: 'https://soundcloud.com/die_v/tracks',
-          icon: '/assets/icons/soundcloud.png'
+          icon: './assets/icons/soundcloud.png'
         },
         {
           id: 'deezer',
           label: 'Deezer',
           url: 'https://www.deezer.com/en/artist/5170963',
-          icon: '/assets/icons/deezer.png'
+          icon: './assets/icons/deezer.png'
         }
       ];
 
       // Update the fallback list with real Instagram thumbnails when needed.
       const CLOTHES_FALLBACK = [
-        { img: '/assets/icons/Clothes.png', url: 'https://www.instagram.com/blissworldweb/' },
-        { img: '/assets/icons/Clothes.png', url: 'https://www.instagram.com/blissworldweb/' },
-        { img: '/assets/icons/Clothes.png', url: 'https://www.instagram.com/blissworldweb/' },
-        { img: '/assets/icons/Clothes.png', url: 'https://www.instagram.com/blissworldweb/' },
-        { img: '/assets/icons/Clothes.png', url: 'https://www.instagram.com/blissworldweb/' },
-        { img: '/assets/icons/Clothes.png', url: 'https://www.instagram.com/blissworldweb/' }
+        { img: './assets/icons/Clothes.png', url: 'https://www.instagram.com/blissworldweb/' },
+        { img: './assets/icons/Clothes.png', url: 'https://www.instagram.com/blissworldweb/' },
+        { img: './assets/icons/Clothes.png', url: 'https://www.instagram.com/blissworldweb/' },
+        { img: './assets/icons/Clothes.png', url: 'https://www.instagram.com/blissworldweb/' },
+        { img: './assets/icons/Clothes.png', url: 'https://www.instagram.com/blissworldweb/' },
+        { img: './assets/icons/Clothes.png', url: 'https://www.instagram.com/blissworldweb/' }
       ];
 
       const VIDEO_CHANNEL_HANDLE = 'DIEVBLISS';
@@ -8451,7 +8451,7 @@ Eu sou o buffalo branco extinto`
               return `
                 <button class="games-item games-card" type="button" data-game-id="snake">
                   <div class="games-icon pixel">
-                    <img class="pixel" src="/assets/icons/snake.png" width="32" height="32" alt="${t('games.snake')}" style="display:block;" />
+                    <img class="pixel" src="./assets/icons/snake.png" width="32" height="32" alt="${t('games.snake')}" style="display:block;" />
                   </div>
                   <span data-i18n="games.snake">Snake</span>
                 </button>
@@ -8461,7 +8461,7 @@ Eu sou o buffalo branco extinto`
               return `
                 <button class="games-item games-card games-hero" type="button" data-game-id="dope-skate">
                   <div class="games-icon pixel">
-                    <img class="pixel" src="/assets/icons/dope-skate.png" width="64" height="64" alt="${t('games.dopeSkate')}" style="display:block;" />
+                    <img class="pixel" src="./assets/icons/dope-skate.png" width="64" height="64" alt="${t('games.dopeSkate')}" style="display:block;" />
                   </div>
                   <span data-i18n="games.dopeSkate">Dope Skate</span>
                 </button>
@@ -8542,7 +8542,7 @@ Eu sou o buffalo branco extinto`
           const grid = POEMS.map(poem => `
             <button class="poetry-item" type="button" data-poem-id="${poem.id}">
               <div class="pixel" style="width:34px;height:34px;display:flex;align-items:center;justify-content:center;">
-                <img class="pixel" src="/assets/icons/poetry2.png" width="32" height="32" alt="${poem.title}" style="display:block;" />
+                <img class="pixel" src="./assets/icons/poetry2.png" width="32" height="32" alt="${poem.title}" style="display:block;" />
               </div>
               <span>${poem.title}</span>
             </button>
@@ -8598,7 +8598,7 @@ Eu sou o buffalo branco extinto`
               <div class="settings-panel" role="tabpanel" data-tab="general" id="settingsPanel_general">
                 <div class="settings-general">
                   <div class="settings-logo">
-                    <img class="pixel" src="/assets/icons/computer.png" width="48" height="48" alt="" />
+                    <img class="pixel" src="./assets/icons/computer.png" width="48" height="48" alt="" />
                   </div>
                   <div class="settings-summary">
                     <strong data-i18n="settings.general.title">BLISS 98</strong>
@@ -8622,7 +8622,7 @@ Eu sou o buffalo branco extinto`
               <div class="settings-panel" role="tabpanel" data-tab="language" id="settingsPanel_language">
                 <div class="settings-panel-header">
                   <div class="settings-panel-icon">
-                    <img class="pixel" src="/assets/icons/language.png" width="48" height="48" alt="" />
+                    <img class="pixel" src="./assets/icons/language.png" width="48" height="48" alt="" />
                   </div>
                   <div>
                     <strong data-i18n="settings.languageTab">Language</strong>
@@ -8637,7 +8637,7 @@ Eu sou o buffalo branco extinto`
               <div class="settings-panel" role="tabpanel" data-tab="appearance" id="settingsPanel_appearance">
                 <div class="settings-panel-header">
                   <div class="settings-panel-icon">
-                    <img class="pixel" src="/assets/icons/appearance.png" width="48" height="48" alt="" />
+                    <img class="pixel" src="./assets/icons/appearance.png" width="48" height="48" alt="" />
                   </div>
                   <div>
                     <strong data-i18n="settings.appearanceTab">Appearance</strong>
@@ -8672,7 +8672,7 @@ Eu sou o buffalo branco extinto`
                     <button class="theme-thumb bevel" type="button" data-set-theme="xp98" data-theme-thumb="xp98">
                       <div class="theme-preview theme-preview-xp98">
                         <div class="theme-preview-bar"></div>
-                        <div class="theme-preview-body" style="background:url('/assets/wallpapers/bliss98.png') center/cover no-repeat;"></div>
+                        <div class="theme-preview-body" style="background:url('./assets/wallpapers/bliss98.png') center/cover no-repeat;"></div>
                       </div>
                       <span data-i18n="theme.xp98">XP98</span>
                     </button>
@@ -8779,7 +8779,7 @@ Eu sou o buffalo branco extinto`
                       <span data-i18n="wallpaper.matrix">Matrix</span>
                     </button>
                     <button class="btn bevel" type="button" data-set-wallpaper="xp98bliss">
-                      <span class="wallpaper-swatch" style="background:url('/assets/wallpapers/bliss98.png') center/cover no-repeat;"></span>
+                      <span class="wallpaper-swatch" style="background:url('./assets/wallpapers/bliss98.png') center/cover no-repeat;"></span>
                       <span data-i18n="wallpaper.xp98bliss">XP Bliss 98</span>
                     </button>
                   </div>
@@ -8796,7 +8796,7 @@ Eu sou o buffalo branco extinto`
               <div class="settings-panel" role="tabpanel" data-tab="performance" id="settingsPanel_performance">
                 <div class="settings-panel-header">
                   <div class="settings-panel-icon">
-                    <img class="pixel" src="/assets/icons/performance.png" width="48" height="48" alt="" />
+                    <img class="pixel" src="./assets/icons/performance.png" width="48" height="48" alt="" />
                   </div>
                   <div>
                     <strong data-i18n="settings.animationsTab">Animations</strong>
@@ -8825,8 +8825,8 @@ Eu sou o buffalo branco extinto`
       // --- BLISS Media Player ---
       // NOTE: Browsers cannot scan/list a folder on static hosting (GitHub Pages). We use a manifest file.
       // Create: /assets/music/manifest.json or /assets/audio/tracks.json  Example: ["WOW.mp3","People Change.mp3"]
-      const MP_MANIFEST_URL = '/assets/audio/tracks.json';
-      const MP_LIBRARY_URLS = ['/assets/music/manifest.json', MP_MANIFEST_URL];
+      const MP_MANIFEST_URL = './assets/audio/tracks.json';
+      const MP_LIBRARY_URLS = ['./assets/music/manifest.json', MP_MANIFEST_URL];
       const MP_STATE_KEY = 'bliss98_mp_state';
       const MP_IMPORT_KEY = 'bliss98_mp_imports';
 
@@ -9268,7 +9268,7 @@ Eu sou o buffalo branco extinto`
             if(!res.ok) continue;
             const data = await res.json();
             if(Array.isArray(data) || Array.isArray(data.tracks)){
-              const baseDir = url.includes('/assets/music/') ? '/assets/music/' : '/assets/audio/';
+              const baseDir = url.includes('./assets/music/') ? './assets/music/' : './assets/audio/';
               const list = Array.isArray(data) ? data : data.tracks;
               mp.manifestTracks = mpNormalizeManifest(list, baseDir);
               loaded = true;
@@ -9899,7 +9899,7 @@ function renderIcons(){
 
         const logout = document.createElement('div');
         logout.className = 'menu-item';
-        logout.innerHTML = `<div style="width:18px;height:18px;display:flex;align-items:center;justify-content:center;"><img class="pixel" src="/assets/icons/logout.png" width="16" height="16" alt="" style="display:block;" /></div><div>${t('menu.logoff')}</div>`;
+        logout.innerHTML = `<div style="width:18px;height:18px;display:flex;align-items:center;justify-content:center;"><img class="pixel" src="./assets/icons/logout.png" width="16" height="16" alt="" style="display:block;" /></div><div>${t('menu.logoff')}</div>`;
         logout.addEventListener('click', ()=>{ closeStartMenu(); doLogoff(); });
         list.appendChild(logout);
       }
