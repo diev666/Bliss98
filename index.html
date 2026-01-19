@@ -1343,14 +1343,12 @@
         left:0;
         right:0;
         bottom:16px;
-        padding:0 120px;
-        display:flex;
-        justify-content:space-between;
+        height:32px;
       }
       .ps1-analog{
         position:absolute;
         left:50%;
-        bottom:52px;
+        bottom:56px;
         transform:translateX(-50%);
         display:flex;
         flex-direction:column;
@@ -1370,15 +1368,15 @@
         box-shadow:inset 0 3px 6px rgba(255,255,255,0.6);
         touch-action:none;
       }
-      .ps1-analog-led{
-        width:8px;
-        height:8px;
-        border-radius:50%;
+      .ps1-analog-led-rect{
+        width:18px;
+        height:6px;
+        border-radius:3px;
         background:#7a1b1b;
-        box-shadow:0 0 6px rgba(255,50,50,0.6);
+        box-shadow:0 0 8px rgba(255,50,50,0.6);
         opacity:0;
       }
-      .ps1-dock[data-mode="analog"] .ps1-analog-led{
+      .ps1-dock[data-mode="analog"] .ps1-analog-led-rect{
         opacity:1;
       }
       .ps1-dock[data-mode="analog"] .ps1-dpad{
@@ -1399,6 +1397,16 @@
         text-transform:uppercase;
         box-shadow:inset 0 3px 6px rgba(255,255,255,0.6);
         touch-action:none;
+      }
+      .ps1-center-btn.select{
+        position:absolute;
+        left:150px;
+        bottom:0;
+      }
+      .ps1-center-btn.start{
+        position:absolute;
+        right:150px;
+        bottom:0;
       }
       .skate-canvas-wrap{
         display:flex;
@@ -1488,9 +1496,18 @@
         align-items:stretch;
         height:100%;
       }
-      #win_games.mobile-game .snake-side,
+      #win_games.mobile-game .snake-side{
+        width:100%;
+        min-width:0;
+        flex-direction:row;
+        flex-wrap:wrap;
+        gap:8px;
+        justify-content:center;
+        padding:6px 8px;
+      }
       #win_games.mobile-game .snake-instructions{
-        display:none;
+        display:block;
+        text-align:center;
       }
       #win_games.mobile-game .snake-board{
         width:100%;
@@ -3202,11 +3219,11 @@ function mountMobileGameDock(gameId, winEl){
         </div>
         <div class="ps1-analog">
           <button class="ps1-analog-btn" type="button" data-mobile-action="analog">ANALOG</button>
-          <span class="ps1-analog-led"></span>
+          <span class="ps1-analog-led-rect"></span>
         </div>
         <div class="ps1-center">
-          <button class="ps1-center-btn" type="button" data-mobile-action="select">Select</button>
-          <button class="ps1-center-btn" type="button" data-mobile-action="start">Start</button>
+          <button class="ps1-center-btn select" type="button" data-mobile-action="select">Select</button>
+          <button class="ps1-center-btn start" type="button" data-mobile-action="start">Start</button>
         </div>
       </div>
     `;
@@ -3593,6 +3610,9 @@ function initSnakeInWindow(winEl){
     };
     window.addEventListener('resize', snake.resizeHandler);
     window.addEventListener('orientationchange', snake.resizeHandler);
+    if(window.visualViewport){
+      window.visualViewport.addEventListener('resize', snake.resizeHandler);
+    }
   }
 
   board.addEventListener('touchstart', snakeHandleTouchStart, { passive: false });
@@ -3681,6 +3701,9 @@ function snakeStop(){
   if(snake.resizeHandler){
     window.removeEventListener('resize', snake.resizeHandler);
     window.removeEventListener('orientationchange', snake.resizeHandler);
+    if(window.visualViewport){
+      window.visualViewport.removeEventListener('resize', snake.resizeHandler);
+    }
     snake.resizeHandler = null;
   }
   snake.els = null;
@@ -4384,6 +4407,9 @@ function initDopeSkateInWindow(winEl){
     };
     window.addEventListener('resize', dopeSkate.resizeHandler);
     window.addEventListener('orientationchange', dopeSkate.resizeHandler);
+    if(window.visualViewport){
+      window.visualViewport.addEventListener('resize', dopeSkate.resizeHandler);
+    }
   }
 
   dopeSkateResetWorld();
@@ -4588,6 +4614,9 @@ function dopeSkateStop(){
   if(dopeSkate.resizeHandler){
     window.removeEventListener('resize', dopeSkate.resizeHandler);
     window.removeEventListener('orientationchange', dopeSkate.resizeHandler);
+    if(window.visualViewport){
+      window.visualViewport.removeEventListener('resize', dopeSkate.resizeHandler);
+    }
     dopeSkate.resizeHandler = null;
   }
   dopeSkate.els = null;
