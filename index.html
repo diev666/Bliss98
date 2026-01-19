@@ -1222,13 +1222,14 @@
         pointer-events:none;
         display:none;
         z-index:6;
+        padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
       }
       #win_games.mobile-game .game-mobile-overlay{
         display:block;
       }
       .mobile-shoulders{
         position:absolute;
-        top:8px;
+        top:calc(8px + env(safe-area-inset-top));
         left:8px;
         right:8px;
         display:flex;
@@ -1253,7 +1254,7 @@
       .mobile-stick{
         position:absolute;
         left:12px;
-        bottom:14px;
+        bottom:calc(18px + env(safe-area-inset-bottom));
         width:110px;
         height:110px;
         border-radius:50%;
@@ -1278,7 +1279,7 @@
       .mobile-face{
         position:absolute;
         right:14px;
-        bottom:14px;
+        bottom:calc(18px + env(safe-area-inset-bottom));
         width:150px;
         height:150px;
         pointer-events:auto;
@@ -1295,7 +1296,7 @@
         letter-spacing:0.3px;
         text-align:center;
         line-height:52px;
-        font-size:12px;
+        font-size:18px;
         box-shadow:0 6px 18px rgba(0,0,0,0.25);
         pointer-events:auto;
         touch-action:none;
@@ -1315,7 +1316,7 @@
       .mobile-center{
         position:absolute;
         left:50%;
-        bottom:14px;
+        bottom:calc(18px + env(safe-area-inset-bottom));
         transform:translateX(-50%);
         display:flex;
         gap:10px;
@@ -1346,6 +1347,18 @@
         height:100%;
         overflow:hidden;
       }
+      #win_games.mobile-game{
+        position:fixed;
+        inset:0;
+        width:100dvw;
+        height:100dvh;
+        min-height:100svh;
+      }
+      #win_games.mobile-game .frame{
+        height:100%;
+        display:flex;
+        flex-direction:column;
+      }
       #win_games.mobile-game .skate-shell{
         height:100%;
       }
@@ -1356,13 +1369,16 @@
       #win_games.mobile-game .skate-screen{
         flex:1;
         padding:4px;
+        height:100%;
+        min-height:100dvh;
+        min-height:100svh;
       }
       #win_games.mobile-game .skate-canvas-wrap{
         min-height:auto;
       }
       #win_games.mobile-game #skateCanvas{
         width:100%;
-        height:auto;
+        height:100%;
       }
       #win_games.mobile-game .skate-controls{
         display:none;
@@ -1378,14 +1394,17 @@
       }
       #win_games.mobile-game .snake-board{
         width:100%;
-        height:auto;
+        height:100%;
         min-width:0;
         min-height:0;
         padding:6px;
+        flex:1;
+        min-height:100dvh;
+        min-height:100svh;
       }
       #win_games.mobile-game .snake-board canvas{
         width:100%;
-        height:auto;
+        height:100%;
       }
       .skate-hud{
         position:absolute;
@@ -2999,7 +3018,7 @@ function enterMobileFullscreen(gameId, winEl){
   if(!mobile) return;
 
   const area = $('#desktopArea').getBoundingClientRect();
-  const margin = 6;
+  const margin = 0;
   const newW = Math.max(240, Math.floor(area.width - margin * 2));
   const newH = Math.max(200, Math.floor(area.height - margin * 2));
   winEl.style.left = `${margin}px`;
@@ -3014,26 +3033,23 @@ function enterMobileFullscreen(gameId, winEl){
     w.width = newW;
     w.height = newH;
   }
-
-  armMobileFullscreen(winEl);
 }
 
 let mobileFullscreenArmed = false;
-function armMobileFullscreen(winEl){
-  if(mobileFullscreenArmed) return;
+function armMobileFullscreen(targetEl){
+  if(mobileFullscreenArmed || !targetEl) return;
   mobileFullscreenArmed = true;
   const handler = ()=>{
     if(document.fullscreenElement){
       mobileFullscreenArmed = false;
       return;
     }
-    const target = winEl || document.documentElement;
-    if(target.requestFullscreen){
-      target.requestFullscreen().catch(()=>{});
+    if(targetEl.requestFullscreen){
+      targetEl.requestFullscreen().catch(()=>{});
     }
     mobileFullscreenArmed = false;
   };
-  winEl.addEventListener('pointerdown', handler, { once:true });
+  targetEl.addEventListener('pointerdown', handler, { once:true });
 }
 
 function mountMobileGameOverlay(gameId, winEl){
@@ -3065,10 +3081,10 @@ function mountMobileGameOverlay(gameId, winEl){
         <div class="mobile-stick-knob"></div>
       </div>
       <div class="mobile-face">
-        <button class="mobile-btn" type="button" data-mobile-action="trick2" data-btn="triangle" aria-label="Trick 2">Tri</button>
-        <button class="mobile-btn" type="button" data-mobile-action="trick3" data-btn="circle" aria-label="Trick 3">Cir</button>
-        <button class="mobile-btn" type="button" data-mobile-action="jump" data-btn="cross" aria-label="Jump">X</button>
-        <button class="mobile-btn" type="button" data-mobile-action="trick1" data-btn="square" aria-label="Trick 1">Sq</button>
+        <button class="mobile-btn" type="button" data-mobile-action="trick2" data-btn="triangle" aria-label="Trick 2">△</button>
+        <button class="mobile-btn" type="button" data-mobile-action="trick3" data-btn="circle" aria-label="Trick 3">○</button>
+        <button class="mobile-btn" type="button" data-mobile-action="jump" data-btn="cross" aria-label="Jump">✕</button>
+        <button class="mobile-btn" type="button" data-mobile-action="trick1" data-btn="square" aria-label="Trick 1">□</button>
       </div>
       <div class="mobile-center">
         <button class="mobile-btn small" type="button" data-mobile-action="select">Select</button>
@@ -3077,6 +3093,7 @@ function mountMobileGameOverlay(gameId, winEl){
     `;
     container.appendChild(overlay);
   }
+  armMobileFullscreen(container);
   if(overlay.dataset.bound !== '1'){
     bindMobileOverlay(gameId, overlay);
     overlay.dataset.bound = '1';
@@ -3222,6 +3239,11 @@ let snake = {
   speed: 'normal',
   timer: null,
   cell: 16,
+  baseSize: 320,
+  renderScale: 1,
+  renderDpr: 1,
+  resizeObserver: null,
+  resizeRaf: null,
   ctx: null,
   els: null,
   swipeStart: null,
@@ -3279,6 +3301,25 @@ function isSnakeActive(){
   return state.activeWindowId === 'games' && state.games.view === 'snake';
 }
 
+function snakeResizeCanvas(){
+  if(!snake.els || !snake.els.canvas || !snake.ctx) return;
+  const board = snake.els.board;
+  if(!board) return;
+  const style = getComputedStyle(board);
+  const padX = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
+  const padY = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
+  const size = Math.max(1, Math.floor(Math.min(board.clientWidth - padX, board.clientHeight - padY)));
+  const isMobile = isMobileGameMode();
+  const dpr = Math.min(window.devicePixelRatio || 1, isMobile ? 2 : 3);
+  snake.renderScale = size / snake.baseSize;
+  snake.renderDpr = dpr;
+  snake.els.canvas.style.width = `${size}px`;
+  snake.els.canvas.style.height = `${size}px`;
+  snake.els.canvas.width = Math.max(1, Math.round(snake.baseSize * dpr));
+  snake.els.canvas.height = Math.max(1, Math.round(snake.baseSize * dpr));
+  snake.ctx.imageSmoothingEnabled = false;
+}
+
 function initSnakeInWindow(winEl){
   const board = winEl.querySelector('#snakeBoard');
   const canvas = winEl.querySelector('#snakeCanvas');
@@ -3308,6 +3349,7 @@ function initSnakeInWindow(winEl){
   if(snake.els.speedSelect) snake.els.speedSelect.value = snake.speed;
 
   const fixedSize = 320;
+  snake.baseSize = fixedSize;
   canvas.width = fixedSize;
   canvas.height = fixedSize;
   canvas.style.width = fixedSize + 'px';
@@ -3347,6 +3389,22 @@ function initSnakeInWindow(winEl){
       if(snake.running) snakeStartLoop();
     });
   }
+
+  if(snake.resizeObserver){
+    snake.resizeObserver.disconnect();
+    snake.resizeObserver = null;
+  }
+  if(window.ResizeObserver){
+    snake.resizeObserver = new ResizeObserver(()=>{
+      if(snake.resizeRaf) return;
+      snake.resizeRaf = requestAnimationFrame(()=>{
+        snake.resizeRaf = null;
+        snakeResizeCanvas();
+      });
+    });
+    snake.resizeObserver.observe(board);
+  }
+  snakeResizeCanvas();
 
   board.addEventListener('touchstart', snakeHandleTouchStart, { passive: false });
   board.addEventListener('touchmove', snakeHandleTouchMove, { passive: false });
@@ -3427,6 +3485,10 @@ function snakeStop(){
   snake.paused = false;
   snake.gameOver = false;
   snake.started = false;
+  if(snake.resizeObserver){
+    snake.resizeObserver.disconnect();
+    snake.resizeObserver = null;
+  }
   snake.els = null;
   snake.ctx = null;
 }
@@ -3482,13 +3544,16 @@ function snakeGameOver(){
 
 function snakeDraw(){
   if(!snake.ctx || !snake.els) return;
-  const canvas = snake.els.canvas;
   const ctx = snake.ctx;
   const cell = snake.cell;
+  const base = snake.baseSize || 320;
+  const scale = snake.renderScale || 1;
+  const dpr = snake.renderDpr || 1;
 
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.setTransform(dpr * scale, 0, 0, dpr * scale, 0, 0);
+  ctx.clearRect(0, 0, base, base);
   ctx.fillStyle = '#ffffff';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillRect(0, 0, base, base);
 
   ctx.fillStyle = '#1b7c1b';
   snake.body.forEach((seg, idx)=>{
@@ -3565,8 +3630,9 @@ function snakeHandleTouchEnd(e){
 function snakeHandleTap(clientX, clientY){
   if(!isSnakeActive() || !snake.els || !snake.els.canvas) return;
   const rect = snake.els.canvas.getBoundingClientRect();
-  const x = clientX - rect.left;
-  const y = clientY - rect.top;
+  const scale = rect.width / (snake.baseSize || rect.width);
+  const x = (clientX - rect.left) / scale;
+  const y = (clientY - rect.top) / scale;
   const head = snake.body[0];
   if(!head) return;
   const headX = (head.x + 0.5) * snake.cell;
@@ -3741,6 +3807,13 @@ let dopeSkate = {
   difficulty: 'medium',
   spawnMultiplier: 1,
   scoreMultiplier: 1,
+  renderScaleX: 1,
+  renderScaleY: 1,
+  renderDpr: 1,
+  renderW: 0,
+  renderH: 0,
+  resizeObserver: null,
+  resizeRaf: null,
   lastComboHtml: '',
   lastBlissKey: '',
   startQueued: false,
@@ -3909,6 +3982,27 @@ function dopeSkateLoadAssets(){
   return dopeSkate.assetsLoading;
 }
 
+function dopeSkateResizeCanvas(){
+  if(!dopeSkate.canvas || !dopeSkate.ctx || !dopeSkate.els) return;
+  const wrap = dopeSkate.els.canvasWrap || dopeSkate.canvas.parentElement;
+  if(!wrap) return;
+  const width = Math.max(1, Math.floor(wrap.clientWidth));
+  const height = Math.max(1, Math.floor(wrap.clientHeight));
+  const isMobile = isMobileGameMode();
+  const dpr = Math.min(window.devicePixelRatio || 1, isMobile ? 2 : 3);
+  if(width === dopeSkate.renderW && height === dopeSkate.renderH && dpr === dopeSkate.renderDpr) return;
+  dopeSkate.renderW = width;
+  dopeSkate.renderH = height;
+  dopeSkate.renderDpr = dpr;
+  dopeSkate.renderScaleX = width / dopeSkate.width;
+  dopeSkate.renderScaleY = height / dopeSkate.height;
+  dopeSkate.canvas.style.width = `${width}px`;
+  dopeSkate.canvas.style.height = `${height}px`;
+  dopeSkate.canvas.width = Math.max(1, Math.round(dopeSkate.width * dpr));
+  dopeSkate.canvas.height = Math.max(1, Math.round(dopeSkate.height * dpr));
+  dopeSkate.ctx.imageSmoothingEnabled = false;
+}
+
 function dopeSkateIsInteractiveTarget(target){
   if(!target || !target.closest) return false;
   return Boolean(target.closest('[data-skate-action], [data-skate-tab], [data-skate-shop-tab], [data-games-action="back"], .skate-btn, button, a, input, select, textarea'));
@@ -3932,6 +4026,7 @@ function initDopeSkateInWindow(winEl){
     screen,
     menuOverlay: winEl.querySelector('#skateMenuOverlay'),
     overOverlay: winEl.querySelector('#skateOverOverlay'),
+    canvasWrap: winEl.querySelector('.skate-canvas-wrap'),
     score: winEl.querySelector('[data-skate-score]'),
     best: winEl.querySelector('[data-skate-best]'),
     cds: winEl.querySelector('[data-skate-cds]'),
@@ -4057,6 +4152,22 @@ function initDopeSkateInWindow(winEl){
   } else {
     dopeSkate.assetsReady = true;
   }
+
+  if(dopeSkate.resizeObserver){
+    dopeSkate.resizeObserver.disconnect();
+    dopeSkate.resizeObserver = null;
+  }
+  if(window.ResizeObserver){
+    dopeSkate.resizeObserver = new ResizeObserver(()=>{
+      if(dopeSkate.resizeRaf) return;
+      dopeSkate.resizeRaf = requestAnimationFrame(()=>{
+        dopeSkate.resizeRaf = null;
+        dopeSkateResizeCanvas();
+      });
+    });
+    if(dopeSkate.els.canvasWrap) dopeSkate.resizeObserver.observe(dopeSkate.els.canvasWrap);
+  }
+  dopeSkateResizeCanvas();
 
   dopeSkateResetWorld();
   dopeSkateShowMenu('play');
@@ -4253,6 +4364,10 @@ function dopeSkateStop(){
   dopeSkate.paused = false;
   dopeSkate.gameOver = false;
   dopeSkate.started = false;
+  if(dopeSkate.resizeObserver){
+    dopeSkate.resizeObserver.disconnect();
+    dopeSkate.resizeObserver = null;
+  }
   dopeSkate.els = null;
   dopeSkate.canvas = null;
   dopeSkate.ctx = null;
@@ -4452,7 +4567,11 @@ function dopeSkateDraw(){
   const w = dopeSkate.width;
   const h = dopeSkate.height;
   const groundY = h - dopeSkate.groundHeight;
+  const scaleX = dopeSkate.renderScaleX || 1;
+  const scaleY = dopeSkate.renderScaleY || 1;
+  const dpr = dopeSkate.renderDpr || 1;
 
+  ctx.setTransform(dpr * scaleX, 0, 0, dpr * scaleY, 0, 0);
   ctx.clearRect(0, 0, w, h);
   ctx.save();
   if(dopeSkate.cameraShake > 0){
