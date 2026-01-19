@@ -1008,6 +1008,155 @@
       .snake-instructions{
         line-height:1.3;
       }
+      .skate-shell{
+        display:flex;
+        flex-direction:column;
+        gap:8px;
+      }
+      .skate-topbar{
+        display:flex;
+        align-items:center;
+        gap:10px;
+        flex-wrap:wrap;
+      }
+      .skate-title{
+        margin:0;
+        font-size:16px;
+        font-weight:700;
+      }
+      .skate-menubar{
+        display:flex;
+        gap:6px;
+        padding:4px;
+        flex-wrap:wrap;
+      }
+      .skate-menu-btn{
+        height:22px;
+        padding:0 10px;
+      }
+      .skate-body{
+        display:flex;
+        gap:10px;
+        flex-wrap:wrap;
+        align-items:stretch;
+      }
+      .skate-screen{
+        position:relative;
+        flex:1 1 520px;
+        min-width:260px;
+        padding:6px;
+        background:var(--panel-in);
+        touch-action:none;
+      }
+      #skateCanvas{
+        display:block;
+        width:100%;
+        height:auto;
+        background:#2f2f2f;
+        touch-action:none;
+      }
+      .skate-hud{
+        position:absolute;
+        left:12px;
+        top:12px;
+        display:flex;
+        gap:10px;
+        flex-wrap:wrap;
+        padding:4px 6px;
+        background:rgba(233,233,233,0.88);
+        border:1px solid var(--panel-border);
+        font-size:12px;
+      }
+      body.dark .skate-hud{
+        background:rgba(24,24,24,0.88);
+      }
+      .skate-overlay{
+        position:absolute;
+        inset:6px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        background:rgba(233,233,233,0.92);
+      }
+      body.dark .skate-overlay{
+        background:rgba(16,16,16,0.9);
+      }
+      .skate-menu{
+        display:flex;
+        gap:12px;
+        width:min(760px, 96%);
+        padding:10px;
+      }
+      .skate-menu-list{
+        display:flex;
+        flex-direction:column;
+        gap:6px;
+        min-width:150px;
+      }
+      .skate-menu-panels{
+        flex:1;
+      }
+      .skate-panel{
+        display:none;
+        min-height:220px;
+      }
+      .skate-panel.active{
+        display:block;
+      }
+      .skate-panel-title{
+        font-weight:700;
+        margin-bottom:8px;
+      }
+      .skate-panel-text{
+        margin:0 0 12px 0;
+        line-height:1.4;
+      }
+      .skate-shop-grid{
+        display:grid;
+        grid-template-columns:repeat(auto-fill, minmax(120px, 1fr));
+        gap:8px;
+      }
+      .skate-shop-item{
+        padding:8px;
+        border:1px solid var(--panel-border);
+        background:var(--panel-bg);
+        display:flex;
+        flex-direction:column;
+        gap:6px;
+        min-height:70px;
+      }
+      .skate-controls{
+        display:flex;
+        gap:8px;
+        flex-wrap:wrap;
+        justify-content:center;
+      }
+      .skate-control{
+        min-width:90px;
+        justify-content:center;
+      }
+      .skate-control[disabled]{
+        opacity:0.6;
+        filter:grayscale(0.2);
+        cursor:default;
+      }
+      .skate-statusbar{
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        padding:4px 8px;
+        gap:10px;
+        flex-wrap:wrap;
+      }
+      .skate-over-box{
+        display:flex;
+        flex-direction:column;
+        gap:8px;
+        min-width:200px;
+        align-items:center;
+        text-align:center;
+        padding:10px 12px;
+      }
       @media (max-width: 520px){
         .music-grid{
           grid-template-columns:1fr;
@@ -1039,6 +1188,18 @@
           min-width:336px;
           min-height:336px;
           margin:0 auto;
+        }
+        .skate-menu{
+          flex-direction:column;
+        }
+        .skate-menu-list{
+          flex-direction:row;
+          flex-wrap:wrap;
+          min-width:0;
+        }
+        .skate-hud{
+          position:static;
+          margin:6px 0 0;
         }
       }
       .settings-shell{
@@ -1653,6 +1814,9 @@
           speed: 'normal',
           highScore: 0,
         },
+        dopeSkate: {
+          highScore: 0,
+        },
         trash: new Set(),
         iconLabels: {},
         trashSelection: new Set(),
@@ -1680,6 +1844,7 @@
       const CLOTHES_CACHE_KEY = 'bliss98_clothes_cache';
       const CLOTHES_CACHE_TTL = 1000 * 60 * 60 * 3;
       const SNAKE_HIGH_KEY = 'bliss98_snake_highscore';
+      const DOPE_SKATE_HIGH_KEY = 'bliss98_dope_skate_highscore';
       const TITLEBAR_KEY = 'bliss98_titlebar_theme';
       const THEME_PRESET_KEY = 'bliss98_theme_preset';
       const THEME_CUSTOM_KEY = 'bliss98_theme_custom';
@@ -1774,7 +1939,8 @@
       ];
 
       const VIRTUAL_ICONS = [
-        { id:'snake', titleKey:'games.snake', iconFile:'/assets/icons/snake.png' }
+        { id:'snake', titleKey:'games.snake', iconFile:'/assets/icons/snake.png' },
+        { id:'dope-skate', titleKey:'games.dopeSkate', iconFile:'/assets/icons/dope-skate.svg' }
       ];
 
       function initSfx(){
@@ -2234,6 +2400,9 @@ function renderGamesWindow(){
     return;
   }
 
+  if(state.games.view === 'dope-skate'){
+    initDopeSkateInWindow(win);
+  }
   if(state.games.view === 'snake'){
     initSnakeInWindow(win);
   }
@@ -2255,6 +2424,12 @@ function openGameFromHub(id){
     renderGamesWindow();
     return;
   }
+  if(id === 'dope-skate'){
+    state.games.view = 'dope-skate';
+    state.games.selectedId = 'dope-skate';
+    renderGamesWindow();
+    return;
+  }
   if(getAppById(id)){
     openApp(id);
   }
@@ -2264,6 +2439,7 @@ function backToGamesHub(){
   state.games.view = 'list';
   state.games.selectedId = getFirstGameId();
   snakeStop();
+  dopeSkateStop();
   renderGamesWindow();
 }
 
@@ -2621,6 +2797,495 @@ function updateSnakeUI(){
   if(snake.els.pauseBtn){
     snake.els.pauseBtn.classList.toggle('pressed', snake.paused);
   }
+}
+
+const DOPE_SKATE_ASSETS = {
+  sky: '/assets/skate/sky/sky.svg',
+  city: '/assets/skate/background/city.svg',
+  ground: '/assets/skate/ground/ground.svg',
+  body: '/assets/skate/skater/body.svg',
+  hat: '/assets/skate/hat/hat.svg',
+  board: '/assets/skate/board/board.svg',
+  wheels: '/assets/skate/wheels/wheels.svg',
+  vodka: '/assets/skate/obstacles/vodka.svg',
+  trash: '/assets/skate/obstacles/trash.svg',
+  cone: '/assets/skate/obstacles/cone.svg',
+  cd: '/assets/skate/collectibles/cd.svg',
+};
+
+let dopeSkate = {
+  canvas: null,
+  ctx: null,
+  els: null,
+  width: 640,
+  height: 360,
+  groundHeight: 64,
+  player: null,
+  obstacles: [],
+  spawnTimer: 0,
+  speed: 240,
+  gravity: 1400,
+  jumpVel: -520,
+  score: 0,
+  distance: 0,
+  cds: 0,
+  combo: 1,
+  running: false,
+  paused: false,
+  gameOver: false,
+  started: false,
+  raf: null,
+  lastTime: 0,
+  assets: null,
+  assetsReady: false,
+  offsets: { sky: 0, city: 0, ground: 0 },
+  gamepad: { jump: false },
+};
+
+function loadDopeSkateHighScore(){
+  try{
+    const raw = localStorage.getItem(DOPE_SKATE_HIGH_KEY);
+    const parsed = parseInt(raw || '0', 10);
+    return Number.isFinite(parsed) ? parsed : 0;
+  } catch {
+    return 0;
+  }
+}
+
+function saveDopeSkateHighScore(score){
+  try{ localStorage.setItem(DOPE_SKATE_HIGH_KEY, String(score)); } catch {}
+}
+
+function isDopeSkateActive(){
+  return state.activeWindowId === 'games' && state.games.view === 'dope-skate';
+}
+
+function loadDopeSkateAssets(){
+  const entries = Object.entries(DOPE_SKATE_ASSETS);
+  const promises = entries.map(([key, src]) => new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => resolve([key, img]);
+    img.onerror = () => resolve([key, null]);
+    img.src = src;
+  }));
+  return Promise.all(promises).then(results => {
+    const out = {};
+    results.forEach(([key, img]) => { out[key] = img; });
+    return out;
+  });
+}
+
+function initDopeSkateInWindow(winEl){
+  const canvas = winEl.querySelector('#skateCanvas');
+  const screen = winEl.querySelector('#skateScreen');
+  if(!canvas || !screen) return;
+
+  dopeSkate.canvas = canvas;
+  dopeSkate.ctx = canvas.getContext('2d');
+  dopeSkate.ctx.imageSmoothingEnabled = false;
+  dopeSkate.width = canvas.width;
+  dopeSkate.height = canvas.height;
+  dopeSkate.groundHeight = 64;
+
+  dopeSkate.els = {
+    screen,
+    menuOverlay: winEl.querySelector('#skateMenuOverlay'),
+    overOverlay: winEl.querySelector('#skateOverOverlay'),
+    score: winEl.querySelector('[data-skate-score]'),
+    best: winEl.querySelector('[data-skate-best]'),
+    cds: winEl.querySelector('[data-skate-cds]'),
+    combo: winEl.querySelector('[data-skate-combo]'),
+    overScore: winEl.querySelector('[data-skate-over-score]'),
+    overBest: winEl.querySelector('[data-skate-over-best]'),
+    localBest: winEl.querySelector('[data-skate-local-best]'),
+    backBtn: winEl.querySelector('[data-games-action="back"]'),
+    menuButtons: Array.from(winEl.querySelectorAll('[data-skate-menu]')),
+    panelButtons: Array.from(winEl.querySelectorAll('[data-skate-panel]')),
+    actionButtons: Array.from(winEl.querySelectorAll('[data-skate-action]')),
+  };
+
+  if(typeof state.dopeSkate.highScore !== 'number' || Number.isNaN(state.dopeSkate.highScore)){
+    state.dopeSkate.highScore = loadDopeSkateHighScore();
+  }
+
+  if(dopeSkate.els.backBtn){
+    dopeSkate.els.backBtn.addEventListener('click', (e)=>{
+      e.preventDefault();
+      backToGamesHub();
+    });
+  }
+
+  dopeSkate.els.menuButtons.forEach(btn => {
+    btn.addEventListener('click', ()=>{
+      dopeSkateShowMenu(btn.dataset.skateMenu || 'play');
+    });
+  });
+
+  dopeSkate.els.panelButtons.forEach(btn => {
+    btn.addEventListener('click', ()=>{
+      dopeSkateSetPanel(btn.dataset.skatePanel || 'play');
+    });
+  });
+
+  dopeSkate.els.actionButtons.forEach(btn => {
+    btn.addEventListener('click', (e)=>{
+      const action = btn.dataset.skateAction;
+      if(action === 'start'){
+        dopeSkateStartRun();
+      } else if(action === 'retry'){
+        dopeSkateStartRun();
+      } else if(action === 'menu'){
+        dopeSkateShowMenu('play');
+      } else if(action === 'jump'){
+        dopeSkateJump();
+      }
+      if(e.pointerType === 'touch') e.preventDefault();
+    });
+    btn.addEventListener('touchstart', (e)=>{ e.preventDefault(); }, { passive:false });
+  });
+
+  screen.addEventListener('touchstart', (e)=>{ e.preventDefault(); }, { passive:false });
+  screen.addEventListener('touchmove', (e)=>{ e.preventDefault(); }, { passive:false });
+  screen.addEventListener('pointerdown', (e)=>{
+    if(e.pointerType === 'mouse') return;
+    if(!dopeSkate.running || dopeSkate.gameOver) return;
+    dopeSkateJump();
+    e.preventDefault();
+  }, { passive:false });
+
+  if(!dopeSkate.assets){
+    loadDopeSkateAssets().then(assets => {
+      dopeSkate.assets = assets;
+      dopeSkate.assetsReady = true;
+      dopeSkateDraw();
+    });
+  } else {
+    dopeSkate.assetsReady = true;
+  }
+
+  dopeSkateResetWorld();
+  dopeSkateShowMenu('play');
+  updateDopeSkateUI();
+  dopeSkateStartLoop();
+}
+
+function dopeSkateResetWorld(){
+  const groundY = dopeSkate.height - dopeSkate.groundHeight;
+  dopeSkate.player = {
+    x: 130,
+    y: groundY - 58,
+    w: 40,
+    h: 58,
+    vy: 0,
+    onGround: true,
+  };
+  dopeSkate.obstacles = [];
+  dopeSkate.spawnTimer = 1.1;
+  dopeSkate.score = 0;
+  dopeSkate.distance = 0;
+  dopeSkate.cds = 0;
+  dopeSkate.combo = 1;
+  dopeSkate.gameOver = false;
+  dopeSkate.running = false;
+  dopeSkate.paused = false;
+  dopeSkate.started = false;
+  dopeSkate.offsets = { sky: 0, city: 0, ground: 0 };
+}
+
+function dopeSkateStartRun(){
+  dopeSkateResetWorld();
+  dopeSkate.running = true;
+  dopeSkate.started = true;
+  if(dopeSkate.els && dopeSkate.els.menuOverlay){
+    dopeSkate.els.menuOverlay.classList.add('hidden');
+  }
+  if(dopeSkate.els && dopeSkate.els.overOverlay){
+    dopeSkate.els.overOverlay.classList.add('hidden');
+  }
+  updateDopeSkateUI();
+}
+
+function dopeSkateShowMenu(panel){
+  dopeSkate.paused = true;
+  dopeSkate.running = false;
+  if(dopeSkate.els && dopeSkate.els.menuOverlay){
+    dopeSkate.els.menuOverlay.classList.remove('hidden');
+  }
+  if(dopeSkate.els && dopeSkate.els.overOverlay){
+    dopeSkate.els.overOverlay.classList.add('hidden');
+  }
+  dopeSkateSetPanel(panel);
+}
+
+function dopeSkateSetPanel(panel){
+  if(!dopeSkate.els) return;
+  dopeSkate.els.panelButtons.forEach(btn => {
+    const active = btn.dataset.skatePanel === panel;
+    btn.classList.toggle('pressed', active);
+  });
+  const panels = Array.from(dopeSkate.els.menuOverlay.querySelectorAll('[data-skate-panel]'));
+  panels.forEach(p => p.classList.toggle('active', p.dataset.skatePanel === panel));
+  dopeSkate.els.menuButtons.forEach(btn => {
+    btn.classList.toggle('pressed', btn.dataset.skateMenu === panel);
+  });
+}
+
+function dopeSkateJump(){
+  if(!dopeSkate.running || dopeSkate.gameOver) return;
+  if(!dopeSkate.player.onGround) return;
+  dopeSkate.player.vy = dopeSkate.jumpVel;
+  dopeSkate.player.onGround = false;
+}
+
+function dopeSkateStartLoop(){
+  dopeSkateStopLoop();
+  dopeSkate.lastTime = 0;
+  dopeSkate.raf = requestAnimationFrame(dopeSkateLoop);
+}
+
+function dopeSkateStopLoop(){
+  if(dopeSkate.raf){
+    cancelAnimationFrame(dopeSkate.raf);
+    dopeSkate.raf = null;
+  }
+}
+
+function dopeSkateStop(){
+  dopeSkateStopLoop();
+  dopeSkate.running = false;
+  dopeSkate.paused = false;
+  dopeSkate.gameOver = false;
+  dopeSkate.started = false;
+  dopeSkate.els = null;
+  dopeSkate.canvas = null;
+  dopeSkate.ctx = null;
+}
+
+function dopeSkateLoop(ts){
+  if(!dopeSkate.ctx) return;
+  const dt = dopeSkate.lastTime ? Math.min(0.05, (ts - dopeSkate.lastTime) / 1000) : 0;
+  dopeSkate.lastTime = ts;
+  if(dopeSkate.running && !dopeSkate.paused && !dopeSkate.gameOver){
+    dopeSkateUpdate(dt);
+  }
+  dopeSkateDraw();
+  dopeSkate.raf = requestAnimationFrame(dopeSkateLoop);
+}
+
+function dopeSkateUpdate(dt){
+  const groundY = dopeSkate.height - dopeSkate.groundHeight;
+  const player = dopeSkate.player;
+  player.vy += dopeSkate.gravity * dt;
+  player.y += player.vy * dt;
+  if(player.y >= groundY - player.h){
+    player.y = groundY - player.h;
+    player.vy = 0;
+    player.onGround = true;
+  }
+
+  dopeSkate.distance += dopeSkate.speed * dt;
+  dopeSkate.score = Math.max(dopeSkate.score, Math.floor(dopeSkate.distance / 8));
+
+  dopeSkate.spawnTimer -= dt;
+  if(dopeSkate.spawnTimer <= 0){
+    dopeSkateSpawnObstacle();
+    dopeSkate.spawnTimer = 0.9 + Math.random() * 0.9;
+  }
+
+  dopeSkate.obstacles.forEach(ob => { ob.x -= dopeSkate.speed * dt; });
+  dopeSkate.obstacles = dopeSkate.obstacles.filter(ob => ob.x + ob.w > -40);
+
+  const playerBox = {
+    x: player.x + 6,
+    y: player.y + 8,
+    w: player.w - 12,
+    h: player.h - 10,
+  };
+
+  for(const ob of dopeSkate.obstacles){
+    const hit = !(playerBox.x + playerBox.w < ob.x || playerBox.x > ob.x + ob.w || playerBox.y + playerBox.h < ob.y || playerBox.y > ob.y + ob.h);
+    if(hit){
+      dopeSkateGameOver();
+      break;
+    }
+  }
+
+  dopeSkateUpdateOffsets(dt);
+  dopeSkateCheckGamepad();
+  updateDopeSkateUI();
+}
+
+function dopeSkateUpdateOffsets(dt){
+  const assets = dopeSkate.assets || {};
+  const skyW = assets.sky ? assets.sky.width : dopeSkate.width;
+  const cityW = assets.city ? assets.city.width : dopeSkate.width;
+  const groundW = assets.ground ? assets.ground.width : dopeSkate.width;
+  dopeSkate.offsets.sky = (dopeSkate.offsets.sky + dopeSkate.speed * dt * 0.15) % skyW;
+  dopeSkate.offsets.city = (dopeSkate.offsets.city + dopeSkate.speed * dt * 0.35) % cityW;
+  dopeSkate.offsets.ground = (dopeSkate.offsets.ground + dopeSkate.speed * dt * 1.0) % groundW;
+}
+
+function dopeSkateSpawnObstacle(){
+  const groundY = dopeSkate.height - dopeSkate.groundHeight;
+  const types = [
+    { key: 'vodka', w: 24, h: 50 },
+    { key: 'trash', w: 36, h: 34 },
+    { key: 'cone', w: 28, h: 40 },
+  ];
+  const pick = types[Math.floor(Math.random() * types.length)];
+  dopeSkate.obstacles.push({
+    type: pick.key,
+    w: pick.w,
+    h: pick.h,
+    x: dopeSkate.width + 40,
+    y: groundY - pick.h,
+  });
+}
+
+function dopeSkateGameOver(){
+  dopeSkate.running = false;
+  dopeSkate.gameOver = true;
+  if(dopeSkate.score > state.dopeSkate.highScore){
+    state.dopeSkate.highScore = dopeSkate.score;
+    saveDopeSkateHighScore(state.dopeSkate.highScore);
+  }
+  updateDopeSkateUI();
+  if(dopeSkate.els && dopeSkate.els.overOverlay){
+    dopeSkate.els.overOverlay.classList.remove('hidden');
+  }
+}
+
+function dopeSkateDraw(){
+  if(!dopeSkate.ctx) return;
+  const ctx = dopeSkate.ctx;
+  const w = dopeSkate.width;
+  const h = dopeSkate.height;
+  const groundY = h - dopeSkate.groundHeight;
+
+  ctx.clearRect(0, 0, w, h);
+  dopeSkateDrawLayer(dopeSkate.assets && dopeSkate.assets.sky, dopeSkate.offsets.sky, 0, h);
+  dopeSkateDrawLayer(dopeSkate.assets && dopeSkate.assets.city, dopeSkate.offsets.city, 40, h - 80);
+  dopeSkateDrawLayer(dopeSkate.assets && dopeSkate.assets.ground, dopeSkate.offsets.ground, groundY, dopeSkate.groundHeight);
+
+  if(!dopeSkate.assetsReady){
+    ctx.fillStyle = '#2b2b2b';
+    ctx.fillRect(0, groundY, w, dopeSkate.groundHeight);
+  }
+
+  dopeSkate.obstacles.forEach(ob => {
+    const img = dopeSkate.assets ? dopeSkate.assets[ob.type] : null;
+    if(img){
+      ctx.drawImage(img, ob.x, ob.y, ob.w, ob.h);
+    } else {
+      ctx.fillStyle = '#b54f2a';
+      ctx.fillRect(ob.x, ob.y, ob.w, ob.h);
+    }
+  });
+
+  dopeSkateDrawSkater();
+}
+
+function dopeSkateDrawLayer(img, offset, y, height){
+  const ctx = dopeSkate.ctx;
+  const w = dopeSkate.width;
+  if(!img){
+    ctx.fillStyle = '#6aa6d9';
+    ctx.fillRect(0, y, w, height);
+    return;
+  }
+  const tileW = img.width;
+  let x = -offset;
+  while(x < w){
+    ctx.drawImage(img, x, y, tileW, height);
+    x += tileW;
+  }
+}
+
+function dopeSkateDrawSkater(){
+  const ctx = dopeSkate.ctx;
+  const p = dopeSkate.player;
+  if(!p) return;
+  const body = dopeSkate.assets ? dopeSkate.assets.body : null;
+  const hat = dopeSkate.assets ? dopeSkate.assets.hat : null;
+  const board = dopeSkate.assets ? dopeSkate.assets.board : null;
+  const wheels = dopeSkate.assets ? dopeSkate.assets.wheels : null;
+
+  const bodyW = 44;
+  const bodyH = 58;
+  const boardW = 72;
+  const boardH = 14;
+  const wheelsW = 32;
+  const wheelsH = 10;
+
+  if(board){
+    ctx.drawImage(board, p.x - 6, p.y + bodyH - 4, boardW, boardH);
+  } else {
+    ctx.fillStyle = '#c28b2f';
+    ctx.fillRect(p.x - 6, p.y + bodyH - 4, boardW, boardH);
+  }
+  if(wheels){
+    ctx.drawImage(wheels, p.x + 2, p.y + bodyH + 6, wheelsW, wheelsH);
+  } else {
+    ctx.fillStyle = '#222';
+    ctx.fillRect(p.x + 2, p.y + bodyH + 6, wheelsW, wheelsH);
+  }
+
+  if(body){
+    ctx.drawImage(body, p.x, p.y, bodyW, bodyH);
+  } else {
+    ctx.fillStyle = '#2f6b9a';
+    ctx.fillRect(p.x, p.y + 12, bodyW, bodyH - 12);
+    ctx.fillStyle = '#f2c6a0';
+    ctx.fillRect(p.x + 12, p.y, 18, 18);
+  }
+  if(hat){
+    ctx.drawImage(hat, p.x + 6, p.y - 6, 30, 16);
+  }
+}
+
+function dopeSkateCheckGamepad(){
+  const pads = navigator.getGamepads ? navigator.getGamepads() : [];
+  if(!pads) return;
+  for(const pad of pads){
+    if(!pad) continue;
+    const pressed = pad.buttons && pad.buttons[0] && pad.buttons[0].pressed;
+    if(pressed && !dopeSkate.gamepad.jump){
+      dopeSkateJump();
+    }
+    dopeSkate.gamepad.jump = pressed;
+  }
+}
+
+function updateDopeSkateUI(){
+  if(!dopeSkate.els) return;
+  if(dopeSkate.els.score) dopeSkate.els.score.textContent = String(dopeSkate.score);
+  if(dopeSkate.els.combo) dopeSkate.els.combo.textContent = `${dopeSkate.combo}x`;
+  if(dopeSkate.els.cds) dopeSkate.els.cds.textContent = String(dopeSkate.cds);
+  if(dopeSkate.els.best) dopeSkate.els.best.textContent = String(state.dopeSkate.highScore || 0);
+  if(dopeSkate.els.localBest) dopeSkate.els.localBest.textContent = String(state.dopeSkate.highScore || 0);
+  if(dopeSkate.els.overScore) dopeSkate.els.overScore.textContent = String(dopeSkate.score);
+  if(dopeSkate.els.overBest) dopeSkate.els.overBest.textContent = String(state.dopeSkate.highScore || 0);
+}
+
+function dopeSkateHandleKey(e){
+  if(!isDopeSkateActive()) return false;
+  const tag = e.target && e.target.tagName;
+  if(tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return false;
+
+  const key = e.key.toLowerCase();
+  let handled = true;
+  if(key === 'arrowup' || key === 'w' || key === ' ' || key === 'spacebar'){
+    dopeSkateJump();
+  } else if(key === 'enter' && !dopeSkate.running && !dopeSkate.gameOver){
+    dopeSkateStartRun();
+  } else {
+    handled = false;
+  }
+
+  if(handled){
+    e.preventDefault();
+  }
+  return handled;
 }
 
 function loadClothesCache(){
@@ -2981,7 +3646,7 @@ function loadFolders(){
     const raw = localStorage.getItem(FOLDER_KEY);
     if(raw) return JSON.parse(raw);
   } catch {}
-  return { games: ['snake'] };
+  return { games: ['snake', 'dope-skate'] };
 }
 
 function saveFolders(){
@@ -3817,11 +4482,50 @@ function installLongPress(el, getTarget){
           'app.trash': 'Recycle Bin',
           'app.mediaplayer': 'BLISS Media Player',
           'games.snake': 'Snake',
+          'games.dopeSkate': 'Dope Skate',
           'games.back': 'Back',
           'games.viewGrid': 'Grid view',
           'games.viewList': 'List view',
           'games.bigIcons': 'Bigger Icons',
           'games.empty': 'No games yet.',
+          'skate.menu.play': 'Play',
+          'skate.menu.settings': 'Settings',
+          'skate.menu.shop': 'Shop',
+          'skate.menu.howto': 'How to play',
+          'skate.menu.leaderboard': 'Leaderboard',
+          'skate.menu.playDesc': 'Endless run through the city. Jump obstacles, keep the combo alive.',
+          'skate.action.start': 'Start run',
+          'skate.action.retry': 'Retry',
+          'skate.action.menu': 'Menu',
+          'skate.action.jump': 'Jump',
+          'skate.action.trick': 'Trick',
+          'skate.action.grind': 'Grind',
+          'skate.hud.score': 'Score',
+          'skate.hud.combo': 'Combo',
+          'skate.hud.best': 'Best',
+          'skate.hud.cds': 'CDs',
+          'skate.gameOver': 'Game Over',
+          'skate.status.ready': 'Ready to roll',
+          'skate.status.controls': 'Jump: Space / Tap',
+          'skate.settings.camera': 'Camera',
+          'skate.settings.cameraDesc': 'Classic side view',
+          'skate.settings.speed': 'Speed',
+          'skate.settings.speedDesc': 'Auto runner',
+          'skate.settings.sound': 'Sound',
+          'skate.settings.soundDesc': 'Soon',
+          'skate.shop.ground': 'Ground',
+          'skate.shop.background': 'Background',
+          'skate.shop.sky': 'Sky',
+          'skate.shop.skater': 'Skater',
+          'skate.shop.hat': 'Hat',
+          'skate.shop.board': 'Skate',
+          'skate.shop.wheels': 'Wheels',
+          'skate.howto.body': 'Jump over obstacles. Keep moving to raise your score. On mobile, use the big buttons.',
+          'skate.howto.jump': 'Jump',
+          'skate.howto.trick': 'Trick',
+          'skate.howto.grind': 'Grind',
+          'skate.leaderboard.body': 'Local and global records will show here.',
+          'skate.leaderboard.local': 'Local best',
           'snake.title': 'Snake',
           'snake.start': 'Start',
           'snake.restart': 'Restart',
@@ -4183,11 +4887,50 @@ function installLongPress(el, getTarget){
           'app.trash': 'Lixeira',
           'app.mediaplayer': 'BLISS Media Player',
           'games.snake': 'Snake',
+          'games.dopeSkate': 'Dope Skate',
           'games.back': 'Voltar',
           'games.viewGrid': 'Grade',
           'games.viewList': 'Lista',
           'games.bigIcons': 'Ícones grandes',
           'games.empty': 'Sem jogos ainda.',
+          'skate.menu.play': 'Jogar',
+          'skate.menu.settings': 'Configurações',
+          'skate.menu.shop': 'Shop',
+          'skate.menu.howto': 'Como jogar',
+          'skate.menu.leaderboard': 'Leaderboard',
+          'skate.menu.playDesc': 'Endless run pela cidade. Pule obstáculos e mantenha o combo.',
+          'skate.action.start': 'Iniciar run',
+          'skate.action.retry': 'Tentar de novo',
+          'skate.action.menu': 'Menu',
+          'skate.action.jump': 'Pular',
+          'skate.action.trick': 'Trick',
+          'skate.action.grind': 'Grind',
+          'skate.hud.score': 'Score',
+          'skate.hud.combo': 'Combo',
+          'skate.hud.best': 'Recorde',
+          'skate.hud.cds': 'CDs',
+          'skate.gameOver': 'Game Over',
+          'skate.status.ready': 'Pronto para rodar',
+          'skate.status.controls': 'Pulo: Espaco / Toque',
+          'skate.settings.camera': 'Camera',
+          'skate.settings.cameraDesc': 'Visao lateral classica',
+          'skate.settings.speed': 'Velocidade',
+          'skate.settings.speedDesc': 'Runner automatico',
+          'skate.settings.sound': 'Som',
+          'skate.settings.soundDesc': 'Em breve',
+          'skate.shop.ground': 'Chao',
+          'skate.shop.background': 'Fundo',
+          'skate.shop.sky': 'Ceu',
+          'skate.shop.skater': 'Skater',
+          'skate.shop.hat': 'Chapeu',
+          'skate.shop.board': 'Skate',
+          'skate.shop.wheels': 'Rodas',
+          'skate.howto.body': 'Pule os obstaculos. Continue correndo para aumentar o score. No mobile, use os botoes grandes.',
+          'skate.howto.jump': 'Pulo',
+          'skate.howto.trick': 'Trick',
+          'skate.howto.grind': 'Grind',
+          'skate.leaderboard.body': 'Records locais e globais aparecem aqui.',
+          'skate.leaderboard.local': 'Recorde local',
           'snake.title': 'Snake',
           'snake.start': 'Iniciar',
           'snake.restart': 'Reiniciar',
@@ -5988,6 +6731,146 @@ Eu sou o buffalo branco extinto`
 
         art: () => `<h2>BLISS — ${t('app.art')}</h2><p>${t('common.soon')}</p>`,
         games: () => {
+          if(state.games.view === 'dope-skate'){
+            return `
+              <div class="skate-shell">
+                <div class="skate-topbar">
+                  <button class="btn bevel" type="button" data-games-action="back" data-i18n="games.back">Back</button>
+                  <h2 class="skate-title">BLISS — ${t('games.dopeSkate')}</h2>
+                </div>
+                <div class="skate-menubar bevel">
+                  <button class="btn bevel skate-menu-btn" type="button" data-skate-menu="play" data-i18n="skate.menu.play">Play</button>
+                  <button class="btn bevel skate-menu-btn" type="button" data-skate-menu="settings" data-i18n="skate.menu.settings">Settings</button>
+                  <button class="btn bevel skate-menu-btn" type="button" data-skate-menu="shop" data-i18n="skate.menu.shop">Shop</button>
+                  <button class="btn bevel skate-menu-btn" type="button" data-skate-menu="howto" data-i18n="skate.menu.howto">How to play</button>
+                  <button class="btn bevel skate-menu-btn" type="button" data-skate-menu="leaderboard" data-i18n="skate.menu.leaderboard">Leaderboard</button>
+                </div>
+                <div class="skate-body">
+                  <div class="skate-screen bevel-in" id="skateScreen">
+                    <canvas id="skateCanvas" class="pixel" width="640" height="360"></canvas>
+                    <div class="skate-hud" id="skateHud">
+                      <div><span data-i18n="skate.hud.score">Score</span>: <strong data-skate-score>0</strong></div>
+                      <div><span data-i18n="skate.hud.combo">Combo</span>: <strong data-skate-combo>1x</strong></div>
+                      <div><span data-i18n="skate.hud.best">Best</span>: <strong data-skate-best>0</strong></div>
+                      <div><span data-i18n="skate.hud.cds">CDs</span>: <strong data-skate-cds>0</strong></div>
+                    </div>
+                    <div class="skate-overlay" id="skateMenuOverlay">
+                      <div class="skate-menu bevel">
+                        <div class="skate-menu-list">
+                          <button class="btn bevel" type="button" data-skate-panel="play" data-i18n="skate.menu.play">Play</button>
+                          <button class="btn bevel" type="button" data-skate-panel="settings" data-i18n="skate.menu.settings">Settings</button>
+                          <button class="btn bevel" type="button" data-skate-panel="shop" data-i18n="skate.menu.shop">Shop</button>
+                          <button class="btn bevel" type="button" data-skate-panel="howto" data-i18n="skate.menu.howto">How to play</button>
+                          <button class="btn bevel" type="button" data-skate-panel="leaderboard" data-i18n="skate.menu.leaderboard">Leaderboard</button>
+                        </div>
+                        <div class="skate-menu-panels">
+                          <div class="skate-panel active" data-skate-panel="play">
+                            <div class="skate-panel-title" data-i18n="skate.menu.play">Play</div>
+                            <p class="skate-panel-text" data-i18n="skate.menu.playDesc">Endless run through the city. Jump obstacles, keep the combo alive.</p>
+                            <button class="btn bevel" type="button" data-skate-action="start" data-i18n="skate.action.start">Start run</button>
+                          </div>
+                          <div class="skate-panel" data-skate-panel="settings">
+                            <div class="skate-panel-title" data-i18n="skate.menu.settings">Settings</div>
+                            <div class="skate-shop-grid">
+                              <div class="skate-shop-item">
+                                <strong data-i18n="skate.settings.camera">Camera</strong>
+                                <span class="tiny" data-i18n="skate.settings.cameraDesc">Classic side view</span>
+                              </div>
+                              <div class="skate-shop-item">
+                                <strong data-i18n="skate.settings.speed">Speed</strong>
+                                <span class="tiny" data-i18n="skate.settings.speedDesc">Auto runner</span>
+                              </div>
+                              <div class="skate-shop-item">
+                                <strong data-i18n="skate.settings.sound">Sound</strong>
+                                <span class="tiny" data-i18n="skate.settings.soundDesc">Soon</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="skate-panel" data-skate-panel="shop">
+                            <div class="skate-panel-title" data-i18n="skate.menu.shop">Shop</div>
+                            <div class="skate-shop-grid">
+                              <div class="skate-shop-item">
+                                <strong data-i18n="skate.shop.ground">Ground</strong>
+                                <span class="tiny">CD 120</span>
+                              </div>
+                              <div class="skate-shop-item">
+                                <strong data-i18n="skate.shop.background">Background</strong>
+                                <span class="tiny">CD 180</span>
+                              </div>
+                              <div class="skate-shop-item">
+                                <strong data-i18n="skate.shop.sky">Sky</strong>
+                                <span class="tiny">CD 140</span>
+                              </div>
+                              <div class="skate-shop-item">
+                                <strong data-i18n="skate.shop.skater">Skater</strong>
+                                <span class="tiny">CD 220</span>
+                              </div>
+                              <div class="skate-shop-item">
+                                <strong data-i18n="skate.shop.hat">Hat</strong>
+                                <span class="tiny">CD 90</span>
+                              </div>
+                              <div class="skate-shop-item">
+                                <strong data-i18n="skate.shop.board">Skate</strong>
+                                <span class="tiny">CD 200</span>
+                              </div>
+                              <div class="skate-shop-item">
+                                <strong data-i18n="skate.shop.wheels">Wheels</strong>
+                                <span class="tiny">CD 110</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="skate-panel" data-skate-panel="howto">
+                            <div class="skate-panel-title" data-i18n="skate.menu.howto">How to play</div>
+                            <p class="skate-panel-text" data-i18n="skate.howto.body">Jump over obstacles. Keep moving to raise your score. On mobile, use the big buttons.</p>
+                            <div class="skate-shop-grid">
+                              <div class="skate-shop-item">
+                                <strong data-i18n="skate.howto.jump">Jump</strong>
+                                <span class="tiny">Space / ↑ / Tap</span>
+                              </div>
+                              <div class="skate-shop-item">
+                                <strong data-i18n="skate.howto.trick">Trick</strong>
+                                <span class="tiny" data-i18n="common.soon">Soon.</span>
+                              </div>
+                              <div class="skate-shop-item">
+                                <strong data-i18n="skate.howto.grind">Grind</strong>
+                                <span class="tiny" data-i18n="common.soon">Soon.</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="skate-panel" data-skate-panel="leaderboard">
+                            <div class="skate-panel-title" data-i18n="skate.menu.leaderboard">Leaderboard</div>
+                            <p class="skate-panel-text" data-i18n="skate.leaderboard.body">Local and global records will show here.</p>
+                            <div class="skate-shop-item">
+                              <strong data-i18n="skate.leaderboard.local">Local best</strong>
+                              <span class="tiny" data-skate-local-best>0</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="skate-overlay hidden" id="skateOverOverlay">
+                      <div class="skate-over-box bevel">
+                        <strong data-i18n="skate.gameOver">Game Over</strong>
+                        <div class="tiny"><span data-i18n="skate.hud.score">Score</span>: <span data-skate-over-score>0</span></div>
+                        <div class="tiny"><span data-i18n="skate.hud.best">Best</span>: <span data-skate-over-best>0</span></div>
+                        <button class="btn bevel" type="button" data-skate-action="retry" data-i18n="skate.action.retry">Retry</button>
+                        <button class="btn bevel" type="button" data-skate-action="menu" data-i18n="skate.action.menu">Menu</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="skate-controls">
+                  <button class="btn bevel skate-control" type="button" data-skate-action="jump" data-i18n="skate.action.jump">Jump</button>
+                  <button class="btn bevel skate-control" type="button" data-skate-action="trick" data-i18n="skate.action.trick" disabled>Trick</button>
+                  <button class="btn bevel skate-control" type="button" data-skate-action="grind" data-i18n="skate.action.grind" disabled>Grind</button>
+                </div>
+                <div class="skate-statusbar bevel">
+                  <span class="tiny" data-i18n="skate.status.ready">Ready to roll</span>
+                  <span class="tiny" data-i18n="skate.status.controls">Jump: Space / Tap</span>
+                </div>
+              </div>
+            `;
+          }
           if(state.games.view === 'snake'){
             return `
               <div style="display:flex; gap:8px; align-items:center; margin-bottom:10px;">
@@ -6033,6 +6916,16 @@ Eu sou o buffalo branco extinto`
                     <img class="pixel" src="/assets/icons/snake.png" width="32" height="32" alt="${t('games.snake')}" style="display:block;" />
                   </div>
                   <span data-i18n="games.snake">Snake</span>
+                </button>
+              `;
+            }
+            if(id === 'dope-skate'){
+              return `
+                <button class="games-item" type="button" data-game-id="dope-skate">
+                  <div class="games-icon pixel">
+                    <img class="pixel" src="/assets/icons/dope-skate.svg" width="32" height="32" alt="${t('games.dopeSkate')}" style="display:block;" />
+                  </div>
+                  <span data-i18n="games.dopeSkate">Dope Skate</span>
                 </button>
               `;
             }
@@ -7581,6 +8474,7 @@ function renderIcons(){
         if(!w) return;
         if(appId === 'games'){
           snakeStop();
+          dopeSkateStop();
           state.games.view = 'list';
           state.games.selectedId = null;
         }
@@ -8112,6 +9006,7 @@ function renderIcons(){
           closeModal();
         }
         if(snakeHandleKey(e)) return;
+        if(dopeSkateHandleKey(e)) return;
         if(e.key === 'Enter' && state.activeWindowId === 'poetry' && state.poetry.view === 'list' && state.poetry.selectedId){
           state.poetry.view = 'read';
           state.poetry.currentId = state.poetry.selectedId;
@@ -8384,6 +9279,9 @@ function renderIcons(){
         state.games.layout = loadGamesLayout();
         state.games.bigIcons = loadGamesBigIcons();
         state.folders = loadFolders();
+        if(!Array.isArray(state.folders.games)) state.folders.games = [];
+        if(!state.folders.games.includes('snake')) state.folders.games.unshift('snake');
+        if(!state.folders.games.includes('dope-skate')) state.folders.games.push('dope-skate');
         state.snake.highScore = loadSnakeHighScore();
         state.trash = new Set(loadTrash());
         state.iconLabels = loadIconLabels();
