@@ -3113,6 +3113,13 @@ function renderPoetryWindow(){
 function renderGamesWindow(){
   const win = document.getElementById('win_games');
   if(!win) return;
+  if(!win.dataset.ctxGuard){
+    win.addEventListener('contextmenu', (e)=>{
+      e.preventDefault();
+      e.stopPropagation();
+    });
+    win.dataset.ctxGuard = '1';
+  }
   const content = win.querySelector('.content');
   if(!content) return;
   content.innerHTML = CONTENT.games();
@@ -10704,6 +10711,7 @@ function renderIcons(){
         let dragging = false;
         let pointerId = null;
         let movedToLayer = false;
+        let lastEvent = null;
 
         let startX = 0, startY = 0;
         let group = [];
@@ -10713,6 +10721,80 @@ function renderIcons(){
         let dxMin = 0, dxMax = 0, dyMin = 0, dyMax = 0;
 
         const dragLayer = $('#dragLayer');
+        const onWindowBlur = ()=>{
+          endDrag(lastEvent, true);
+        };
+        const onDocPointerUp = (e)=>{
+          if(pointerId !== null && e.pointerId !== pointerId) return;
+          endDrag(e, false);
+        };
+        const endDrag = (e, cancel)=>{
+          if(!down) return;
+          if(pointerId !== null && e && e.pointerId !== pointerId) return;
+
+          down = false;
+          document.removeEventListener('pointermove', onPointerMove);
+          document.removeEventListener('pointerup', onPointerUp);
+          document.removeEventListener('pointercancel', onPointerUp);
+          window.removeEventListener('blur', onWindowBlur);
+
+          document.body.classList.remove('dragging');
+
+          if(dragging && !cancel && e){
+            const ids = startPositions.map(p => p.id);
+            if(isOverTrashWindow(e.clientX, e.clientY) || isOverTrash(e.clientX, e.clientY)){
+              restoreGroupLayer();
+              moveIconsToTrash(ids);
+            } else if(isOverGamesWindow(e.clientX, e.clientY)){
+              addToFolder('games', ids);
+              const saved = loadIconPositions();
+              ids.forEach(id => { delete saved[id]; });
+              saveIconPositions(saved);
+              restoreGroupLayer();
+              renderIcons();
+              renderGamesWindow();
+            } else {
+              restoreGroupLayer();
+              // Save all moved positions in one write
+              const saved = loadIconPositions();
+              const metrics = getGridMetrics();
+              const movedIds = new Set(ids);
+              const occupied = new Map();
+
+              APPS.forEach((app, idx) => {
+                if(movedIds.has(app.id)) return;
+                const base = saved[app.id] || defaultIconPos(idx);
+                const placed = placeOnFreeCell(base.x, base.y, occupied, metrics);
+                if(placed.changed || !saved[app.id]){
+                  saved[app.id] = { x: placed.x, y: placed.y };
+                }
+              });
+
+              startPositions.forEach(p => {
+                let x = parseInt(p.el.style.left || '0', 10);
+                let y = parseInt(p.el.style.top || '0', 10);
+
+                if(state.gridSnap){
+                  const snapped = snapToGrid(x, y);
+                  x = snapped.x;
+                  y = snapped.y;
+                }
+
+                const placed = placeOnFreeCell(x, y, occupied, metrics);
+                p.el.style.left = placed.x + 'px';
+                p.el.style.top = placed.y + 'px';
+                saved[p.id] = { x: placed.x, y: placed.y };
+                p.el.dataset.dragged = '1';
+              });
+              saveIconPositions(saved);
+            }
+          } else if(dragging){
+            restoreGroupLayer();
+          }
+
+          dragging = false;
+          pointerId = null;
+        };
         const onPointerDown = (e)=>{
           if($('#desktop').classList.contains('hidden')) return;
           if(e.pointerType === 'mouse' && e.button !== 0) return;
@@ -10767,11 +10849,10 @@ function renderIcons(){
           group.forEach(el => (el.dataset.dragged = '0'));
 
           document.body.classList.add('dragging');
-          try{ iconEl.setPointerCapture(pointerId); } catch {}
-
-          iconEl.addEventListener('pointermove', onPointerMove);
-          iconEl.addEventListener('pointerup', onPointerUp);
-          iconEl.addEventListener('pointercancel', onPointerUp);
+          document.addEventListener('pointermove', onPointerMove);
+          document.addEventListener('pointerup', onPointerUp);
+          document.addEventListener('pointercancel', onPointerUp);
+          window.addEventListener('blur', onWindowBlur);
 
           e.preventDefault();
         };
@@ -10800,6 +10881,7 @@ function renderIcons(){
         const onPointerMove = (e)=>{
           if(!down) return;
           if(pointerId !== null && e.pointerId !== pointerId) return;
+          lastEvent = e;
 
           const dxRaw = e.clientX - startX;
           const dyRaw = e.clientY - startY;
@@ -10824,70 +10906,7 @@ function renderIcons(){
         };
 
         const onPointerUp = (e)=>{
-          if(!down) return;
-          if(pointerId !== null && e.pointerId !== pointerId) return;
-
-          down = false;
-          try{ iconEl.releasePointerCapture(e.pointerId); } catch {}
-
-          iconEl.removeEventListener('pointermove', onPointerMove);
-          iconEl.removeEventListener('pointerup', onPointerUp);
-          iconEl.removeEventListener('pointercancel', onPointerUp);
-
-          document.body.classList.remove('dragging');
-
-          if(dragging){
-            const ids = startPositions.map(p => p.id);
-            if(isOverTrashWindow(e.clientX, e.clientY) || isOverTrash(e.clientX, e.clientY)){
-              restoreGroupLayer();
-              moveIconsToTrash(ids);
-            } else if(isOverGamesWindow(e.clientX, e.clientY)){
-              addToFolder('games', ids);
-              const saved = loadIconPositions();
-              ids.forEach(id => { delete saved[id]; });
-              saveIconPositions(saved);
-              restoreGroupLayer();
-              renderIcons();
-              renderGamesWindow();
-            } else {
-              restoreGroupLayer();
-              // Save all moved positions in one write
-              const saved = loadIconPositions();
-              const metrics = getGridMetrics();
-              const movedIds = new Set(ids);
-              const occupied = new Map();
-
-              APPS.forEach((app, idx) => {
-                if(movedIds.has(app.id)) return;
-                const base = saved[app.id] || defaultIconPos(idx);
-                const placed = placeOnFreeCell(base.x, base.y, occupied, metrics);
-                if(placed.changed || !saved[app.id]){
-                  saved[app.id] = { x: placed.x, y: placed.y };
-                }
-              });
-
-              startPositions.forEach(p => {
-                let x = parseInt(p.el.style.left || '0', 10);
-                let y = parseInt(p.el.style.top || '0', 10);
-
-                if(state.gridSnap){
-                  const snapped = snapToGrid(x, y);
-                  x = snapped.x;
-                  y = snapped.y;
-                }
-
-                const placed = placeOnFreeCell(x, y, occupied, metrics);
-                p.el.style.left = placed.x + 'px';
-                p.el.style.top = placed.y + 'px';
-                saved[p.id] = { x: placed.x, y: placed.y };
-                p.el.dataset.dragged = '1';
-              });
-              saveIconPositions(saved);
-            }
-          }
-
-          dragging = false;
-          pointerId = null;
+          endDrag(e, false);
         };
 
         // Pointer events handle mouse + touch + pen
@@ -10910,6 +10929,7 @@ function renderIcons(){
       $('#desktopArea').addEventListener('contextmenu', (e)=>{
         if($('#desktop').classList.contains('hidden')) return;
         if(e.target && e.target.closest && e.target.closest('.icon')) return;
+        if(e.target && e.target.closest && e.target.closest('.window')) return;
         e.preventDefault();
         openCtxMenu(e.clientX, e.clientY, 'desktop', null);
       });
@@ -11428,6 +11448,10 @@ function autoFitWindow(winEl, appId){
         `;
 
         el.addEventListener('mousedown', (e)=>{ e.stopPropagation(); focusWindow(appId); closeStartMenu(); });
+        el.addEventListener('contextmenu', (e)=>{
+          e.preventDefault();
+          e.stopPropagation();
+        });
         el.addEventListener('click', (e)=>{
           const act = e.target?.dataset?.action;
           if(!act) return;
