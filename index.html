@@ -1282,24 +1282,18 @@
         align-items:center;
         justify-content:center;
       }
-      .ps1-dpad::before,
-      .ps1-dpad::after{
+      .ps1-dpad-corner{
         position:absolute;
-        left:50%;
-        transform:translateX(-50%);
-        font-size:18px;
+        font-size:16px;
         color:rgba(0,0,0,0.18);
         text-shadow:0 1px 0 rgba(255,255,255,0.2);
         pointer-events:none;
+        user-select:none;
       }
-      .ps1-dpad::before{
-        content:"▲";
-        top:-10px;
-      }
-      .ps1-dpad::after{
-        content:"▼";
-        bottom:-10px;
-      }
+      .ps1-dpad-corner.ne{ top:-8px; right:-8px; }
+      .ps1-dpad-corner.se{ bottom:-8px; right:-8px; }
+      .ps1-dpad-corner.sw{ bottom:-8px; left:-8px; }
+      .ps1-dpad-corner.nw{ top:-8px; left:-8px; }
       .ps1-dpad-btn{
         position:absolute;
         width:34px;
@@ -1562,13 +1556,13 @@
         box-shadow:inset 0 2px 6px rgba(0,0,0,0.2);
       }
       #win_games.mobile-game .snake-board{
-        width:min(92vw, 360px);
+        width:min(84vw, 300px);
         height:auto;
         min-width:0;
         min-height:0;
         padding:6px;
         flex:0 0 auto;
-        max-height:min(42vh, 360px);
+        max-height:min(34vh, 300px);
         align-self:center;
         aspect-ratio:1/1;
       }
@@ -3278,6 +3272,10 @@ function mountMobileGameDock(gameId, winEl){
       <div class="ps1-dock-body">
         <div class="ps1-brand">BLISS</div>
         <div class="ps1-dpad" data-mobile-dpad>
+          <span class="ps1-dpad-corner ne">↗</span>
+          <span class="ps1-dpad-corner se">↘</span>
+          <span class="ps1-dpad-corner sw">↙</span>
+          <span class="ps1-dpad-corner nw">↖</span>
           <button class="ps1-dpad-btn up" type="button" data-mobile-action="up">▲</button>
           <button class="ps1-dpad-btn down" type="button" data-mobile-action="down">▼</button>
           <button class="ps1-dpad-btn left" type="button" data-mobile-action="left">◀</button>
