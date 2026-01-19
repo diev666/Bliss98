@@ -1099,6 +1099,19 @@
         flex-wrap:wrap;
         align-items:stretch;
       }
+      .snake-topbar{
+        display:flex;
+        align-items:center;
+        gap:10px;
+        flex-wrap:wrap;
+        margin-bottom:10px;
+      }
+      .snake-topbar-stats{
+        display:flex;
+        align-items:center;
+        gap:10px;
+        flex-wrap:wrap;
+      }
       .snake-board{
         flex:0 0 auto;
         width:336px;
@@ -1505,9 +1518,30 @@
         justify-content:center;
         padding:6px 8px;
       }
-      #win_games.mobile-game .snake-instructions{
-        display:block;
-        text-align:center;
+      #win_games.mobile-game .snake-controls{
+        display:none;
+      }
+      #win_games.mobile-game .snake-topbar{
+        margin-bottom:6px;
+      }
+      #win_games.mobile-game .snake-topbar-stats{
+        width:100%;
+        justify-content:flex-start;
+      }
+      #win_games.mobile-game .snake-speed{
+        margin-left:auto;
+      }
+      #win_games .snake-controls .btn,
+      #win_games .snake-topbar .btn{
+        background:linear-gradient(180deg, #8b6337 0%, #6f4b27 100%);
+        color:#f4f0e6;
+        border:1px solid rgba(0,0,0,0.35);
+        box-shadow:inset 0 1px 0 rgba(255,255,255,0.2);
+      }
+      #win_games .snake-board{
+        border:2px solid rgba(74,48,20,0.6);
+        background:linear-gradient(180deg, #8f6433 0%, #6e4a25 100%);
+        box-shadow:inset 0 2px 6px rgba(0,0,0,0.2);
       }
       #win_games.mobile-game .snake-board{
         width:100%;
@@ -3420,6 +3454,7 @@ let snake = {
   dir: { x: 1, y: 0 },
   nextDir: { x: 1, y: 0 },
   food: { x: 0, y: 0 },
+  eatPulses: [],
   running: false,
   paused: false,
   score: 0,
@@ -3635,6 +3670,7 @@ function snakePrepareBoard(){
   snake.gameOver = false;
   snake.started = false;
   snake.score = 0;
+  snake.eatPulses = [];
   snake.dir = { x: 1, y: 0 };
   snake.nextDir = { x: 1, y: 0 };
   const mid = Math.floor(snake.grid / 2);
@@ -3658,6 +3694,7 @@ function snakeStartGame(){
   snake.dir = { x: 1, y: 0 };
   snake.nextDir = { x: 1, y: 0 };
   snake.score = 0;
+  snake.eatPulses = [];
   snake.running = true;
   snake.paused = false;
   snake.gameOver = false;
@@ -3727,8 +3764,13 @@ function snakeTick(){
   if(next.x === snake.food.x && next.y === snake.food.y){
     snake.score += 10;
     snakePlaceFood();
+    snake.eatPulses.push({ t: 0 });
   } else {
     snake.body.pop();
+  }
+  if(snake.eatPulses.length){
+    snake.eatPulses.forEach(p => { p.t += 1; });
+    snake.eatPulses = snake.eatPulses.filter(p => p.t < snake.body.length - 1);
   }
   snakeDraw();
   updateSnakeUI();
@@ -3770,17 +3812,97 @@ function snakeDraw(){
 
   ctx.setTransform(dpr * scaleX, 0, 0, dpr * scaleY, 0, 0);
   ctx.clearRect(0, 0, base, base);
-  ctx.fillStyle = '#ffffff';
+  const tileLight = '#8ea77a';
+  const tileDark = '#7a9168';
+  ctx.fillStyle = tileLight;
   ctx.fillRect(0, 0, base, base);
+  for(let y = 0; y < snake.grid; y += 1){
+    for(let x = 0; x < snake.grid; x += 1){
+      if((x + y) % 2 === 0){
+        ctx.fillStyle = tileDark;
+        ctx.fillRect(x * cell, y * cell, cell, cell);
+      }
+    }
+  }
 
-  ctx.fillStyle = '#1b7c1b';
+  const pad = 0;
   snake.body.forEach((seg, idx)=>{
-    ctx.fillStyle = idx === 0 ? '#0f5c0f' : '#1b7c1b';
-    ctx.fillRect(seg.x * cell, seg.y * cell, cell, cell);
+    const x = seg.x * cell + pad;
+    const y = seg.y * cell + pad;
+    const w = cell - pad * 2;
+    const h = cell - pad * 2;
+    const radius = Math.max(2, Math.floor(w * 0.2));
+    ctx.fillStyle = idx === 0 ? '#2f6f2f' : '#3f8a3f';
+    ctx.beginPath();
+    ctx.moveTo(x + radius, y);
+    ctx.arcTo(x + w, y, x + w, y + h, radius);
+    ctx.arcTo(x + w, y + h, x, y + h, radius);
+    ctx.arcTo(x, y + h, x, y, radius);
+    ctx.arcTo(x, y, x + w, y, radius);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = '#245a24';
+    ctx.lineWidth = 1;
+    ctx.stroke();
   });
 
-  ctx.fillStyle = '#b20000';
-  ctx.fillRect(snake.food.x * cell, snake.food.y * cell, cell, cell);
+  const head = snake.body[0];
+  if(head){
+    const hx = head.x * cell + cell / 2;
+    const hy = head.y * cell + cell / 2;
+    const dir = snake.dir;
+    const noseLen = Math.max(4, cell * 0.28);
+    ctx.fillStyle = '#2a5f2a';
+    ctx.beginPath();
+    ctx.moveTo(hx + dir.x * noseLen, hy + dir.y * noseLen);
+    ctx.lineTo(hx + dir.y * (noseLen * 0.6), hy - dir.x * (noseLen * 0.6));
+    ctx.lineTo(hx - dir.y * (noseLen * 0.6), hy + dir.x * (noseLen * 0.6));
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = '#0e2910';
+    const eyeOffset = Math.max(2, cell * 0.15);
+    ctx.beginPath();
+    ctx.arc(hx + dir.y * eyeOffset, hy - dir.x * eyeOffset, 1.5, 0, Math.PI * 2);
+    ctx.arc(hx - dir.y * eyeOffset, hy + dir.x * eyeOffset, 1.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#d14b4b';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(hx + dir.x * (noseLen + 2), hy + dir.y * (noseLen + 2));
+    ctx.lineTo(hx + dir.x * (noseLen + 8), hy + dir.y * (noseLen + 8));
+    ctx.stroke();
+  }
+
+  if(snake.eatPulses.length){
+    snake.eatPulses.forEach(pulse => {
+      const idx = Math.floor(pulse.t);
+      const nextIdx = Math.min(idx + 1, snake.body.length - 1);
+      const segA = snake.body[idx];
+      const segB = snake.body[nextIdx];
+      if(!segA || !segB) return;
+      const frac = pulse.t - idx;
+      const px = (segA.x + (segB.x - segA.x) * frac) * cell + cell / 2;
+      const py = (segA.y + (segB.y - segA.y) * frac) * cell + cell / 2;
+      ctx.fillStyle = '#2a5f2a';
+      ctx.beginPath();
+      ctx.arc(px, py, Math.max(2, cell * 0.16), 0, Math.PI * 2);
+      ctx.fill();
+    });
+  }
+
+  const appleX = snake.food.x * cell + cell / 2;
+  const appleY = snake.food.y * cell + cell / 2;
+  const appleR = Math.max(4, cell * 0.28);
+  ctx.fillStyle = '#c51f2f';
+  ctx.beginPath();
+  ctx.arc(appleX, appleY, appleR, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#6b3a1a';
+  ctx.fillRect(appleX - 1, appleY - appleR - 4, 2, 6);
+  ctx.fillStyle = '#2f7d2f';
+  ctx.beginPath();
+  ctx.ellipse(appleX + 4, appleY - appleR - 2, 4, 2, -0.6, 0, Math.PI * 2);
+  ctx.fill();
 }
 
 
@@ -9399,21 +9521,27 @@ Eu sou o buffalo branco extinto`
                     </div>
                   </div>
                 </div>
-                <div class="skate-controls">
-                  <button class="skate-btn skate-control" type="button" data-skate-action="jump" data-i18n="skate.action.jump">Jump</button>
-                  <button class="skate-btn skate-control" type="button" data-skate-action="trick1" data-i18n="skate.action.trick1">Trick 1</button>
-                  <button class="skate-btn skate-control" type="button" data-skate-action="trick2" data-i18n="skate.action.trick2">Trick 2</button>
-                  <button class="skate-btn skate-control" type="button" data-skate-action="trick3" data-i18n="skate.action.trick3">Trick 3</button>
-                </div>
               </div>
             `;
           }
           if(state.games.view === 'snake'){
             return `
-              <div style="display:flex; gap:8px; align-items:center; margin-bottom:10px;">
+              <div class="snake-topbar">
                 <button class="btn bevel" type="button" data-games-action="back" data-i18n="games.back">Back</button>
+                <div class="snake-topbar-stats">
+                  <div class="tiny"><span data-i18n="snake.score">Score:</span> <strong data-snake-score>0</strong></div>
+                  <div class="tiny"><span data-i18n="snake.highScore">High Score:</span> <strong data-snake-high>0</strong></div>
+                  <label class="snake-speed">
+                    <span class="tiny" data-i18n="snake.speed">Speed:</span>
+                    <select data-snake-speed>
+                      <option value="slow" data-i18n="snake.speed.slow">Slow</option>
+                      <option value="normal" data-i18n="snake.speed.normal">Normal</option>
+                      <option value="fast" data-i18n="snake.speed.fast">Fast</option>
+                    </select>
+                  </label>
+                </div>
               </div>
-              <h2>BLISS — ${t('games.snake')}</h2>
+              <h2>${t('games.snake')}</h2>
               <div class="snake-layout">
                 <div class="snake-board bevel-in" id="snakeBoard">
                   <canvas id="snakeCanvas" class="pixel" width="320" height="320"></canvas>
@@ -9429,18 +9557,7 @@ Eu sou o buffalo branco extinto`
                   <div class="snake-controls">
                     <button class="btn bevel" type="button" data-snake-action="start" data-i18n="snake.start">Start</button>
                     <button class="btn bevel" type="button" data-snake-action="pause" data-i18n="snake.pause">Pause</button>
-                    <div class="tiny"><span data-i18n="snake.score">Score:</span> <strong data-snake-score>0</strong></div>
-                    <div class="tiny"><span data-i18n="snake.highScore">High Score:</span> <strong data-snake-high>0</strong></div>
-                    <label class="snake-speed">
-                      <span class="tiny" data-i18n="snake.speed">Speed:</span>
-                      <select data-snake-speed>
-                        <option value="slow" data-i18n="snake.speed.slow">Slow</option>
-                        <option value="normal" data-i18n="snake.speed.normal">Normal</option>
-                        <option value="fast" data-i18n="snake.speed.fast">Fast</option>
-                      </select>
-                    </label>
                   </div>
-                  <div class="tiny snake-instructions" data-i18n="snake.instructions">Use arrow keys or WASD. On mobile, swipe.</div>
                 </div>
               </div>
             `;
