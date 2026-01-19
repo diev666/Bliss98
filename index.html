@@ -1259,6 +1259,36 @@
         color:#6a6258;
         font-weight:700;
       }
+      .ps1-dpad{
+        position:absolute;
+        left:28px;
+        bottom:22px;
+        width:112px;
+        height:112px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+      }
+      .ps1-dpad-btn{
+        position:absolute;
+        width:34px;
+        height:34px;
+        border-radius:8px;
+        border:2px solid rgba(0,0,0,0.2);
+        background:linear-gradient(180deg, #dfd8cb 0%, #bdb4a6 100%);
+        color:#4b4339;
+        font-size:16px;
+        font-weight:700;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        box-shadow:inset 0 2px 6px rgba(255,255,255,0.4);
+        touch-action:none;
+      }
+      .ps1-dpad-btn.up{ top:0; }
+      .ps1-dpad-btn.down{ bottom:0; }
+      .ps1-dpad-btn.left{ left:0; }
+      .ps1-dpad-btn.right{ right:0; }
       .ps1-stick{
         position:absolute;
         left:26px;
@@ -1310,11 +1340,52 @@
       .ps1-face-btn.square{ color:#7c49d1; left:0; top:48px; }
       .ps1-center{
         position:absolute;
+        left:0;
+        right:0;
+        bottom:16px;
+        padding:0 120px;
+        display:flex;
+        justify-content:space-between;
+      }
+      .ps1-analog{
+        position:absolute;
         left:50%;
-        bottom:26px;
+        bottom:52px;
         transform:translateX(-50%);
         display:flex;
-        gap:14px;
+        flex-direction:column;
+        align-items:center;
+        gap:4px;
+      }
+      .ps1-analog-btn{
+        min-width:72px;
+        height:28px;
+        border-radius:999px;
+        border:1px solid rgba(0,0,0,0.25);
+        background:linear-gradient(180deg, #f2ede4 0%, #cfc7b9 100%);
+        font-size:11px;
+        letter-spacing:1px;
+        color:#6a6258;
+        text-transform:uppercase;
+        box-shadow:inset 0 3px 6px rgba(255,255,255,0.6);
+        touch-action:none;
+      }
+      .ps1-analog-led{
+        width:8px;
+        height:8px;
+        border-radius:50%;
+        background:#7a1b1b;
+        box-shadow:0 0 6px rgba(255,50,50,0.6);
+        opacity:0;
+      }
+      .ps1-dock[data-mode="analog"] .ps1-analog-led{
+        opacity:1;
+      }
+      .ps1-dock[data-mode="analog"] .ps1-dpad{
+        display:none;
+      }
+      .ps1-dock[data-mode="dpad"] .ps1-stick{
+        display:none;
       }
       .ps1-center-btn{
         min-width:64px;
@@ -1328,9 +1399,6 @@
         text-transform:uppercase;
         box-shadow:inset 0 3px 6px rgba(255,255,255,0.6);
         touch-action:none;
-      }
-      .ps1-dock[data-game="snake"] .ps1-face{
-        display:none;
       }
       .skate-canvas-wrap{
         display:flex;
@@ -1380,6 +1448,17 @@
       }
       #win_games.mobile-game .skate-shell{
         height:100%;
+      }
+      #win_games.mobile-game .skate-menu{
+        max-height:calc(100dvh - 300px);
+        overflow:auto;
+      }
+      #win_games.mobile-game .skate-menu-panels{
+        max-height:calc(100dvh - 340px);
+        overflow:auto;
+      }
+      #win_games.mobile-game .skate-panel{
+        padding-bottom:16px;
       }
       #win_games.mobile-game .skate-body{
         flex-direction:column;
@@ -2451,8 +2530,24 @@
       const FOLDER_KEY = 'bliss98_folders';
       const GAMES_VIEW_KEY = 'bliss98_games_view';
       const GAMES_BIG_KEY = 'bliss98_games_big';
-      const RETRO_KEY = 'bliss98_retro_glow';
-      const YOUTUBE_KEY = 'bliss98_youtube_api_key';
+const RETRO_KEY = 'bliss98_retro_glow';
+const YOUTUBE_KEY = 'bliss98_youtube_api_key';
+const MOBILE_CONTROLS_KEY = 'bliss98_mobile_controls_mode';
+      function loadMobileControlsMode(){
+        try{
+          const raw = localStorage.getItem(MOBILE_CONTROLS_KEY);
+          return (raw === 'analog' || raw === 'dpad') ? raw : 'dpad';
+        } catch {
+          return 'dpad';
+        }
+      }
+
+      function saveMobileControlsMode(mode){
+        try{ localStorage.setItem(MOBILE_CONTROLS_KEY, mode); } catch {}
+      }
+
+      state.mobileControlsMode = loadMobileControlsMode();
+
       const SFX = {
         boot: {
           src: './assets/audio/boot.mp3',
@@ -3086,9 +3181,16 @@ function mountMobileGameDock(gameId, winEl){
     dock = document.createElement('div');
     dock.className = 'ps1-dock';
     dock.dataset.game = gameId;
+    dock.dataset.mode = state.mobileControlsMode;
     dock.innerHTML = `
       <div class="ps1-dock-body">
         <div class="ps1-brand">BLISS</div>
+        <div class="ps1-dpad" data-mobile-dpad>
+          <button class="ps1-dpad-btn up" type="button" data-mobile-action="up">▲</button>
+          <button class="ps1-dpad-btn down" type="button" data-mobile-action="down">▼</button>
+          <button class="ps1-dpad-btn left" type="button" data-mobile-action="left">◀</button>
+          <button class="ps1-dpad-btn right" type="button" data-mobile-action="right">▶</button>
+        </div>
         <div class="ps1-stick" data-mobile-stick="left" aria-label="Joystick">
           <div class="ps1-stick-knob"></div>
         </div>
@@ -3097,6 +3199,10 @@ function mountMobileGameDock(gameId, winEl){
           <button class="ps1-face-btn circle" type="button" data-mobile-action="trick3" aria-label="Trick 3">○</button>
           <button class="ps1-face-btn cross" type="button" data-mobile-action="jump" aria-label="Jump">✕</button>
           <button class="ps1-face-btn square" type="button" data-mobile-action="trick1" aria-label="Trick 1">□</button>
+        </div>
+        <div class="ps1-analog">
+          <button class="ps1-analog-btn" type="button" data-mobile-action="analog">ANALOG</button>
+          <span class="ps1-analog-led"></span>
         </div>
         <div class="ps1-center">
           <button class="ps1-center-btn" type="button" data-mobile-action="select">Select</button>
@@ -3114,6 +3220,14 @@ function mountMobileGameDock(gameId, winEl){
 }
 
 function bindMobileOverlay(gameId, overlay){
+  function setMobileControlsMode(mode){
+    const next = (mode === 'analog') ? 'analog' : 'dpad';
+    state.mobileControlsMode = next;
+    saveMobileControlsMode(next);
+    $$('.ps1-dock').forEach(dock => { dock.dataset.mode = next; });
+  }
+
+  overlay.dataset.mode = state.mobileControlsMode;
   const stick = overlay.querySelector('[data-mobile-stick="left"]');
   if(stick){
     const knob = stick.querySelector('.ps1-stick-knob');
@@ -3123,6 +3237,7 @@ function bindMobileOverlay(gameId, overlay){
     let lastDir = '';
 
     const updateStick = (dx, dy)=>{
+      if(state.mobileControlsMode !== 'analog') return;
       const dist = Math.min(radius, Math.hypot(dx, dy));
       const angle = Math.atan2(dy, dx);
       const cx = Math.cos(angle) * dist;
@@ -3182,10 +3297,50 @@ function bindMobileOverlay(gameId, overlay){
     stick.addEventListener('pointercancel', endPointer);
   }
 
+  const dpad = overlay.querySelector('[data-mobile-dpad]');
+  if(dpad){
+    dpad.querySelectorAll('[data-mobile-action]').forEach(btn => {
+      btn.addEventListener('pointerdown', (e)=>{
+        if(state.mobileControlsMode !== 'dpad') return;
+        e.preventDefault();
+        e.stopPropagation();
+        const action = btn.dataset.mobileAction;
+        if(gameId === 'snake' && isSnakeActive()){
+          if(action === 'up') snakeHandleDirection(0, -1);
+          if(action === 'down') snakeHandleDirection(0, 1);
+          if(action === 'left') snakeHandleDirection(-1, 0);
+          if(action === 'right') snakeHandleDirection(1, 0);
+        }
+        if(gameId === 'dope-skate' && isDopeSkateActive()){
+          if(action === 'left') dopeSkate.inputs.left = true;
+          if(action === 'right') dopeSkate.inputs.right = true;
+        }
+      });
+      btn.addEventListener('pointerup', (e)=>{
+        if(gameId === 'dope-skate'){
+          const action = btn.dataset.mobileAction;
+          if(action === 'left') dopeSkate.inputs.left = false;
+          if(action === 'right') dopeSkate.inputs.right = false;
+        }
+      });
+      btn.addEventListener('pointercancel', (e)=>{
+        if(gameId === 'dope-skate'){
+          const action = btn.dataset.mobileAction;
+          if(action === 'left') dopeSkate.inputs.left = false;
+          if(action === 'right') dopeSkate.inputs.right = false;
+        }
+      });
+    });
+  }
+
   overlay.querySelectorAll('[data-mobile-action]').forEach(btn => {
     btn.addEventListener('pointerdown', (e)=>{
       e.preventDefault();
       e.stopPropagation();
+      if(btn.dataset.mobileAction === 'analog'){
+        setMobileControlsMode(state.mobileControlsMode === 'analog' ? 'dpad' : 'analog');
+        return;
+      }
       if(gameId === 'dope-skate' && isDopeSkateActive()){
         const action = btn.dataset.mobileAction;
         if(action === 'jump') dopeSkateRegisterJump();
@@ -3258,10 +3413,13 @@ let snake = {
   cell: 16,
   baseSize: 320,
   renderScale: 1,
+  renderScaleX: 1,
+  renderScaleY: 1,
   renderDpr: 1,
   renderTarget: 0,
   resizeObserver: null,
   resizeRaf: null,
+  resizeHandler: null,
   ctx: null,
   els: null,
   swipeStart: null,
@@ -3323,19 +3481,20 @@ function snakeResizeCanvas(){
   if(!snake.els || !snake.els.canvas || !snake.ctx) return;
   const board = snake.els.board;
   if(!board) return;
-  const style = getComputedStyle(board);
-  const padX = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
-  const padY = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
-  const size = Math.max(1, Math.floor(Math.min(board.clientWidth - padX, board.clientHeight - padY)));
+  const rect = board.getBoundingClientRect();
+  const targetW = Math.max(1, Math.floor(rect.width));
+  const targetH = Math.max(1, Math.floor(rect.height));
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
-  if(size === snake.renderTarget && snake.renderDpr === dpr) return;
-  snake.renderScale = size / snake.baseSize;
+  if(targetW === snake.renderTarget && snake.renderDpr === dpr) return;
+  snake.renderScale = targetW / snake.baseSize;
+  snake.renderScaleX = targetW / snake.baseSize;
+  snake.renderScaleY = targetH / snake.baseSize;
   snake.renderDpr = dpr;
-  snake.renderTarget = size;
-  if(snake.els.canvas.style.width !== `${size}px`) snake.els.canvas.style.width = `${size}px`;
-  if(snake.els.canvas.style.height !== `${size}px`) snake.els.canvas.style.height = `${size}px`;
-  snake.els.canvas.width = Math.max(1, Math.round(snake.baseSize * dpr));
-  snake.els.canvas.height = Math.max(1, Math.round(snake.baseSize * dpr));
+  snake.renderTarget = targetW;
+  if(snake.els.canvas.style.width !== `${targetW}px`) snake.els.canvas.style.width = `${targetW}px`;
+  if(snake.els.canvas.style.height !== `${targetH}px`) snake.els.canvas.style.height = `${targetH}px`;
+  snake.els.canvas.width = Math.max(1, Math.floor(targetW * dpr));
+  snake.els.canvas.height = Math.max(1, Math.floor(targetH * dpr));
   snake.ctx.imageSmoothingEnabled = false;
 }
 
@@ -3424,6 +3583,17 @@ function initSnakeInWindow(winEl){
     snake.resizeObserver.observe(board);
   }
   snakeResizeCanvas();
+  if(!snake.resizeHandler){
+    snake.resizeHandler = ()=>{
+      if(snake.resizeRaf) return;
+      snake.resizeRaf = requestAnimationFrame(()=>{
+        snake.resizeRaf = null;
+        snakeResizeCanvas();
+      });
+    };
+    window.addEventListener('resize', snake.resizeHandler);
+    window.addEventListener('orientationchange', snake.resizeHandler);
+  }
 
   board.addEventListener('touchstart', snakeHandleTouchStart, { passive: false });
   board.addEventListener('touchmove', snakeHandleTouchMove, { passive: false });
@@ -3508,6 +3678,11 @@ function snakeStop(){
     snake.resizeObserver.disconnect();
     snake.resizeObserver = null;
   }
+  if(snake.resizeHandler){
+    window.removeEventListener('resize', snake.resizeHandler);
+    window.removeEventListener('orientationchange', snake.resizeHandler);
+    snake.resizeHandler = null;
+  }
   snake.els = null;
   snake.ctx = null;
 }
@@ -3567,8 +3742,10 @@ function snakeDraw(){
   const cell = snake.cell;
   const base = snake.baseSize || 320;
   const dpr = snake.renderDpr || 1;
+  const scaleX = snake.renderScaleX || 1;
+  const scaleY = snake.renderScaleY || 1;
 
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.setTransform(dpr * scaleX, 0, 0, dpr * scaleY, 0, 0);
   ctx.clearRect(0, 0, base, base);
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(0, 0, base, base);
@@ -3825,11 +4002,14 @@ let dopeSkate = {
   difficulty: 'medium',
   spawnMultiplier: 1,
   scoreMultiplier: 1,
+  renderScaleX: 1,
+  renderScaleY: 1,
   renderDpr: 1,
   renderTargetW: 0,
   renderTargetH: 0,
   resizeObserver: null,
   resizeRaf: null,
+  resizeHandler: null,
   lastComboHtml: '',
   lastBlissKey: '',
   startQueued: false,
@@ -4002,31 +4182,27 @@ function fitSkateCanvas(){
   if(!dopeSkate.canvas || !dopeSkate.ctx || !dopeSkate.els) return;
   const wrap = dopeSkate.els.canvasWrap || dopeSkate.canvas.parentElement;
   if(!wrap) return;
-  const containerW = Math.max(1, Math.floor(wrap.clientWidth));
-  const containerH = Math.max(1, Math.floor(wrap.clientHeight));
-  if(!Number.isFinite(containerW) || !Number.isFinite(containerH)) return;
-  if(containerW === 0 || containerH === 0) return;
+  // Measure container only; never drive layout from canvas to avoid resize feedback loops.
+  const rect = wrap.getBoundingClientRect();
+  const targetW = Math.max(1, Math.floor(rect.width));
+  const targetH = Math.max(1, Math.floor(rect.height));
+  if(!Number.isFinite(targetW) || !Number.isFinite(targetH)) return;
+  if(targetW === 0 || targetH === 0) return;
 
-  let targetW = containerW;
-  let targetH = Math.round(containerW * 9 / 16);
-  if(targetH > containerH){
-    targetH = containerH;
-    targetW = Math.round(containerH * 16 / 9);
-  }
-
-  const isMobile = isMobileGameMode();
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
   if(targetW === dopeSkate.renderTargetW && targetH === dopeSkate.renderTargetH && dpr === dopeSkate.renderDpr) return;
 
   dopeSkate.renderTargetW = targetW;
   dopeSkate.renderTargetH = targetH;
   dopeSkate.renderDpr = dpr;
+  dopeSkate.renderScaleX = targetW / dopeSkate.width;
+  dopeSkate.renderScaleY = targetH / dopeSkate.height;
 
   if(dopeSkate.canvas.style.width !== `${targetW}px`) dopeSkate.canvas.style.width = `${targetW}px`;
   if(dopeSkate.canvas.style.height !== `${targetH}px`) dopeSkate.canvas.style.height = `${targetH}px`;
 
-  const internalW = Math.max(1, Math.round(dopeSkate.width * dpr));
-  const internalH = Math.max(1, Math.round(dopeSkate.height * dpr));
+  const internalW = Math.max(1, Math.floor(targetW * dpr));
+  const internalH = Math.max(1, Math.floor(targetH * dpr));
   if(dopeSkate.canvas.width !== internalW) dopeSkate.canvas.width = internalW;
   if(dopeSkate.canvas.height !== internalH) dopeSkate.canvas.height = internalH;
   dopeSkate.ctx.imageSmoothingEnabled = false;
@@ -4197,6 +4373,17 @@ function initDopeSkateInWindow(winEl){
     if(dopeSkate.els.canvasWrap) dopeSkate.resizeObserver.observe(dopeSkate.els.canvasWrap);
   }
   fitSkateCanvas();
+  if(!dopeSkate.resizeHandler){
+    dopeSkate.resizeHandler = ()=>{
+      if(dopeSkate.resizeRaf) return;
+      dopeSkate.resizeRaf = requestAnimationFrame(()=>{
+        dopeSkate.resizeRaf = null;
+        fitSkateCanvas();
+      });
+    };
+    window.addEventListener('resize', dopeSkate.resizeHandler);
+    window.addEventListener('orientationchange', dopeSkate.resizeHandler);
+  }
 
   dopeSkateResetWorld();
   dopeSkateShowMenu('play');
@@ -4396,6 +4583,11 @@ function dopeSkateStop(){
   if(dopeSkate.resizeObserver){
     dopeSkate.resizeObserver.disconnect();
     dopeSkate.resizeObserver = null;
+  }
+  if(dopeSkate.resizeHandler){
+    window.removeEventListener('resize', dopeSkate.resizeHandler);
+    window.removeEventListener('orientationchange', dopeSkate.resizeHandler);
+    dopeSkate.resizeHandler = null;
   }
   dopeSkate.els = null;
   dopeSkate.canvas = null;
@@ -4597,8 +4789,10 @@ function dopeSkateDraw(){
   const h = dopeSkate.height;
   const groundY = h - dopeSkate.groundHeight;
   const dpr = dopeSkate.renderDpr || 1;
+  const scaleX = dopeSkate.renderScaleX || 1;
+  const scaleY = dopeSkate.renderScaleY || 1;
 
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.setTransform(dpr * scaleX, 0, 0, dpr * scaleY, 0, 0);
   ctx.clearRect(0, 0, w, h);
   ctx.save();
   if(dopeSkate.cameraShake > 0){
