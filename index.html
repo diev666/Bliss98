@@ -1353,10 +1353,8 @@
       .ps1-face-btn.square{ color:#7c49d1; left:0; top:48px; }
       .ps1-center{
         position:absolute;
-        left:0;
-        right:0;
-        bottom:6px;
-        height:32px;
+        inset:0;
+        pointer-events:none;
       }
       .ps1-analog{
         position:absolute;
@@ -1410,16 +1408,17 @@
         text-transform:uppercase;
         box-shadow:inset 0 3px 6px rgba(255,255,255,0.6);
         touch-action:none;
+        pointer-events:auto;
       }
       .ps1-center-btn.select{
         position:absolute;
-        left:70px;
-        bottom:0;
+        left:8px;
+        top:8px;
       }
       .ps1-center-btn.start{
         position:absolute;
-        right:70px;
-        bottom:0;
+        right:8px;
+        top:8px;
       }
       .skate-canvas-wrap{
         display:flex;
