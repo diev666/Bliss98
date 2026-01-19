@@ -673,6 +673,90 @@
         transform:translateX(-50%);
         pointer-events:none;
       }
+      #win_games .frame{
+        background:
+          linear-gradient(90deg, #7a4f26, #5a3518),
+          repeating-linear-gradient(90deg, rgba(255,255,255,0.06) 0 2px, rgba(0,0,0,0.08) 2px 4px),
+          linear-gradient(180deg, rgba(255,255,255,0.12), rgba(0,0,0,0.2));
+        border:none;
+        box-shadow: 0 10px 24px rgba(0,0,0,0.25);
+        position:relative;
+      }
+      #win_games .frame.bevel{
+        border:none;
+        box-shadow:none;
+      }
+      #win_games .frame::before{
+        content:"";
+        position:absolute;
+        inset:2px;
+        border-radius:8px;
+        box-shadow: inset 0 0 0 2px rgba(255,255,255,0.12), inset 0 0 12px rgba(0,0,0,0.25);
+        pointer-events:none;
+      }
+      #win_games .titlebar{
+        background:
+          linear-gradient(90deg, #8a5a2d, #6b3f1c),
+          repeating-linear-gradient(90deg, rgba(255,255,255,0.08) 0 2px, rgba(0,0,0,0.08) 2px 4px),
+          linear-gradient(180deg, rgba(255,255,255,0.12), rgba(0,0,0,0.25));
+        color:#f7efe4;
+        text-shadow:0 1px 0 rgba(0,0,0,0.4);
+      }
+      #win_games .titlebar .wctl{
+        background:rgba(0,0,0,0.25);
+        border:1px solid rgba(255,255,255,0.18);
+        color:#f7efe4;
+        box-shadow:none;
+      }
+      #win_games .menubar{
+        background:
+          linear-gradient(90deg, #7f4d26, #5a3418),
+          repeating-linear-gradient(90deg, rgba(255,255,255,0.06) 0 2px, rgba(0,0,0,0.08) 2px 4px);
+        color:#f7efe4;
+        border-bottom:1px solid rgba(255,255,255,0.1);
+      }
+      #win_games .menubar span.active{
+        background:rgba(255,255,255,0.15);
+        color:#f7efe4;
+      }
+      #win_games .content{
+        background:
+          radial-gradient(circle at 20% 20%, rgba(255,255,255,0.08) 0 2px, transparent 2px 6px),
+          radial-gradient(circle at 80% 40%, rgba(0,0,0,0.12) 0 2px, transparent 2px 6px),
+          radial-gradient(circle at 50% 50%, rgba(0,0,0,0.12), rgba(0,0,0,0.32)),
+          repeating-radial-gradient(circle, rgba(255,255,255,0.05) 0 1px, transparent 1px 6px),
+          linear-gradient(180deg, #2a7a4b, #1e5d3a);
+        border:none;
+        border-radius:8px;
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,0.12);
+        padding:10px 12px 12px;
+      }
+      #win_games .statusbar{
+        background:
+          linear-gradient(90deg, #8a5a2d, #6b3f1c),
+          repeating-linear-gradient(90deg, rgba(255,255,255,0.08) 0 2px, rgba(0,0,0,0.08) 2px 4px);
+        color:#f7efe4;
+        border-top:1px solid rgba(255,255,255,0.12);
+      }
+      #win_games .menu-drop{
+        background:
+          radial-gradient(circle at 20% 20%, rgba(255,255,255,0.08) 0 2px, transparent 2px 6px),
+          linear-gradient(180deg, #1f5a3a, #17422b);
+        border:2px solid rgba(212,168,92,0.7);
+        box-shadow: 0 10px 18px rgba(0,0,0,0.35);
+        color:#f7efe4;
+      }
+      #win_games .menu-item{
+        color:#f7efe4;
+      }
+      #win_games .menu-item:hover,
+      #win_games .menu-item:focus{
+        background:linear-gradient(180deg, #f3d59b, #c28a3b);
+        color:#2b1a0a;
+      }
+      #win_games .menu-sep{
+        background:rgba(255,255,255,0.12);
+      }
 
       .resize{
         position:absolute;
@@ -875,43 +959,33 @@
       .music-hide-icons .music-icon{display:none;}
       .games-grid{
         display:grid;
-        grid-template-columns: repeat(auto-fill, 92px);
-        gap:12px;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap:14px;
         align-items:start;
+        justify-items:center;
+        justify-content:center;
       }
       .games-shell{
         display:flex;
         flex-direction:column;
         gap:12px;
-        padding:8px;
+        padding:6px;
       }
       .games-skin{
         position:relative;
-        padding:14px;
-        border-radius:16px;
-        background:
-          radial-gradient(circle at 20% 20%, rgba(255,255,255,0.08) 0 2px, transparent 2px 6px),
-          radial-gradient(circle at 80% 40%, rgba(0,0,0,0.12) 0 2px, transparent 2px 6px),
-          linear-gradient(180deg, #2a7a4b, #1e5d3a);
-        box-shadow: 0 14px 28px rgba(0,0,0,0.25);
-        border:8px solid #7a4b1e;
-      }
-      .games-skin::before{
-        content:"";
-        position:absolute;
-        inset:-6px;
-        border-radius:20px;
-        border:6px solid #9a6b3a;
-        box-shadow: inset 0 0 0 2px rgba(255,255,255,0.15);
-        pointer-events:none;
-      }
-      .games-skin::after{
-        content:"";
-        position:absolute;
-        inset:12px;
+        padding:0;
         border-radius:12px;
-        border:2px solid rgba(255,255,255,0.12);
-        pointer-events:none;
+        background:transparent;
+        box-shadow:none;
+        border:none;
+      }
+      .games-surface{
+        position:relative;
+        padding:6px 2px 12px;
+        border-radius:10px;
+        background:transparent;
+        box-shadow:none;
+        color:#f4f0e6;
       }
       .games-tabs{
         display:flex;
@@ -923,32 +997,21 @@
         border:none;
         padding:6px 12px;
         border-radius:999px;
-        background:rgba(0,0,0,0.25);
-        color:#f4f0e6;
+        background:linear-gradient(180deg, #f2d397, #c7903c);
+        color:#2d1a09;
         font-weight:600;
         cursor:pointer;
-        box-shadow: inset 0 0 0 1px rgba(255,255,255,0.15);
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,0.45), 0 4px 8px rgba(0,0,0,0.2);
       }
       .games-tab.active{
-        background:linear-gradient(180deg, #f0cf91, #c38a3e);
-        color:#2d1a09;
-      }
-      .games-hero{
-        grid-column: span 2;
-      }
-      .games-hero .games-icon{
-        width:64px;
-        height:64px;
-      }
-      .games-hero img{
-        width:64px;
-        height:64px;
+        background:linear-gradient(180deg, #ffe6b5, #cf8f36);
+        color:#2b1a0a;
       }
       .games-card{
-        background:rgba(0,0,0,0.25);
-        border-radius:12px;
-        padding:10px 8px;
-        box-shadow: inset 0 0 0 1px rgba(255,255,255,0.12);
+        background:rgba(0,0,0,0.22);
+        border-radius:14px;
+        padding:12px 10px;
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,0.16), 0 6px 12px rgba(0,0,0,0.2);
       }
       .games-card:hover{
         box-shadow: inset 0 0 0 1px rgba(255,255,255,0.24), 0 8px 16px rgba(0,0,0,0.2);
@@ -983,8 +1046,8 @@
       .games-item{
         background:transparent;
         border:1px solid transparent;
-        width:92px;
-        max-width:92px;
+        width:140px;
+        max-width:140px;
         display:flex;
         flex-direction:column;
         align-items:center;
@@ -1006,19 +1069,16 @@
         padding:8px 6px;
       }
       .games-icon{
-        width:34px;
-        height:34px;
+        width:64px;
+        height:64px;
         display:flex;
         align-items:center;
         justify-content:center;
       }
-      .games-grid.games-big .games-icon{
-        width:56px;
-        height:56px;
-      }
-      .games-grid.games-big .games-icon img{
-        width:48px;
-        height:48px;
+      .games-icon img{
+        width:64px;
+        height:64px;
+        object-fit:contain;
       }
       .games-item.selected{
         border:1px dotted var(--selection-border);
@@ -1027,7 +1087,7 @@
       .games-item span{
         text-align:center;
         line-height:1.1;
-        max-width:86px;
+        max-width:120px;
         word-break:break-word;
       }
       .games-skin .games-item{
@@ -1465,18 +1525,6 @@
         filter:grayscale(0.2);
         cursor:default;
       }
-      .skate-statusbar{
-        display:flex;
-        justify-content:space-between;
-        align-items:center;
-        padding:4px 8px;
-        gap:10px;
-        flex-wrap:wrap;
-        color:var(--skate-muted);
-        border-radius:10px;
-        border:1px solid var(--skate-border);
-        background:var(--skate-panel);
-      }
       .skate-over-box{
         display:flex;
         flex-direction:column;
@@ -1505,9 +1553,6 @@
         }
         .games-grid{
           grid-template-columns:repeat(2, minmax(0, 1fr));
-        }
-        .games-hero{
-          grid-column: span 2;
         }
         .games-item{
           width:100%;
@@ -2728,10 +2773,12 @@ function renderGamesWindow(){
       });
       makeGameItemDraggable(item, id);
     });
+    autoFitWindow(win, 'games');
     return;
   }
 
   if(state.games.view === 'leaderboard'){
+    autoFitWindow(win, 'games');
     return;
   }
 
@@ -2741,6 +2788,7 @@ function renderGamesWindow(){
   if(state.games.view === 'snake'){
     initSnakeInWindow(win);
   }
+  autoFitWindow(win, 'games');
 }
 
 function initGamesWindow(){
@@ -2844,6 +2892,7 @@ function recordGameScore(gameId, best, lastPlayed = null){
 
 function getGamesLeaderboard(){
   const data = loadGamesLeaderboardData();
+  // TODO: plug in backend leaderboard source.
   const items = [
     { id:'dopeSkate', label: t('games.dopeSkate'), best: data.dopeSkate ? data.dopeSkate.best : 0 },
     { id:'snake', label: t('games.snake'), best: data.snake ? data.snake.best : 0 },
@@ -3284,6 +3333,7 @@ let dopeSkate = {
   lastTime: 0,
   assets: null,
   assetsReady: false,
+  assetsLoading: false,
   offsets: { sky: 0, city: 0, ground: 0 },
   inputs: { left: false, right: false },
   jumpBufferUntil: 0,
@@ -3308,6 +3358,7 @@ let dopeSkate = {
   equippedDirty: true,
   lastComboHtml: '',
   lastBlissKey: '',
+  startQueued: false,
 };
 
 function loadDopeSkateHighScore(){
@@ -3353,7 +3404,7 @@ function loadDopeSkateData(){
     const raw = localStorage.getItem(DOPE_SKATE_DATA_KEY);
     if(raw){
       const parsed = JSON.parse(raw);
-      if(parsed && parsed.owned && parsed.equipped) return parsed;
+      if(parsed && parsed.owned && parsed.equipped) return normalizeDopeSkateData(parsed);
     }
   } catch {}
   return getDopeSkateDefaultData();
@@ -3363,6 +3414,27 @@ function saveDopeSkateData(data){
   try{
     localStorage.setItem(DOPE_SKATE_DATA_KEY, JSON.stringify(data));
   } catch {}
+}
+
+function normalizeDopeSkateData(data){
+  const defaults = getDopeSkateDefaultData();
+  const out = data && typeof data === 'object' ? data : {};
+  out.wallet = typeof out.wallet === 'number' && Number.isFinite(out.wallet) ? out.wallet : defaults.wallet;
+  out.owned = out.owned && typeof out.owned === 'object' ? out.owned : {};
+  out.equipped = out.equipped && typeof out.equipped === 'object' ? out.equipped : {};
+
+  Object.keys(defaults.owned).forEach(cat => {
+    if(!Array.isArray(out.owned[cat]) || out.owned[cat].length === 0){
+      out.owned[cat] = [...defaults.owned[cat]];
+    }
+    if(!out.equipped[cat]){
+      out.equipped[cat] = defaults.equipped[cat];
+    }
+    if(!out.owned[cat].includes(out.equipped[cat])){
+      out.owned[cat].push(out.equipped[cat]);
+    }
+  });
+  return out;
 }
 
 function isDopeSkateActive(){
@@ -3382,6 +3454,30 @@ function loadDopeSkateAssets(){
     results.forEach(([key, img]) => { out[key] = img; });
     return out;
   });
+}
+
+function dopeSkateLoadAssets(){
+  if(dopeSkate.assetsReady) return Promise.resolve(dopeSkate.assets);
+  if(dopeSkate.assetsLoading) return dopeSkate.assetsLoading;
+  dopeSkate.assetsLoading = loadDopeSkateAssets().then(assets => {
+    dopeSkate.assets = assets;
+    dopeSkate.assetsReady = true;
+    dopeSkate.assetsLoading = null;
+    dopeSkate.equippedDirty = true;
+    dopeSkateDraw();
+    dopeSkateRenderShop();
+    if(dopeSkate.startQueued){
+      dopeSkate.startQueued = false;
+      dopeSkateStartRun();
+    }
+    return assets;
+  });
+  return dopeSkate.assetsLoading;
+}
+
+function dopeSkateIsInteractiveTarget(target){
+  if(!target || !target.closest) return false;
+  return Boolean(target.closest('[data-skate-action], [data-skate-tab], [data-skate-shop-tab], [data-games-action="back"], .skate-btn, button, a, input, select, textarea'));
 }
 
 function initDopeSkateInWindow(winEl){
@@ -3436,6 +3532,7 @@ function initDopeSkateInWindow(winEl){
   }
   if(!dopeSkate.data){
     dopeSkate.data = loadDopeSkateData();
+    saveDopeSkateData(dopeSkate.data);
   }
   dopeSkate.equippedDirty = true;
 
@@ -3477,29 +3574,23 @@ function initDopeSkateInWindow(winEl){
       } else if(action === 'trick3'){
         dopeSkateRegisterTrick('trick3');
       }
-      if(e.pointerType === 'touch') e.preventDefault();
     });
-    btn.addEventListener('touchstart', (e)=>{ e.preventDefault(); }, { passive:false });
   });
 
-  screen.addEventListener('touchstart', (e)=>{ e.preventDefault(); }, { passive:false });
-  screen.addEventListener('touchmove', (e)=>{ e.preventDefault(); }, { passive:false });
-  canvas.addEventListener('touchstart', (e)=>{ e.preventDefault(); }, { passive:false });
-  canvas.addEventListener('touchmove', (e)=>{ e.preventDefault(); }, { passive:false });
+  screen.addEventListener('touchstart', (e)=>{ if(!dopeSkateIsInteractiveTarget(e.target)) e.preventDefault(); }, { passive:false });
+  screen.addEventListener('touchmove', (e)=>{ if(!dopeSkateIsInteractiveTarget(e.target)) e.preventDefault(); }, { passive:false });
+  canvas.addEventListener('touchstart', (e)=>{ if(!dopeSkateIsInteractiveTarget(e.target)) e.preventDefault(); }, { passive:false });
+  canvas.addEventListener('touchmove', (e)=>{ if(!dopeSkateIsInteractiveTarget(e.target)) e.preventDefault(); }, { passive:false });
   screen.addEventListener('pointerdown', (e)=>{
     if(e.pointerType === 'mouse') return;
+    if(dopeSkateIsInteractiveTarget(e.target)) return;
     if(!dopeSkate.running || dopeSkate.gameOver) return;
     dopeSkateRegisterJump();
     e.preventDefault();
   }, { passive:false });
 
   if(!dopeSkate.assets){
-    loadDopeSkateAssets().then(assets => {
-      dopeSkate.assets = assets;
-      dopeSkate.assetsReady = true;
-      dopeSkateDraw();
-      dopeSkateRenderShop();
-    });
+    dopeSkateLoadAssets();
   } else {
     dopeSkate.assetsReady = true;
   }
@@ -3526,6 +3617,7 @@ function dopeSkateResetWorld(){
     boardAngle: 0,
     boardSpin: 0,
     bodyLean: 0,
+    bodyBob: 0,
     squash: 0,
     trickAnim: null,
   };
@@ -3573,6 +3665,11 @@ function dopeSkateResetWorld(){
 }
 
 function dopeSkateStartRun(){
+  if(!dopeSkate.assetsReady){
+    dopeSkate.startQueued = true;
+    dopeSkateLoadAssets();
+    return;
+  }
   dopeSkateResetWorld();
   dopeSkate.running = true;
   dopeSkate.paused = false;
@@ -3982,19 +4079,43 @@ function dopeSkateDrawSkater(){
 
   const bodyW = 44;
   const bodyH = 58;
-  const boardW = 72;
-  const boardH = 14;
-  const wheelsW = 32;
-  const wheelsH = 10;
+  const boardW = 60;
+  const boardH = 12;
+  const wheelW = 12;
+  const wheelH = 12;
 
-  const boardX = p.x - 6;
-  const boardY = p.y + bodyH - 4;
+  const boardX = p.x + bodyW / 2 - boardW / 2;
+  const boardY = p.y + bodyH - 12;
   const boardCx = boardX + boardW / 2;
   const boardCy = boardY + boardH / 2;
+  const boardAngle = p.boardSpin + p.boardAngle;
 
   ctx.save();
   ctx.translate(boardCx, boardCy);
-  ctx.rotate(p.boardSpin + p.boardAngle);
+  ctx.rotate(boardAngle);
+  const wheelSpriteCount = wheels && wheels.width >= wheels.height * 2 ? 2 : 1;
+  const wheelSrcW = wheels ? wheels.width / wheelSpriteCount : wheelW;
+  const wheelSrcH = wheels ? wheels.height : wheelH;
+  const wheelInset = boardW * 0.28;
+  const wheelOffsetY = boardH / 2 + 2;
+  const wheelPositions = [
+    { x: -boardW / 2 + wheelInset, srcX: 0 },
+    { x: boardW / 2 - wheelInset, srcX: wheelSpriteCount === 2 ? wheelSrcW : 0 },
+  ];
+  wheelPositions.forEach(pos => {
+    ctx.save();
+    ctx.translate(pos.x, wheelOffsetY);
+    ctx.rotate(p.wheelAngle);
+    if(wheels){
+      ctx.drawImage(wheels, pos.srcX, 0, wheelSrcW, wheelSrcH, -wheelW / 2, -wheelH / 2, wheelW, wheelH);
+    } else {
+      ctx.fillStyle = '#222';
+      ctx.beginPath();
+      ctx.ellipse(0, 0, wheelW / 2, wheelH / 2, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+  });
   if(board){
     ctx.drawImage(board, -boardW / 2, -boardH / 2, boardW, boardH);
   } else {
@@ -4003,39 +4124,27 @@ function dopeSkateDrawSkater(){
   }
   ctx.restore();
 
-  const wheelX = boardX + 8;
-  const wheelY = boardY + boardH - 2;
-  ctx.save();
-  ctx.translate(wheelX + wheelsW / 2, wheelY + wheelsH / 2);
-  ctx.rotate(p.wheelAngle);
-  if(wheels){
-    ctx.drawImage(wheels, -wheelsW / 2, -wheelsH / 2, wheelsW, wheelsH);
-  } else {
-    ctx.fillStyle = '#222';
-    ctx.fillRect(-wheelsW / 2, -wheelsH / 2, wheelsW, wheelsH);
-  }
-  ctx.restore();
-
   if(body){
     ctx.save();
-    ctx.translate(p.x + bodyW / 2, p.y + bodyH / 2);
+    ctx.translate(p.x + bodyW / 2, p.y + bodyH / 2 + (p.bodyBob || 0));
     ctx.rotate(p.bodyLean);
     const squash = 1 - p.squash * 0.3;
     ctx.scale(1 + p.squash * 0.2, squash);
     ctx.drawImage(body, -bodyW / 2, -bodyH / 2, bodyW, bodyH);
+    if(hat){
+      const headX = 0;
+      const headY = -bodyH / 2 + 10;
+      ctx.save();
+      ctx.translate(headX, headY);
+      ctx.drawImage(hat, -14, -12, 32, 18);
+      ctx.restore();
+    }
     ctx.restore();
   } else {
     ctx.fillStyle = '#2f6b9a';
     ctx.fillRect(p.x, p.y + 12, bodyW, bodyH - 12);
     ctx.fillStyle = '#f2c6a0';
     ctx.fillRect(p.x + 12, p.y, 18, 18);
-  }
-  if(hat){
-    ctx.save();
-    ctx.translate(p.x + 18, p.y + 6);
-    ctx.rotate(p.bodyLean * 0.8);
-    ctx.drawImage(hat, -12, -12, 30, 16);
-    ctx.restore();
   }
 }
 
@@ -4194,9 +4303,10 @@ function dopeSkateUpdateAnimations(dt){
   if(!player) return;
   player.wheelAngle += dopeSkate.speed * dt * 0.08;
   player.squash = Math.max(0, player.squash - dt * 2.8);
-  const leanFromVel = Math.max(-0.25, Math.min(0.25, -player.vy / 800));
-  const grindLean = player.mode === 'grind' && player.grind ? (player.grind.balance - 0.5) * 0.6 : 0;
+  const leanFromVel = Math.max(-0.12, Math.min(0.12, -player.vy / 900));
+  const grindLean = player.mode === 'grind' && player.grind ? (player.grind.balance - 0.5) * 0.35 : 0;
   player.bodyLean = leanFromVel + grindLean;
+  player.bodyBob = player.mode === 'ground' ? Math.sin(dopeSkate.time * 10) * 1.2 : Math.sin(dopeSkate.time * 6) * 0.6;
 
   if(player.trickAnim){
     player.trickAnim.t += dt;
@@ -4562,7 +4672,7 @@ function dopeSkateGetEquippedAssets(){
   }
   const assets = dopeSkate.assets || {};
   const eq = (dopeSkate.data && dopeSkate.data.equipped) ? dopeSkate.data.equipped : {};
-  dopeSkate.equippedAssets = {
+  const equipped = {
     sky: assets[DOPE_SKATE_SHOP.sky.find(item => item.id === eq.sky)?.asset || 'sky'],
     background: assets[DOPE_SKATE_SHOP.background.find(item => item.id === eq.background)?.asset || 'city'],
     ground: assets[DOPE_SKATE_SHOP.ground.find(item => item.id === eq.ground)?.asset || 'ground'],
@@ -4571,6 +4681,10 @@ function dopeSkateGetEquippedAssets(){
     board: assets[DOPE_SKATE_SHOP.board.find(item => item.id === eq.board)?.asset || 'board'],
     wheels: assets[DOPE_SKATE_SHOP.wheels.find(item => item.id === eq.wheels)?.asset || 'wheels'],
   };
+  if(!dopeSkate.assetsReady){
+    return equipped;
+  }
+  dopeSkate.equippedAssets = equipped;
   dopeSkate.equippedDirty = false;
   return dopeSkate.equippedAssets;
 }
@@ -5933,7 +6047,7 @@ function installLongPress(el, getTarget){
           'skate.menu.shop': 'Shop',
           'skate.menu.howto': 'How to play',
           'skate.menu.leaderboard': 'Leaderboard',
-          'skate.menu.playDesc': 'Endless run through the city. Jump obstacles, keep the combo alive.',
+          'skate.menu.playDesc': 'Skate away',
           'skate.action.start': 'Start run',
           'skate.action.retry': 'Retry',
           'skate.action.menu': 'Menu',
@@ -5949,8 +6063,6 @@ function installLongPress(el, getTarget){
           'skate.hud.cds': 'CDs',
           'skate.gameOver': 'Game Over',
           'skate.grind.balance': 'Balance',
-          'skate.status.ready': 'Ready to roll',
-          'skate.status.controls': 'Jump: Space / Tap • Tricks: Z/X/C',
           'skate.settings.camera': 'Camera',
           'skate.settings.cameraDesc': 'Classic side view',
           'skate.settings.speed': 'Speed',
@@ -6359,7 +6471,7 @@ function installLongPress(el, getTarget){
           'skate.menu.shop': 'Shop',
           'skate.menu.howto': 'Como jogar',
           'skate.menu.leaderboard': 'Leaderboard',
-          'skate.menu.playDesc': 'Endless run pela cidade. Pule obstáculos e mantenha o combo.',
+          'skate.menu.playDesc': 'Skate away',
           'skate.action.start': 'Iniciar run',
           'skate.action.retry': 'Tentar de novo',
           'skate.action.menu': 'Menu',
@@ -6375,8 +6487,6 @@ function installLongPress(el, getTarget){
           'skate.hud.cds': 'CDs',
           'skate.gameOver': 'Game Over',
           'skate.grind.balance': 'Equilibrio',
-          'skate.status.ready': 'Pronto para rodar',
-          'skate.status.controls': 'Pulo: Espaco / Toque • Tricks: Z/X/C',
           'skate.settings.camera': 'Camera',
           'skate.settings.cameraDesc': 'Visao lateral classica',
           'skate.settings.speed': 'Velocidade',
@@ -8257,7 +8367,6 @@ Eu sou o buffalo branco extinto`
                         </div>
                         <div class="skate-menu-panels">
                           <div class="skate-panel active" data-skate-panel="play">
-                            <div class="skate-panel-title" data-i18n="skate.menu.play">Play</div>
                             <p class="skate-panel-text" data-i18n="skate.menu.playDesc">Endless run through the city. Jump obstacles, keep the combo alive.</p>
                             <div class="skate-panel-actions">
                               <button class="skate-btn primary" type="button" data-skate-action="start" data-i18n="skate.action.start">Start run</button>
@@ -8376,10 +8485,6 @@ Eu sou o buffalo branco extinto`
                   <button class="skate-btn skate-control" type="button" data-skate-action="trick2" data-i18n="skate.action.trick2">Trick 2</button>
                   <button class="skate-btn skate-control" type="button" data-skate-action="trick3" data-i18n="skate.action.trick3">Trick 3</button>
                 </div>
-                <div class="skate-statusbar">
-                  <span class="tiny" data-i18n="skate.status.ready">Ready to roll</span>
-                  <span class="tiny" data-i18n="skate.status.controls">Jump: Space / Tap</span>
-                </div>
               </div>
             `;
           }
@@ -8431,16 +8536,18 @@ Eu sou o buffalo branco extinto`
             return `
               <div class="games-shell">
                 <div class="games-skin">
-                  <div class="games-tabs">
-                    <button class="games-tab${state.games.view === 'list' ? ' active' : ''}" type="button" data-games-tab="hub" data-i18n="games.tab.hub">Games</button>
-                    <button class="games-tab${state.games.view === 'leaderboard' ? ' active' : ''}" type="button" data-games-tab="leaderboard" data-i18n="games.tab.leaderboard">Leaderboard</button>
-                  </div>
-                  <div class="games-leaderboard">
-                    <div class="games-leaderboard-row">
-                      <strong data-i18n="games.leaderboard.total">Total Score</strong>
-                      <span>${lb.total}</span>
+                  <div class="games-surface">
+                    <div class="games-tabs">
+                      <button class="games-tab${state.games.view === 'list' ? ' active' : ''}" type="button" data-games-tab="hub" data-i18n="games.tab.hub">Games</button>
+                      <button class="games-tab${state.games.view === 'leaderboard' ? ' active' : ''}" type="button" data-games-tab="leaderboard" data-i18n="games.tab.leaderboard">Leaderboard</button>
                     </div>
-                    ${rows || `<div class="tiny" data-i18n="games.leaderboard.empty">No scores yet.</div>`}
+                    <div class="games-leaderboard">
+                      <div class="games-leaderboard-row">
+                        <strong data-i18n="games.leaderboard.total">Total Score</strong>
+                        <span>${lb.total}</span>
+                      </div>
+                      ${rows || `<div class="tiny" data-i18n="games.leaderboard.empty">No scores yet.</div>`}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -8451,7 +8558,7 @@ Eu sou o buffalo branco extinto`
               return `
                 <button class="games-item games-card" type="button" data-game-id="snake">
                   <div class="games-icon pixel">
-                    <img class="pixel" src="./assets/icons/snake.png" width="32" height="32" alt="${t('games.snake')}" style="display:block;" />
+                    <img class="pixel" src="./assets/icons/snake.png" width="64" height="64" alt="${t('games.snake')}" style="display:block;" />
                   </div>
                   <span data-i18n="games.snake">Snake</span>
                 </button>
@@ -8459,7 +8566,7 @@ Eu sou o buffalo branco extinto`
             }
             if(id === 'dope-skate'){
               return `
-                <button class="games-item games-card games-hero" type="button" data-game-id="dope-skate">
+                <button class="games-item games-card" type="button" data-game-id="dope-skate">
                   <div class="games-icon pixel">
                     <img class="pixel" src="./assets/icons/dope-skate.png" width="64" height="64" alt="${t('games.dopeSkate')}" style="display:block;" />
                   </div>
@@ -8485,12 +8592,14 @@ Eu sou o buffalo branco extinto`
           return `
             <div class="games-shell">
               <div class="games-skin">
-                <div class="games-tabs">
-                  <button class="games-tab${state.games.view === 'list' ? ' active' : ''}" type="button" data-games-tab="hub" data-i18n="games.tab.hub">Games</button>
-                  <button class="games-tab${state.games.view === 'leaderboard' ? ' active' : ''}" type="button" data-games-tab="leaderboard" data-i18n="games.tab.leaderboard">Leaderboard</button>
-                </div>
-                <div id="gamesList" class="games-grid">
-                  ${items || `<div class="tiny" data-i18n="games.empty">${t('games.empty')}</div>`}
+                <div class="games-surface">
+                  <div class="games-tabs">
+                    <button class="games-tab${state.games.view === 'list' ? ' active' : ''}" type="button" data-games-tab="hub" data-i18n="games.tab.hub">Games</button>
+                    <button class="games-tab${state.games.view === 'leaderboard' ? ' active' : ''}" type="button" data-games-tab="leaderboard" data-i18n="games.tab.leaderboard">Leaderboard</button>
+                  </div>
+                  <div id="gamesList" class="games-grid">
+                    ${items || `<div class="tiny" data-i18n="games.empty">${t('games.empty')}</div>`}
+                  </div>
                 </div>
               </div>
             </div>
@@ -9926,6 +10035,64 @@ function renderIcons(){
         return { left, top, width:w, height:h };
       }
 
+      function getSavedWindowRect(appId){
+        try{
+          const raw = localStorage.getItem(`bliss98_window_${appId}`);
+          if(!raw) return null;
+          const parsed = JSON.parse(raw);
+          if(!parsed) return null;
+          const { left, top, width, height } = parsed;
+          if(!Number.isFinite(left) || !Number.isFinite(top) || !Number.isFinite(width) || !Number.isFinite(height)) return null;
+          return { left, top, width, height };
+        } catch {
+          return null;
+        }
+      }
+
+      function normalizeWindowRect(rect, area, margin = 16){
+        const maxW = Math.max(240, Math.floor(area.width - margin * 2));
+        const maxH = Math.max(200, Math.floor(area.height - margin * 2));
+        const width = clamp(rect.width, 240, maxW);
+        const height = clamp(rect.height, 200, maxH);
+        const left = clamp(rect.left, margin, Math.max(margin, area.width - width - margin));
+        const top = clamp(rect.top, margin, Math.max(margin, area.height - height - margin));
+        return { left, top, width, height };
+      }
+
+      // Auto-fit windows to their rendered content on first open (when no saved/manual size exists).
+      function autoFitWindow(winEl, appId){
+        if(!winEl) return;
+        const w = state.windows.get(appId);
+        if(!w || w.userSized || w.savedRect) return;
+
+        requestAnimationFrame(()=>{
+          requestAnimationFrame(()=>{
+            const frame = winEl.querySelector('.frame');
+            const content = winEl.querySelector('.content');
+            if(!frame || !content) return;
+
+            const area = $('#desktopArea').getBoundingClientRect();
+            const frameRect = frame.getBoundingClientRect();
+            const contentRect = content.getBoundingClientRect();
+            const extraW = frameRect.width - contentRect.width;
+            const extraH = frameRect.height - contentRect.height;
+            const targetW = Math.ceil(Math.max(content.scrollWidth, content.clientWidth) + extraW);
+            const targetH = Math.ceil(Math.max(content.scrollHeight, content.clientHeight) + extraH);
+
+            const normalized = normalizeWindowRect({ left: w.left, top: w.top, width: targetW, height: targetH }, area, 16);
+            w.left = normalized.left;
+            w.top = normalized.top;
+            w.width = normalized.width;
+            w.height = normalized.height;
+
+            winEl.style.left = w.left + 'px';
+            winEl.style.top = w.top + 'px';
+            winEl.style.width = w.width + 'px';
+            winEl.style.height = w.height + 'px';
+          });
+        });
+      }
+
       function sizeWindowToContent(winEl, appId){
         if(!winEl) return;
         const frame = winEl.querySelector('.frame');
@@ -9979,13 +10146,20 @@ function renderIcons(){
           return;
         }
 
-        const rect = defaultWindowRect();
+        let rect = defaultWindowRect();
         if(appId === 'mediaplayer'){
           const area = $('#desktopArea').getBoundingClientRect();
           const maxW = Math.max(260, Math.floor(area.width - 40));
           const maxH = Math.max(180, Math.floor(area.height - 80));
           rect.width = clamp(360, 260, maxW);
           rect.height = clamp(210, 180, maxH);
+        }
+        const area = $('#desktopArea').getBoundingClientRect();
+        const savedRect = getSavedWindowRect(appId);
+        if(savedRect){
+          rect = normalizeWindowRect(savedRect, area, 16);
+        } else {
+          rect = normalizeWindowRect(rect, area, 16);
         }
         const iconFile = typeof app.iconFile === 'function' ? app.iconFile() : app.iconFile;
         const wstate = {
@@ -10002,6 +10176,8 @@ function renderIcons(){
           width: rect.width,
           height: rect.height,
           z: ++state.zTop,
+          savedRect: Boolean(savedRect),
+          userSized: false,
         };
         state.windows.set(appId, wstate);
         createWindowElement(wstate);
@@ -10215,7 +10391,8 @@ function renderIcons(){
         applyI18nTo(el);
         applyWindowState(el, appId);
         if(appId === 'trash') updateTrashIconUI();
-        sizeWindowToContent(el, appId);
+        // Auto-fit after content + i18n, unless a saved/manual size exists.
+        autoFitWindow(el, appId);
         el.style.visibility = 'visible';
         if(state.animations){
           el.addEventListener('animationend', ()=>{ el.classList.remove('anim-open'); }, { once:true });
@@ -10418,6 +10595,8 @@ function renderIcons(){
           winEl.removeEventListener('pointermove', onPointerMove);
           winEl.removeEventListener('pointerup', onPointerUp);
           winEl.removeEventListener('pointercancel', onPointerUp);
+          const w = state.windows.get(appId);
+          if(w) w.userSized = true;
         }
 
         // Mouse hover cursor change near edges
