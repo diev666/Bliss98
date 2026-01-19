@@ -879,6 +879,98 @@
         gap:12px;
         align-items:start;
       }
+      .games-shell{
+        display:flex;
+        flex-direction:column;
+        gap:12px;
+        padding:8px;
+      }
+      .games-skin{
+        position:relative;
+        padding:14px;
+        border-radius:16px;
+        background:
+          radial-gradient(circle at 20% 20%, rgba(255,255,255,0.08) 0 2px, transparent 2px 6px),
+          radial-gradient(circle at 80% 40%, rgba(0,0,0,0.12) 0 2px, transparent 2px 6px),
+          linear-gradient(180deg, #2a7a4b, #1e5d3a);
+        box-shadow: 0 14px 28px rgba(0,0,0,0.25);
+        border:8px solid #7a4b1e;
+      }
+      .games-skin::before{
+        content:"";
+        position:absolute;
+        inset:-6px;
+        border-radius:20px;
+        border:6px solid #9a6b3a;
+        box-shadow: inset 0 0 0 2px rgba(255,255,255,0.15);
+        pointer-events:none;
+      }
+      .games-skin::after{
+        content:"";
+        position:absolute;
+        inset:12px;
+        border-radius:12px;
+        border:2px solid rgba(255,255,255,0.12);
+        pointer-events:none;
+      }
+      .games-tabs{
+        display:flex;
+        gap:8px;
+        margin-bottom:12px;
+        flex-wrap:wrap;
+      }
+      .games-tab{
+        border:none;
+        padding:6px 12px;
+        border-radius:999px;
+        background:rgba(0,0,0,0.25);
+        color:#f4f0e6;
+        font-weight:600;
+        cursor:pointer;
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,0.15);
+      }
+      .games-tab.active{
+        background:linear-gradient(180deg, #f0cf91, #c38a3e);
+        color:#2d1a09;
+      }
+      .games-hero{
+        grid-column: span 2;
+      }
+      .games-hero .games-icon{
+        width:64px;
+        height:64px;
+      }
+      .games-hero img{
+        width:64px;
+        height:64px;
+      }
+      .games-card{
+        background:rgba(0,0,0,0.25);
+        border-radius:12px;
+        padding:10px 8px;
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,0.12);
+      }
+      .games-card:hover{
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,0.24), 0 8px 16px rgba(0,0,0,0.2);
+      }
+      .games-leaderboard{
+        display:flex;
+        flex-direction:column;
+        gap:10px;
+        padding:8px;
+        border-radius:12px;
+        background:rgba(0,0,0,0.25);
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,0.12);
+        color:#f4f0e6;
+      }
+      .games-leaderboard-row{
+        display:flex;
+        justify-content:space-between;
+        gap:10px;
+        padding:6px 8px;
+        background:rgba(255,255,255,0.06);
+        border-radius:8px;
+      }
       .games-grid.games-big{
         grid-template-columns: repeat(auto-fill, 140px);
         gap:16px;
@@ -898,7 +990,7 @@
         align-items:center;
         gap:6px;
         padding:6px 4px;
-        cursor:default;
+        cursor:pointer;
       }
       .games-list .games-item{
         width:100%;
@@ -937,6 +1029,9 @@
         line-height:1.1;
         max-width:86px;
         word-break:break-word;
+      }
+      .games-skin .games-item{
+        color:#f4f0e6;
       }
       .snake-layout{
         display:flex;
@@ -1410,6 +1505,9 @@
         }
         .games-grid{
           grid-template-columns:repeat(2, minmax(0, 1fr));
+        }
+        .games-hero{
+          grid-column: span 2;
         }
         .games-item{
           width:100%;
@@ -2607,15 +2705,8 @@ function renderGamesWindow(){
     }
     const listEl = win.querySelector('#gamesList');
     if(listEl){
-      listEl.className = state.games.layout === 'list' ? 'games-list' : 'games-grid';
-      if(state.games.layout === 'grid' && state.games.bigIcons) listEl.classList.add('games-big');
+      listEl.className = 'games-grid';
     }
-    const gridBtn = win.querySelector('[data-games-view="grid"]');
-    const listBtn = win.querySelector('[data-games-view="list"]');
-    const bigBtn = win.querySelector('[data-games-big="toggle"]');
-    if(gridBtn) gridBtn.classList.toggle('pressed', state.games.layout === 'grid');
-    if(listBtn) listBtn.classList.toggle('pressed', state.games.layout === 'list');
-    if(bigBtn) bigBtn.classList.toggle('pressed', state.games.bigIcons);
 
     items.forEach(item => {
       const id = item.dataset.gameId;
@@ -2637,6 +2728,10 @@ function renderGamesWindow(){
       });
       makeGameItemDraggable(item, id);
     });
+    return;
+  }
+
+  if(state.games.view === 'leaderboard'){
     return;
   }
 
@@ -2689,6 +2784,8 @@ const SNAKE_SPEEDS = {
   fast: 90,
 };
 
+const GAMES_LEADER_KEY = 'bliss98_games_leaderboard';
+
 let snake = {
   grid: 20,
   body: [],
@@ -2720,6 +2817,39 @@ function loadSnakeHighScore(){
 
 function saveSnakeHighScore(score){
   try{ localStorage.setItem(SNAKE_HIGH_KEY, String(score)); } catch {}
+}
+
+function loadGamesLeaderboardData(){
+  try{
+    const raw = localStorage.getItem(GAMES_LEADER_KEY);
+    if(raw) return JSON.parse(raw);
+  } catch {}
+  return { snake: { best: 0, lastPlayed: null }, dopeSkate: { best: 0, lastPlayed: null } };
+}
+
+function saveGamesLeaderboardData(data){
+  try{ localStorage.setItem(GAMES_LEADER_KEY, JSON.stringify(data)); } catch {}
+}
+
+function recordGameScore(gameId, best, lastPlayed = null){
+  const data = loadGamesLeaderboardData();
+  const entry = data[gameId] || { best: 0, lastPlayed: null };
+  if(best > entry.best){
+    entry.best = best;
+  }
+  if(lastPlayed) entry.lastPlayed = lastPlayed;
+  data[gameId] = entry;
+  saveGamesLeaderboardData(data);
+}
+
+function getGamesLeaderboard(){
+  const data = loadGamesLeaderboardData();
+  const items = [
+    { id:'dopeSkate', label: t('games.dopeSkate'), best: data.dopeSkate ? data.dopeSkate.best : 0 },
+    { id:'snake', label: t('games.snake'), best: data.snake ? data.snake.best : 0 },
+  ];
+  const total = items.reduce((sum, item)=>sum + (item.best || 0), 0);
+  return { items, total };
 }
 
 function isSnakeActive(){
@@ -2842,6 +2972,7 @@ function snakeStartGame(){
   snake.paused = false;
   snake.gameOver = false;
   snake.started = true;
+  recordGameScore('snake', state.snake.highScore || 0, new Date().toISOString());
   snakePlaceFood();
   snakeStartLoop();
   updateSnakeUI();
@@ -2922,6 +3053,7 @@ function snakeGameOver(){
     state.snake.highScore = snake.score;
     saveSnakeHighScore(state.snake.highScore);
   }
+  recordGameScore('snake', state.snake.highScore, new Date().toISOString());
   updateSnakeUI();
 }
 
@@ -3446,6 +3578,7 @@ function dopeSkateStartRun(){
   dopeSkate.paused = false;
   dopeSkate.started = true;
   dopeSkateUnlockAudio();
+  recordGameScore('dopeSkate', state.dopeSkate.highScore || 0, new Date().toISOString());
   if(dopeSkate.els && dopeSkate.els.menuOverlay){
     dopeSkate.els.menuOverlay.classList.add('hidden');
   }
@@ -4416,6 +4549,7 @@ function dopeSkateFinalizeScore(){
     state.dopeSkate.highScore = dopeSkate.scoreTotal;
     saveDopeSkateHighScore(state.dopeSkate.highScore);
   }
+  recordGameScore('dopeSkate', state.dopeSkate.highScore, new Date().toISOString());
   if(dopeSkate.data){
     dopeSkate.data.wallet = (dopeSkate.data.wallet || 0) + dopeSkate.cds;
     saveDopeSkateData(dopeSkate.data);
@@ -5789,10 +5923,11 @@ function installLongPress(el, getTarget){
           'games.snake': 'Snake',
           'games.dopeSkate': 'Dope Skate',
           'games.back': 'Back',
-          'games.viewGrid': 'Grid view',
-          'games.viewList': 'List view',
-          'games.bigIcons': 'Bigger Icons',
           'games.empty': 'No games yet.',
+          'games.tab.hub': 'Games',
+          'games.tab.leaderboard': 'Leaderboard',
+          'games.leaderboard.total': 'Total Score',
+          'games.leaderboard.empty': 'No scores yet.',
           'skate.menu.play': 'Play',
           'skate.menu.settings': 'Settings',
           'skate.menu.shop': 'Shop',
@@ -6214,10 +6349,11 @@ function installLongPress(el, getTarget){
           'games.snake': 'Snake',
           'games.dopeSkate': 'Dope Skate',
           'games.back': 'Voltar',
-          'games.viewGrid': 'Grade',
-          'games.viewList': 'Lista',
-          'games.bigIcons': 'Ícones grandes',
           'games.empty': 'Sem jogos ainda.',
+          'games.tab.hub': 'Jogos',
+          'games.tab.leaderboard': 'Leaderboard',
+          'games.leaderboard.total': 'Score total',
+          'games.leaderboard.empty': 'Sem scores ainda.',
           'skate.menu.play': 'Jogar',
           'skate.menu.settings': 'Configurações',
           'skate.menu.shop': 'Shop',
@@ -8284,10 +8420,36 @@ Eu sou o buffalo branco extinto`
               </div>
             `;
           }
+          if(state.games.view === 'leaderboard'){
+            const lb = getGamesLeaderboard();
+            const rows = lb.items.map(item => `
+              <div class="games-leaderboard-row">
+                <strong>${item.label}</strong>
+                <span>${item.best}</span>
+              </div>
+            `).join('');
+            return `
+              <div class="games-shell">
+                <div class="games-skin">
+                  <div class="games-tabs">
+                    <button class="games-tab${state.games.view === 'list' ? ' active' : ''}" type="button" data-games-tab="hub" data-i18n="games.tab.hub">Games</button>
+                    <button class="games-tab${state.games.view === 'leaderboard' ? ' active' : ''}" type="button" data-games-tab="leaderboard" data-i18n="games.tab.leaderboard">Leaderboard</button>
+                  </div>
+                  <div class="games-leaderboard">
+                    <div class="games-leaderboard-row">
+                      <strong data-i18n="games.leaderboard.total">Total Score</strong>
+                      <span>${lb.total}</span>
+                    </div>
+                    ${rows || `<div class="tiny" data-i18n="games.leaderboard.empty">No scores yet.</div>`}
+                  </div>
+                </div>
+              </div>
+            `;
+          }
           const items = (state.folders.games || []).map(id => {
             if(id === 'snake'){
               return `
-                <button class="games-item" type="button" data-game-id="snake">
+                <button class="games-item games-card" type="button" data-game-id="snake">
                   <div class="games-icon pixel">
                     <img class="pixel" src="/assets/icons/snake.png" width="32" height="32" alt="${t('games.snake')}" style="display:block;" />
                   </div>
@@ -8297,9 +8459,9 @@ Eu sou o buffalo branco extinto`
             }
             if(id === 'dope-skate'){
               return `
-                <button class="games-item" type="button" data-game-id="dope-skate">
+                <button class="games-item games-card games-hero" type="button" data-game-id="dope-skate">
                   <div class="games-icon pixel">
-                    <img class="pixel" src="/assets/icons/dope-skate.png" width="32" height="32" alt="${t('games.dopeSkate')}" style="display:block;" />
+                    <img class="pixel" src="/assets/icons/dope-skate.png" width="64" height="64" alt="${t('games.dopeSkate')}" style="display:block;" />
                   </div>
                   <span data-i18n="games.dopeSkate">Dope Skate</span>
                 </button>
@@ -8313,7 +8475,7 @@ Eu sou o buffalo branco extinto`
               ? `<img class="pixel" src="${iconFile}" width="32" height="32" alt="${label}" style="display:block;" />`
               : iconSVG(app.icon);
             return `
-              <button class="games-item" type="button" data-game-id="${id}">
+              <button class="games-item games-card" type="button" data-game-id="${id}">
                 <div class="games-icon pixel">${iconHtml}</div>
                 <span>${label}</span>
               </button>
@@ -8321,14 +8483,16 @@ Eu sou o buffalo branco extinto`
           }).join('');
 
           return `
-            <h2>BLISS — ${t('app.games')}</h2>
-            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:10px;">
-              <button class="btn bevel" type="button" data-games-view="grid" data-i18n="games.viewGrid">Grid view</button>
-              <button class="btn bevel" type="button" data-games-view="list" data-i18n="games.viewList">List view</button>
-              <button class="btn bevel" type="button" data-games-big="toggle" data-i18n="games.bigIcons">Bigger Icons</button>
-            </div>
-            <div id="gamesList" class="${state.games.layout === 'list' ? 'games-list' : 'games-grid'}${state.games.bigIcons && state.games.layout === 'grid' ? ' games-big' : ''}">
-              ${items || `<div class="tiny" data-i18n="games.empty">${t('games.empty')}</div>`}
+            <div class="games-shell">
+              <div class="games-skin">
+                <div class="games-tabs">
+                  <button class="games-tab${state.games.view === 'list' ? ' active' : ''}" type="button" data-games-tab="hub" data-i18n="games.tab.hub">Games</button>
+                  <button class="games-tab${state.games.view === 'leaderboard' ? ' active' : ''}" type="button" data-games-tab="leaderboard" data-i18n="games.tab.leaderboard">Leaderboard</button>
+                </div>
+                <div id="gamesList" class="games-grid">
+                  ${items || `<div class="tiny" data-i18n="games.empty">${t('games.empty')}</div>`}
+                </div>
+              </div>
             </div>
           `;
         },
@@ -10566,16 +10730,10 @@ function renderIcons(){
             if(!themeCustomBtn.classList.contains('disabled')) applyCustomTheme();
           }
         }
-        const gamesViewBtn = e.target.closest && e.target.closest('[data-games-view]');
-        if(gamesViewBtn && gamesViewBtn.dataset && gamesViewBtn.dataset.gamesView){
-          state.games.layout = gamesViewBtn.dataset.gamesView;
-          saveGamesLayout();
-          renderGamesWindow();
-        }
-        const gamesBigBtn = e.target.closest && e.target.closest('[data-games-big]');
-        if(gamesBigBtn && gamesBigBtn.dataset && gamesBigBtn.dataset.gamesBig){
-          state.games.bigIcons = !state.games.bigIcons;
-          saveGamesBigIcons();
+        const gamesTabBtn = e.target.closest && e.target.closest('[data-games-tab]');
+        if(gamesTabBtn && gamesTabBtn.dataset && gamesTabBtn.dataset.gamesTab){
+          const tab = gamesTabBtn.dataset.gamesTab;
+          state.games.view = (tab === 'leaderboard') ? 'leaderboard' : 'list';
           renderGamesWindow();
         }
         const videosAction = e.target.closest && e.target.closest('[data-videos-action]');
@@ -10662,6 +10820,9 @@ function renderIcons(){
         if(!state.folders.games.includes('snake')) state.folders.games.unshift('snake');
         if(!state.folders.games.includes('dope-skate')) state.folders.games.push('dope-skate');
         state.snake.highScore = loadSnakeHighScore();
+        state.dopeSkate.highScore = loadDopeSkateHighScore();
+        recordGameScore('snake', state.snake.highScore || 0);
+        recordGameScore('dopeSkate', state.dopeSkate.highScore || 0);
         state.trash = new Set(loadTrash());
         state.iconLabels = loadIconLabels();
         state.trashSelection = new Set();
