@@ -1222,113 +1222,114 @@
         touch-action:none;
         overflow:hidden;
       }
-      .game-mobile-overlay{
-        position:absolute;
-        inset:0;
-        pointer-events:none;
+      .ps1-dock{
         display:none;
+        position:absolute;
+        left:0;
+        right:0;
+        bottom:0;
+        padding:16px 18px calc(18px + env(safe-area-inset-bottom));
+        background:linear-gradient(180deg, #d7d2c8 0%, #bfb8ab 100%);
+        border-top:1px solid rgba(0,0,0,0.12);
+        box-shadow:0 -8px 24px rgba(0,0,0,0.2);
         z-index:6;
-        padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+        pointer-events:auto;
+        touch-action:none;
       }
-      #win_games.mobile-game .game-mobile-overlay{
+      #win_games.mobile-game .ps1-dock{
         display:block;
       }
-      .mobile-shoulders{
+      .ps1-dock-body{
+        position:relative;
+        margin:0 auto;
+        width:min(92vw, 520px);
+        height:190px;
+        border-radius:120px 120px 90px 90px;
+        background:linear-gradient(180deg, #e8e3d8 0%, #c9c2b4 100%);
+        box-shadow:inset 0 6px 12px rgba(255,255,255,0.6), inset 0 -8px 12px rgba(0,0,0,0.18);
+        border:1px solid rgba(0,0,0,0.08);
+      }
+      .ps1-brand{
         position:absolute;
-        top:calc(8px + env(safe-area-inset-top));
-        left:8px;
-        right:8px;
-        display:flex;
-        justify-content:space-between;
-        gap:8px;
+        top:16px;
+        left:50%;
+        transform:translateX(-50%);
+        font-size:14px;
+        letter-spacing:2px;
+        color:#6a6258;
+        font-weight:700;
       }
-      .mobile-shoulder-group{
-        display:flex;
-        gap:8px;
-        pointer-events:auto;
-      }
-      .mobile-shoulder{
-        min-width:46px;
-        height:24px;
-        border-radius:999px;
-        border:1px solid rgba(255,255,255,0.35);
-        background:rgba(10,14,20,0.35);
-        color:#f4f6fb;
-        font-size:11px;
-        letter-spacing:0.3px;
-      }
-      .mobile-stick{
+      .ps1-stick{
         position:absolute;
-        left:12px;
-        bottom:calc(18px + env(safe-area-inset-bottom));
+        left:26px;
+        bottom:20px;
         width:110px;
         height:110px;
         border-radius:50%;
-        border:1px solid rgba(255,255,255,0.35);
-        background:rgba(10,14,20,0.2);
-        box-shadow:0 8px 18px rgba(0,0,0,0.25);
-        pointer-events:auto;
+        background:radial-gradient(circle at 30% 30%, #d0c8ba, #9a9185);
+        border:2px solid rgba(0,0,0,0.15);
+        box-shadow:inset 0 6px 8px rgba(255,255,255,0.35);
         touch-action:none;
       }
-      .mobile-stick-knob{
+      .ps1-stick-knob{
         position:absolute;
         left:50%;
         top:50%;
-        width:48px;
-        height:48px;
-        border-radius:50%;
-        border:1px solid rgba(255,255,255,0.4);
-        background:rgba(255,255,255,0.08);
-        transform:translate(-50%, -50%);
-        box-shadow:0 0 16px rgba(255,255,255,0.15);
-      }
-      .mobile-face{
-        position:absolute;
-        right:14px;
-        bottom:calc(18px + env(safe-area-inset-bottom));
-        width:150px;
-        height:150px;
-        pointer-events:auto;
-      }
-      .mobile-btn{
-        position:absolute;
         width:52px;
         height:52px;
         border-radius:50%;
-        border:1px solid rgba(255,255,255,0.45);
-        background:rgba(10,14,20,0.25);
-        color:#f4f6fb;
-        font-weight:600;
-        letter-spacing:0.3px;
-        text-align:center;
-        line-height:52px;
-        font-size:18px;
-        box-shadow:0 6px 18px rgba(0,0,0,0.25);
-        pointer-events:auto;
+        background:radial-gradient(circle at 30% 30%, #bab1a3, #7d7367);
+        border:2px solid rgba(0,0,0,0.2);
+        transform:translate(-50%, -50%);
+      }
+      .ps1-face{
+        position:absolute;
+        right:26px;
+        bottom:18px;
+        width:150px;
+        height:150px;
+      }
+      .ps1-face-btn{
+        position:absolute;
+        width:54px;
+        height:54px;
+        border-radius:50%;
+        border:2px solid rgba(0,0,0,0.2);
+        background:rgba(245,245,245,0.85);
+        font-size:22px;
+        font-weight:700;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        box-shadow:0 6px 12px rgba(0,0,0,0.2);
         touch-action:none;
       }
-      .mobile-btn.small{
-        width:auto;
-        height:28px;
-        border-radius:999px;
-        padding:0 10px;
-        line-height:28px;
-        font-size:11px;
-      }
-      .mobile-btn[data-btn="triangle"]{ left:48px; top:0; }
-      .mobile-btn[data-btn="circle"]{ right:0; top:48px; }
-      .mobile-btn[data-btn="cross"]{ left:48px; bottom:0; }
-      .mobile-btn[data-btn="square"]{ left:0; top:48px; }
-      .mobile-center{
+      .ps1-face-btn.triangle{ color:#2bb14f; left:48px; top:0; }
+      .ps1-face-btn.circle{ color:#d63b5a; right:0; top:48px; }
+      .ps1-face-btn.cross{ color:#2b78ff; left:48px; bottom:0; }
+      .ps1-face-btn.square{ color:#7c49d1; left:0; top:48px; }
+      .ps1-center{
         position:absolute;
         left:50%;
-        bottom:calc(18px + env(safe-area-inset-bottom));
+        bottom:26px;
         transform:translateX(-50%);
         display:flex;
-        gap:10px;
-        pointer-events:auto;
+        gap:14px;
       }
-      .game-mobile-overlay[data-game="snake"] .mobile-face{
+      .ps1-center-btn{
+        min-width:64px;
+        height:28px;
+        border-radius:999px;
+        border:1px solid rgba(0,0,0,0.2);
+        background:linear-gradient(180deg, #f2ede4 0%, #cfc7b9 100%);
+        font-size:11px;
+        letter-spacing:1px;
+        color:#6a6258;
+        text-transform:uppercase;
+        box-shadow:inset 0 3px 6px rgba(255,255,255,0.6);
+        touch-action:none;
+      }
+      .ps1-dock[data-game="snake"] .ps1-face{
         display:none;
       }
       .skate-canvas-wrap{
@@ -1360,6 +1361,10 @@
         overflow:hidden;
         flex:1 1 auto;
         min-height:0;
+        display:flex;
+        flex-direction:column;
+        padding-bottom:260px;
+        position:relative;
       }
       #win_games.mobile-game{
         position:fixed;
@@ -1384,8 +1389,9 @@
         flex:1;
         padding:4px;
         height:100%;
-        min-height:100dvh;
-        min-height:100svh;
+        max-height:50vh;
+        align-self:center;
+        aspect-ratio:16/9;
       }
       #win_games.mobile-game .skate-canvas-wrap{
         min-height:auto;
@@ -1414,8 +1420,9 @@
         min-height:0;
         padding:6px;
         flex:1;
-        min-height:100dvh;
-        min-height:100svh;
+        max-height:50vh;
+        align-self:center;
+        aspect-ratio:1/1;
       }
       #win_games.mobile-game .snake-board canvas{
         width:100%;
@@ -2998,11 +3005,11 @@ function renderGamesWindow(){
 
   if(state.games.view === 'dope-skate'){
     DopeSkateGame.mount(win);
-    mountMobileGameOverlay('dope-skate', win);
+    mountMobileGameDock('dope-skate', win);
   }
   if(state.games.view === 'snake'){
     initSnakeInWindow(win);
-    mountMobileGameOverlay('snake', win);
+    mountMobileGameDock('snake', win);
   }
   if(!mobileGameView) autoFitWindow(win, 'games');
 }
@@ -3065,58 +3072,51 @@ function armMobileFullscreen(targetEl){
   targetEl.addEventListener('pointerdown', handler, { once:true });
 }
 
-function mountMobileGameOverlay(gameId, winEl){
+function mountMobileGameDock(gameId, winEl){
   if(!winEl) return;
   const mobile = isMobileGameMode();
-  const container = gameId === 'snake' ? winEl.querySelector('#snakeBoard') : winEl.querySelector('#skateScreen');
+  const container = winEl.querySelector('.content');
   if(!container) return;
-  let overlay = container.querySelector(`.game-mobile-overlay[data-game="${gameId}"]`);
+  let dock = container.querySelector(`.ps1-dock[data-game="${gameId}"]`);
   if(!mobile){
-    if(overlay) overlay.remove();
+    if(dock) dock.remove();
     return;
   }
-  if(!overlay){
-    overlay = document.createElement('div');
-    overlay.className = 'game-mobile-overlay';
-    overlay.dataset.game = gameId;
-    overlay.innerHTML = `
-      <div class="mobile-shoulders">
-        <div class="mobile-shoulder-group">
-          <button class="mobile-shoulder" type="button" data-mobile-action="l1">L1</button>
-          <button class="mobile-shoulder" type="button" data-mobile-action="l2">L2</button>
+  if(!dock){
+    dock = document.createElement('div');
+    dock.className = 'ps1-dock';
+    dock.dataset.game = gameId;
+    dock.innerHTML = `
+      <div class="ps1-dock-body">
+        <div class="ps1-brand">BLISS</div>
+        <div class="ps1-stick" data-mobile-stick="left" aria-label="Joystick">
+          <div class="ps1-stick-knob"></div>
         </div>
-        <div class="mobile-shoulder-group">
-          <button class="mobile-shoulder" type="button" data-mobile-action="r1">R1</button>
-          <button class="mobile-shoulder" type="button" data-mobile-action="r2">R2</button>
+        <div class="ps1-face">
+          <button class="ps1-face-btn triangle" type="button" data-mobile-action="trick2" aria-label="Trick 2">△</button>
+          <button class="ps1-face-btn circle" type="button" data-mobile-action="trick3" aria-label="Trick 3">○</button>
+          <button class="ps1-face-btn cross" type="button" data-mobile-action="jump" aria-label="Jump">✕</button>
+          <button class="ps1-face-btn square" type="button" data-mobile-action="trick1" aria-label="Trick 1">□</button>
         </div>
-      </div>
-      <div class="mobile-stick" data-mobile-stick="left" aria-label="Joystick">
-        <div class="mobile-stick-knob"></div>
-      </div>
-      <div class="mobile-face">
-        <button class="mobile-btn" type="button" data-mobile-action="trick2" data-btn="triangle" aria-label="Trick 2">△</button>
-        <button class="mobile-btn" type="button" data-mobile-action="trick3" data-btn="circle" aria-label="Trick 3">○</button>
-        <button class="mobile-btn" type="button" data-mobile-action="jump" data-btn="cross" aria-label="Jump">✕</button>
-        <button class="mobile-btn" type="button" data-mobile-action="trick1" data-btn="square" aria-label="Trick 1">□</button>
-      </div>
-      <div class="mobile-center">
-        <button class="mobile-btn small" type="button" data-mobile-action="select">Select</button>
-        <button class="mobile-btn small" type="button" data-mobile-action="start">Start</button>
+        <div class="ps1-center">
+          <button class="ps1-center-btn" type="button" data-mobile-action="select">Select</button>
+          <button class="ps1-center-btn" type="button" data-mobile-action="start">Start</button>
+        </div>
       </div>
     `;
-    container.appendChild(overlay);
+    container.appendChild(dock);
   }
   armMobileFullscreen(container);
-  if(overlay.dataset.bound !== '1'){
-    bindMobileOverlay(gameId, overlay);
-    overlay.dataset.bound = '1';
+  if(dock.dataset.bound !== '1'){
+    bindMobileOverlay(gameId, dock);
+    dock.dataset.bound = '1';
   }
 }
 
 function bindMobileOverlay(gameId, overlay){
   const stick = overlay.querySelector('[data-mobile-stick="left"]');
   if(stick){
-    const knob = stick.querySelector('.mobile-stick-knob');
+    const knob = stick.querySelector('.ps1-stick-knob');
     const radius = 36;
     let pointerId = null;
     let center = { x: 0, y: 0 };
@@ -3192,8 +3192,12 @@ function bindMobileOverlay(gameId, overlay){
         if(action === 'trick1') dopeSkateRegisterTrick('trick1');
         if(action === 'trick2') dopeSkateRegisterTrick('trick2');
         if(action === 'trick3') dopeSkateRegisterTrick('trick3');
-        if(action === 'start') dopeSkateShowMenu('play');
-        if(action === 'select') dopeSkateHideMenu();
+        if(action === 'start'){
+          const menuHidden = dopeSkate.els && dopeSkate.els.menuOverlay && dopeSkate.els.menuOverlay.classList.contains('hidden');
+          if(menuHidden) dopeSkateShowMenu('play');
+          else dopeSkateHideMenu();
+        }
+        if(action === 'select') dopeSkateShowMenu('play');
       }
       if(gameId === 'snake' && isSnakeActive()){
         const action = btn.dataset.mobileAction;
