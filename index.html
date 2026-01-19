@@ -3123,6 +3123,7 @@ function renderGamesWindow(){
   const content = win.querySelector('.content');
   if(!content) return;
   content.innerHTML = CONTENT.games();
+  content.dataset.fitKey = `games:${state.games.view}`;
   applyI18nTo(win);
   const mobileGameView = isMobileGameMode() && (state.games.view === 'dope-skate' || state.games.view === 'snake');
   if(state.games.view === 'dope-skate' || state.games.view === 'snake'){
@@ -3163,10 +3164,12 @@ function renderGamesWindow(){
       });
       makeGameItemDraggable(item, id);
     });
+    if(!mobileGameView) autoFitWindow(win, 'games');
     return;
   }
 
   if(state.games.view === 'leaderboard'){
+    if(!mobileGameView) autoFitWindow(win, 'games');
     return;
   }
 
@@ -6003,6 +6006,16 @@ function initSettingsTabs(winEl){
     updateWallpaperButtons(win);
     updateAnimationButtons(win);
     updateScanlinesButtons(win);
+    const content = win.querySelector('.content');
+    if(content){
+      content.dataset.fitKey = `settings:${tabId}`;
+      if(tabId === 'appearance'){
+        content.dataset.fitMinW = '560';
+      } else {
+        delete content.dataset.fitMinW;
+      }
+    }
+    autoFitWindow(win, 'settings');
   };
 
   const current = (state.settings.tab && panelMap.has(state.settings.tab))
@@ -11139,11 +11152,25 @@ function renderIcons(){
       }
 
       // Auto-fit windows to their rendered content on first open (when no saved/manual size exists).
+function installAutoFitObserver(winEl, appId){
+  if(!winEl || winEl.dataset.autoFitObserver) return;
+  const content = winEl.querySelector('.content');
+  if(!content) return;
+  const w = state.windows.get(appId);
+  const observer = new MutationObserver(()=>{
+    if(winEl.classList.contains('mobile-game')) return;
+    autoFitWindow(winEl, appId);
+  });
+  observer.observe(content, { childList: true, subtree: true, characterData: true });
+  winEl.dataset.autoFitObserver = '1';
+  if(w) w.autoFitObserver = observer;
+}
+
 function autoFitWindow(winEl, appId){
   if(!winEl) return;
-  if(appId === 'games') return;
   const w = state.windows.get(appId);
-  if(!w || w.userSized || w.savedRect) return;
+  if(!w || w.userSized) return;
+  if(winEl.classList.contains('mobile-game')) return;
 
         requestAnimationFrame(()=>{
           requestAnimationFrame(()=>{
@@ -11156,14 +11183,51 @@ function autoFitWindow(winEl, appId){
             const contentRect = content.getBoundingClientRect();
             const extraW = frameRect.width - contentRect.width;
             const extraH = frameRect.height - contentRect.height;
-            const targetW = Math.ceil(Math.max(content.scrollWidth, content.clientWidth) + extraW);
-            const targetH = Math.ceil(Math.max(content.scrollHeight, content.clientHeight) + extraH);
+
+            let maxRight = 0;
+            let maxBottom = 0;
+            Array.from(content.children).forEach((el)=>{
+              if(!el.getBoundingClientRect) return;
+              const r = el.getBoundingClientRect();
+              maxRight = Math.max(maxRight, r.right - contentRect.left);
+              maxBottom = Math.max(maxBottom, r.bottom - contentRect.top);
+            });
+            let intrinsicW = maxRight > 0 ? maxRight : Math.max(content.scrollWidth, content.clientWidth);
+            let intrinsicH = maxBottom > 0 ? maxBottom : Math.max(content.scrollHeight, content.clientHeight);
+
+            let targetW = Math.ceil(intrinsicW + extraW);
+            let targetH = Math.ceil(intrinsicH + extraH);
+
+            const fitMinW = parseInt(content.dataset.fitMinW || '0', 10) || 0;
+            const fitMinH = parseInt(content.dataset.fitMinH || '0', 10) || 0;
+            if(fitMinW) targetW = Math.max(targetW, fitMinW);
+            if(fitMinH) targetH = Math.max(targetH, fitMinH);
+
+            const currentRect = winEl.getBoundingClientRect();
+            if(Math.abs(targetW - currentRect.width) < 2 && Math.abs(targetH - currentRect.height) < 2) return;
+
+            const fitKey = content.dataset.fitKey || '';
+            if(fitKey){
+              if(!w.fitCache) w.fitCache = {};
+              const cached = w.fitCache[fitKey];
+              if(cached){
+                cached.width = Math.max(cached.width, targetW);
+                cached.height = Math.max(cached.height, targetH);
+                targetW = cached.width;
+                targetH = cached.height;
+              } else {
+                w.fitCache[fitKey] = { width: targetW, height: targetH };
+              }
+            }
 
             const normalized = normalizeWindowRect({ left: w.left, top: w.top, width: targetW, height: targetH }, area, 16);
             w.left = normalized.left;
             w.top = normalized.top;
             w.width = normalized.width;
             w.height = normalized.height;
+            w.lastFitKey = fitKey;
+            w.lastFitW = normalized.width;
+            w.lastFitH = normalized.height;
 
             winEl.style.left = w.left + 'px';
             winEl.style.top = w.top + 'px';
@@ -11258,6 +11322,11 @@ function autoFitWindow(winEl, appId){
           z: ++state.zTop,
           savedRect: Boolean(savedRect),
           userSized: false,
+          autoFitObserver: null,
+          lastFitKey: '',
+          lastFitW: 0,
+          lastFitH: 0,
+          fitCache: null,
         };
         state.windows.set(appId, wstate);
         createWindowElement(wstate);
@@ -11276,6 +11345,7 @@ function autoFitWindow(winEl, appId){
         }
         state.windows.delete(appId);
         const el = document.getElementById(`win_${appId}`);
+        if(w.autoFitObserver) w.autoFitObserver.disconnect();
         if(state.activeWindowId === appId) state.activeWindowId = null;
         renderTaskButtons();
         if(el){
@@ -11325,10 +11395,17 @@ function autoFitWindow(winEl, appId){
         if(!winEl) return;
 
         if(w.fit && w.prevRect){
-          w.left = w.prevRect.left;
-          w.top = w.prevRect.top;
-          w.width = w.prevRect.width;
-          w.height = w.prevRect.height;
+          const area = $('#desktopArea').getBoundingClientRect();
+          const normalized = normalizeWindowRect({
+            left: w.left,
+            top: w.top,
+            width: w.prevRect.width,
+            height: w.prevRect.height
+          }, area, 16);
+          w.left = normalized.left;
+          w.top = normalized.top;
+          w.width = normalized.width;
+          w.height = normalized.height;
           w.fit = false;
           w.prevRect = null;
           winEl.style.left = w.left + 'px';
@@ -11476,6 +11553,7 @@ function autoFitWindow(winEl, appId){
         applyWindowState(el, appId);
         if(appId === 'trash') updateTrashIconUI();
         // Auto-fit after content + i18n, unless a saved/manual size exists.
+        installAutoFitObserver(el, appId);
         autoFitWindow(el, appId);
         el.style.visibility = 'visible';
         if(state.animations){
