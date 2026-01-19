@@ -3412,11 +3412,11 @@ let snake = {
   timer: null,
   cell: 16,
   baseSize: 320,
-  renderScale: 1,
   renderScaleX: 1,
   renderScaleY: 1,
   renderDpr: 1,
-  renderTarget: 0,
+  renderTargetW: 0,
+  renderTargetH: 0,
   resizeObserver: null,
   resizeRaf: null,
   resizeHandler: null,
@@ -3485,12 +3485,12 @@ function snakeResizeCanvas(){
   const targetW = Math.max(1, Math.floor(rect.width));
   const targetH = Math.max(1, Math.floor(rect.height));
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
-  if(targetW === snake.renderTarget && snake.renderDpr === dpr) return;
-  snake.renderScale = targetW / snake.baseSize;
+  if(targetW === snake.renderTargetW && targetH === snake.renderTargetH && snake.renderDpr === dpr) return;
   snake.renderScaleX = targetW / snake.baseSize;
   snake.renderScaleY = targetH / snake.baseSize;
   snake.renderDpr = dpr;
-  snake.renderTarget = targetW;
+  snake.renderTargetW = targetW;
+  snake.renderTargetH = targetH;
   if(snake.els.canvas.style.width !== `${targetW}px`) snake.els.canvas.style.width = `${targetW}px`;
   if(snake.els.canvas.style.height !== `${targetH}px`) snake.els.canvas.style.height = `${targetH}px`;
   snake.els.canvas.width = Math.max(1, Math.floor(targetW * dpr));
@@ -3825,9 +3825,10 @@ function snakeHandleTouchEnd(e){
 function snakeHandleTap(clientX, clientY){
   if(!isSnakeActive() || !snake.els || !snake.els.canvas) return;
   const rect = snake.els.canvas.getBoundingClientRect();
-  const scale = rect.width / (snake.baseSize || rect.width);
-  const x = (clientX - rect.left) / scale;
-  const y = (clientY - rect.top) / scale;
+  const scaleX = rect.width / (snake.baseSize || rect.width);
+  const scaleY = rect.height / (snake.baseSize || rect.height);
+  const x = (clientX - rect.left) / scaleX;
+  const y = (clientY - rect.top) / scaleY;
   const head = snake.body[0];
   if(!head) return;
   const headX = (head.x + 0.5) * snake.cell;
