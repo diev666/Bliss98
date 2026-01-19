@@ -1048,10 +1048,18 @@
         background:var(--panel-in);
         touch-action:none;
       }
+      .skate-canvas-wrap{
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        width:100%;
+        height:100%;
+        min-height:360px;
+      }
       #skateCanvas{
         display:block;
-        width:100%;
-        height:auto;
+        width:640px;
+        height:360px;
         background:#2f2f2f;
         touch-action:none;
       }
@@ -1066,9 +1074,49 @@
         background:rgba(233,233,233,0.88);
         border:1px solid var(--panel-border);
         font-size:12px;
+        max-width:90%;
+      }
+      .skate-combo-list{
+        display:flex;
+        gap:6px;
+        flex-wrap:wrap;
+      }
+      .skate-combo-item{
+        padding:0 4px;
+        border:1px dotted var(--panel-border);
+        background:var(--panel-bg);
       }
       body.dark .skate-hud{
         background:rgba(24,24,24,0.88);
+      }
+      .skate-balance{
+        position:absolute;
+        right:12px;
+        top:12px;
+        padding:4px 6px;
+        background:rgba(233,233,233,0.88);
+        border:1px solid var(--panel-border);
+        font-size:12px;
+        display:flex;
+        flex-direction:column;
+        gap:4px;
+        min-width:90px;
+      }
+      body.dark .skate-balance{
+        background:rgba(24,24,24,0.88);
+      }
+      .skate-balance-bar{
+        height:6px;
+        background:var(--panel-in);
+        border:1px solid var(--panel-border);
+        position:relative;
+      }
+      .skate-balance-indicator{
+        position:absolute;
+        top:-2px;
+        width:4px;
+        height:10px;
+        background:var(--title);
       }
       .skate-overlay{
         position:absolute;
@@ -1110,6 +1158,61 @@
       .skate-panel-text{
         margin:0 0 12px 0;
         line-height:1.4;
+      }
+      .skate-shop-header{
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        gap:10px;
+        margin-bottom:8px;
+      }
+      .skate-shop-layout{
+        display:flex;
+        gap:10px;
+        flex-wrap:wrap;
+      }
+      .skate-shop-shelves{
+        flex:2 1 240px;
+        display:grid;
+        grid-template-columns:repeat(auto-fill, minmax(150px, 1fr));
+        gap:8px;
+      }
+      .skate-shop-preview{
+        flex:1 1 160px;
+        min-width:160px;
+        display:flex;
+        flex-direction:column;
+        gap:8px;
+      }
+      .skate-preview-stage{
+        position:relative;
+        height:180px;
+        background:var(--panel-bg);
+        border:1px solid var(--panel-border);
+        display:flex;
+        align-items:flex-end;
+        justify-content:center;
+        padding-bottom:12px;
+      }
+      .skate-preview-stage img{
+        position:absolute;
+        image-rendering:pixelated;
+      }
+      .skate-shop-item{
+        padding:8px;
+        border:1px solid var(--panel-border);
+        background:var(--panel-bg);
+        display:flex;
+        flex-direction:column;
+        gap:6px;
+        min-height:70px;
+      }
+      .skate-shop-item button{
+        align-self:flex-start;
+      }
+      .skate-shop-item.active{
+        border:1px solid var(--selection-border);
+        background:var(--selection-bg);
       }
       .skate-shop-grid{
         display:grid;
@@ -1197,9 +1300,17 @@
           flex-wrap:wrap;
           min-width:0;
         }
+        .skate-canvas-wrap{
+          min-height:260px;
+        }
         .skate-hud{
           position:static;
           margin:6px 0 0;
+        }
+        .skate-balance{
+          position:static;
+          margin:6px 0 0;
+          width:100%;
         }
       }
       .settings-shell{
@@ -2810,7 +2921,57 @@ const DOPE_SKATE_ASSETS = {
   vodka: '/assets/skate/obstacles/vodka.svg',
   trash: '/assets/skate/obstacles/trash.svg',
   cone: '/assets/skate/obstacles/cone.svg',
+  rail: '/assets/skate/obstacles/rail.svg',
   cd: '/assets/skate/collectibles/cd.svg',
+  bliss: '/assets/skate/collectibles/bliss-letter.svg',
+};
+
+const DOPE_SKATE_DATA_KEY = 'bliss98_dope_skate_data';
+
+const DOPE_SKATE_TRICKS = [
+  { id:'ollie', name:'Ollie', points: 120 },
+  { id:'kickflip', name:'Kickflip', points: 220 },
+  { id:'shuvit', name:'Shuv-it', points: 180 },
+  { id:'hardflip', name:'Hardflip', points: 260 },
+  { id:'heelflip', name:'Heelflip', points: 220 },
+  { id:'varial', name:'Varial Kickflip', points: 280 },
+];
+
+const DOPE_SKATE_GRINDS = [
+  { id:'50-50', name:'50-50', pointsPerSec: 140 },
+  { id:'boardslide', name:'Boardslide', pointsPerSec: 160 },
+  { id:'noseslide', name:'Noseslide', pointsPerSec: 160 },
+];
+
+const DOPE_SKATE_SHOP = {
+  ground: [
+    { id:'classic', name:'Classic Asphalt', cost: 0, asset:'ground' },
+    { id:'night', name:'Night Asphalt', cost: 120, asset:'ground' },
+  ],
+  background: [
+    { id:'city', name:'City Lights', cost: 0, asset:'city' },
+    { id:'industrial', name:'Industrial Blocks', cost: 180, asset:'city' },
+  ],
+  sky: [
+    { id:'sky', name:'Clean Sky', cost: 0, asset:'sky' },
+    { id:'sunset', name:'Sunset Haze', cost: 140, asset:'sky' },
+  ],
+  skater: [
+    { id:'core', name:'Core Skater', cost: 0, asset:'body' },
+    { id:'street', name:'Street Fit', cost: 220, asset:'body' },
+  ],
+  hat: [
+    { id:'red', name:'Red Cap', cost: 0, asset:'hat' },
+    { id:'black', name:'Black Cap', cost: 90, asset:'hat' },
+  ],
+  board: [
+    { id:'classic', name:'Classic Deck', cost: 0, asset:'board' },
+    { id:'chrome', name:'Chrome Deck', cost: 200, asset:'board' },
+  ],
+  wheels: [
+    { id:'black', name:'Black Wheels', cost: 0, asset:'wheels' },
+    { id:'blue', name:'Blue Wheels', cost: 110, asset:'wheels' },
+  ],
 };
 
 let dopeSkate = {
@@ -2822,14 +2983,36 @@ let dopeSkate = {
   groundHeight: 64,
   player: null,
   obstacles: [],
-  spawnTimer: 0,
+  rails: [],
+  collectibles: [],
+  particles: [],
+  spawn: {
+    nextObstacleDist: 260,
+    nextRailDist: 720,
+    nextCdDist: 220,
+    nextLetterDist: 880,
+  },
+  lastObstacleDist: 0,
+  lastRailDist: 0,
   speed: 240,
-  gravity: 1400,
-  jumpVel: -520,
-  score: 0,
+  maxSpeed: 420,
+  accel: 8,
+  gravity: 1500,
+  jumpVel: -560,
+  time: 0,
   distance: 0,
+  scoreBase: 0,
+  comboBank: 0,
+  scoreTotal: 0,
   cds: 0,
-  combo: 1,
+  blissCounts: { B: 0, L: 0, I: 0, S: 0 },
+  combo: {
+    points: 0,
+    tricks: [],
+    unique: new Set(),
+    multiplier: 1,
+    active: false,
+  },
   running: false,
   paused: false,
   gameOver: false,
@@ -2839,7 +3022,23 @@ let dopeSkate = {
   assets: null,
   assetsReady: false,
   offsets: { sky: 0, city: 0, ground: 0 },
-  gamepad: { jump: false },
+  inputs: { left: false, right: false },
+  jumpBufferUntil: 0,
+  lastGroundedAt: 0,
+  lastTrickAt: 0,
+  lastTrickId: null,
+  gamepad: {
+    jump: false,
+    trick1: false,
+    trick2: false,
+    trick3: false,
+  },
+  data: null,
+  audio: {
+    ctx: null,
+    enabled: false,
+    unlocked: false,
+  },
 };
 
 function loadDopeSkateHighScore(){
@@ -2854,6 +3053,47 @@ function loadDopeSkateHighScore(){
 
 function saveDopeSkateHighScore(score){
   try{ localStorage.setItem(DOPE_SKATE_HIGH_KEY, String(score)); } catch {}
+}
+
+function getDopeSkateDefaultData(){
+  return {
+    wallet: 0,
+    owned: {
+      ground: ['classic'],
+      background: ['city'],
+      sky: ['sky'],
+      skater: ['core'],
+      hat: ['red'],
+      board: ['classic'],
+      wheels: ['black'],
+    },
+    equipped: {
+      ground: 'classic',
+      background: 'city',
+      sky: 'sky',
+      skater: 'core',
+      hat: 'red',
+      board: 'classic',
+      wheels: 'black',
+    },
+  };
+}
+
+function loadDopeSkateData(){
+  try{
+    const raw = localStorage.getItem(DOPE_SKATE_DATA_KEY);
+    if(raw){
+      const parsed = JSON.parse(raw);
+      if(parsed && parsed.owned && parsed.equipped) return parsed;
+    }
+  } catch {}
+  return getDopeSkateDefaultData();
+}
+
+function saveDopeSkateData(data){
+  try{
+    localStorage.setItem(DOPE_SKATE_DATA_KEY, JSON.stringify(data));
+  } catch {}
 }
 
 function isDopeSkateActive(){
@@ -2883,8 +3123,10 @@ function initDopeSkateInWindow(winEl){
   dopeSkate.canvas = canvas;
   dopeSkate.ctx = canvas.getContext('2d');
   dopeSkate.ctx.imageSmoothingEnabled = false;
-  dopeSkate.width = canvas.width;
-  dopeSkate.height = canvas.height;
+  dopeSkate.width = 640;
+  dopeSkate.height = 360;
+  canvas.width = dopeSkate.width;
+  canvas.height = dopeSkate.height;
   dopeSkate.groundHeight = 64;
 
   dopeSkate.els = {
@@ -2895,9 +3137,22 @@ function initDopeSkateInWindow(winEl){
     best: winEl.querySelector('[data-skate-best]'),
     cds: winEl.querySelector('[data-skate-cds]'),
     combo: winEl.querySelector('[data-skate-combo]'),
+    comboList: winEl.querySelector('[data-skate-combo-list]'),
     overScore: winEl.querySelector('[data-skate-over-score]'),
+    overBase: winEl.querySelector('[data-skate-over-base]'),
+    overCombo: winEl.querySelector('[data-skate-over-combo]'),
+    overBliss: winEl.querySelector('[data-skate-over-bliss]'),
+    overCds: winEl.querySelector('[data-skate-over-cds]'),
+    overMoney: winEl.querySelector('[data-skate-over-money]'),
     overBest: winEl.querySelector('[data-skate-over-best]'),
     localBest: winEl.querySelector('[data-skate-local-best]'),
+    globalBest: winEl.querySelector('[data-skate-global-best]'),
+    wallet: winEl.querySelector('[data-skate-wallet]'),
+    shopList: winEl.querySelector('[data-skate-shop-list]'),
+    previewStage: winEl.querySelector('[data-skate-preview-stage]'),
+    equippedList: winEl.querySelector('[data-skate-equipped-list]'),
+    balance: winEl.querySelector('#skateBalance'),
+    balanceIndicator: winEl.querySelector('[data-skate-balance-indicator]'),
     backBtn: winEl.querySelector('[data-games-action="back"]'),
     menuButtons: Array.from(winEl.querySelectorAll('[data-skate-menu]')),
     panelButtons: Array.from(winEl.querySelectorAll('[data-skate-panel]')),
@@ -2906,6 +3161,9 @@ function initDopeSkateInWindow(winEl){
 
   if(typeof state.dopeSkate.highScore !== 'number' || Number.isNaN(state.dopeSkate.highScore)){
     state.dopeSkate.highScore = loadDopeSkateHighScore();
+  }
+  if(!dopeSkate.data){
+    dopeSkate.data = loadDopeSkateData();
   }
 
   if(dopeSkate.els.backBtn){
@@ -2937,7 +3195,13 @@ function initDopeSkateInWindow(winEl){
       } else if(action === 'menu'){
         dopeSkateShowMenu('play');
       } else if(action === 'jump'){
-        dopeSkateJump();
+        dopeSkateRegisterJump();
+      } else if(action === 'trick1'){
+        dopeSkateRegisterTrick('trick1');
+      } else if(action === 'trick2'){
+        dopeSkateRegisterTrick('trick2');
+      } else if(action === 'trick3'){
+        dopeSkateRegisterTrick('trick3');
       }
       if(e.pointerType === 'touch') e.preventDefault();
     });
@@ -2946,10 +3210,12 @@ function initDopeSkateInWindow(winEl){
 
   screen.addEventListener('touchstart', (e)=>{ e.preventDefault(); }, { passive:false });
   screen.addEventListener('touchmove', (e)=>{ e.preventDefault(); }, { passive:false });
+  canvas.addEventListener('touchstart', (e)=>{ e.preventDefault(); }, { passive:false });
+  canvas.addEventListener('touchmove', (e)=>{ e.preventDefault(); }, { passive:false });
   screen.addEventListener('pointerdown', (e)=>{
     if(e.pointerType === 'mouse') return;
     if(!dopeSkate.running || dopeSkate.gameOver) return;
-    dopeSkateJump();
+    dopeSkateRegisterJump();
     e.preventDefault();
   }, { passive:false });
 
@@ -2958,6 +3224,7 @@ function initDopeSkateInWindow(winEl){
       dopeSkate.assets = assets;
       dopeSkate.assetsReady = true;
       dopeSkateDraw();
+      dopeSkateRenderShop();
     });
   } else {
     dopeSkate.assetsReady = true;
@@ -2966,6 +3233,7 @@ function initDopeSkateInWindow(winEl){
   dopeSkateResetWorld();
   dopeSkateShowMenu('play');
   updateDopeSkateUI();
+  dopeSkateRenderShop();
   dopeSkateStartLoop();
 }
 
@@ -2978,24 +3246,53 @@ function dopeSkateResetWorld(){
     h: 58,
     vy: 0,
     onGround: true,
+    mode: 'ground',
   };
   dopeSkate.obstacles = [];
-  dopeSkate.spawnTimer = 1.1;
-  dopeSkate.score = 0;
+  dopeSkate.rails = [];
+  dopeSkate.collectibles = [];
+  dopeSkate.particles = [];
+  dopeSkate.spawn = {
+    nextObstacleDist: 260,
+    nextRailDist: 720,
+    nextCdDist: 220,
+    nextLetterDist: 880,
+  };
+  dopeSkate.lastObstacleDist = 0;
+  dopeSkate.lastRailDist = 0;
+  dopeSkate.speed = 240;
+  dopeSkate.scoreBase = 0;
+  dopeSkate.comboBank = 0;
+  dopeSkate.scoreTotal = 0;
+  dopeSkate.blissBonus = 0;
   dopeSkate.distance = 0;
   dopeSkate.cds = 0;
-  dopeSkate.combo = 1;
+  dopeSkate.blissCounts = { B: 0, L: 0, I: 0, S: 0 };
+  dopeSkate.combo = {
+    points: 0,
+    tricks: [],
+    unique: new Set(),
+    multiplier: 1,
+    active: false,
+  };
   dopeSkate.gameOver = false;
   dopeSkate.running = false;
   dopeSkate.paused = false;
   dopeSkate.started = false;
   dopeSkate.offsets = { sky: 0, city: 0, ground: 0 };
+  dopeSkate.jumpBufferUntil = 0;
+  dopeSkate.lastGroundedAt = 0;
+  dopeSkate.lastTrickAt = 0;
+  dopeSkate.lastTrickId = null;
+  dopeSkate.time = 0;
 }
 
 function dopeSkateStartRun(){
   dopeSkateResetWorld();
   dopeSkate.running = true;
+  dopeSkate.paused = false;
   dopeSkate.started = true;
+  dopeSkateUnlockAudio();
   if(dopeSkate.els && dopeSkate.els.menuOverlay){
     dopeSkate.els.menuOverlay.classList.add('hidden');
   }
@@ -3028,13 +3325,42 @@ function dopeSkateSetPanel(panel){
   dopeSkate.els.menuButtons.forEach(btn => {
     btn.classList.toggle('pressed', btn.dataset.skateMenu === panel);
   });
+  if(panel === 'shop'){
+    dopeSkateRenderShop();
+  }
 }
 
-function dopeSkateJump(){
+function dopeSkateRegisterJump(){
   if(!dopeSkate.running || dopeSkate.gameOver) return;
-  if(!dopeSkate.player.onGround) return;
-  dopeSkate.player.vy = dopeSkate.jumpVel;
-  dopeSkate.player.onGround = false;
+  dopeSkate.jumpBufferUntil = dopeSkate.time + 0.12;
+  dopeSkateUnlockAudio();
+  dopeSkatePlaySound('jump');
+}
+
+function dopeSkateTryJump(){
+  const player = dopeSkate.player;
+  const coyoteOk = (dopeSkate.time - dopeSkate.lastGroundedAt) <= 0.12;
+  if(dopeSkate.jumpBufferUntil > dopeSkate.time && player.mode === 'grind'){
+    dopeSkate.jumpBufferUntil = 0;
+    player.mode = 'air';
+    player.grind = null;
+    player.vy = dopeSkate.jumpVel * 0.85;
+    dopeSkateAddTrickById('ollie');
+    return;
+  }
+  if(dopeSkate.jumpBufferUntil > dopeSkate.time && (player.onGround || coyoteOk)){
+    dopeSkate.jumpBufferUntil = 0;
+    player.vy = dopeSkate.jumpVel;
+    player.onGround = false;
+    player.mode = 'air';
+    dopeSkateAddTrickById('ollie');
+  }
+}
+
+function dopeSkateRegisterTrick(slot){
+  if(!dopeSkate.running || dopeSkate.gameOver) return;
+  dopeSkateUnlockAudio();
+  dopeSkateHandleTrick(slot);
 }
 
 function dopeSkateStartLoop(){
@@ -3075,40 +3401,50 @@ function dopeSkateLoop(ts){
 function dopeSkateUpdate(dt){
   const groundY = dopeSkate.height - dopeSkate.groundHeight;
   const player = dopeSkate.player;
-  player.vy += dopeSkate.gravity * dt;
-  player.y += player.vy * dt;
+  dopeSkate.time += dt;
+  const wasOnGround = player.onGround;
+
+  if(player.mode === 'grind'){
+    dopeSkateUpdateGrind(dt);
+  } else {
+    player.vy += dopeSkate.gravity * dt;
+    player.y += player.vy * dt;
+  }
   if(player.y >= groundY - player.h){
     player.y = groundY - player.h;
+    if(!player.onGround && player.mode !== 'grind'){
+      dopeSkatePlaySound('land');
+    }
     player.vy = 0;
     player.onGround = true;
+    player.mode = 'ground';
+    dopeSkate.lastGroundedAt = dopeSkate.time;
+  } else if(player.mode !== 'grind'){
+    player.onGround = false;
   }
 
+  if(!wasOnGround && player.onGround){
+    dopeSkateResolveCombo();
+  }
+
+  dopeSkateTryJump();
+
+  dopeSkate.speed = Math.min(dopeSkate.maxSpeed, dopeSkate.speed + dopeSkate.accel * dt);
   dopeSkate.distance += dopeSkate.speed * dt;
-  dopeSkate.score = Math.max(dopeSkate.score, Math.floor(dopeSkate.distance / 8));
+  dopeSkate.scoreBase = Math.max(dopeSkate.scoreBase, Math.floor(dopeSkate.distance / 7));
+  dopeSkate.scoreTotal = dopeSkate.scoreBase + dopeSkate.comboBank;
 
-  dopeSkate.spawnTimer -= dt;
-  if(dopeSkate.spawnTimer <= 0){
-    dopeSkateSpawnObstacle();
-    dopeSkate.spawnTimer = 0.9 + Math.random() * 0.9;
-  }
+  dopeSkateHandleSpawns();
 
   dopeSkate.obstacles.forEach(ob => { ob.x -= dopeSkate.speed * dt; });
-  dopeSkate.obstacles = dopeSkate.obstacles.filter(ob => ob.x + ob.w > -40);
+  dopeSkate.obstacles = dopeSkate.obstacles.filter(ob => ob.x + ob.w > -80);
+  dopeSkate.rails.forEach(rail => { rail.x -= dopeSkate.speed * dt; });
+  dopeSkate.rails = dopeSkate.rails.filter(rail => rail.x + rail.w > -120);
+  dopeSkate.collectibles.forEach(item => { item.x -= dopeSkate.speed * dt; });
+  dopeSkate.collectibles = dopeSkate.collectibles.filter(item => item.x + item.w > -80);
 
-  const playerBox = {
-    x: player.x + 6,
-    y: player.y + 8,
-    w: player.w - 12,
-    h: player.h - 10,
-  };
-
-  for(const ob of dopeSkate.obstacles){
-    const hit = !(playerBox.x + playerBox.w < ob.x || playerBox.x > ob.x + ob.w || playerBox.y + playerBox.h < ob.y || playerBox.y > ob.y + ob.h);
-    if(hit){
-      dopeSkateGameOver();
-      break;
-    }
-  }
+  dopeSkateCheckCollisions();
+  dopeSkateUpdateParticles(dt);
 
   dopeSkateUpdateOffsets(dt);
   dopeSkateCheckGamepad();
@@ -3123,6 +3459,38 @@ function dopeSkateUpdateOffsets(dt){
   dopeSkate.offsets.sky = (dopeSkate.offsets.sky + dopeSkate.speed * dt * 0.15) % skyW;
   dopeSkate.offsets.city = (dopeSkate.offsets.city + dopeSkate.speed * dt * 0.35) % cityW;
   dopeSkate.offsets.ground = (dopeSkate.offsets.ground + dopeSkate.speed * dt * 1.0) % groundW;
+}
+
+function dopeSkateHandleSpawns(){
+  if(dopeSkate.distance >= dopeSkate.spawn.nextObstacleDist){
+    dopeSkateSpawnObstacle();
+    dopeSkate.spawn.nextObstacleDist += dopeSkateGetObstacleGap();
+  }
+  if(dopeSkate.distance >= dopeSkate.spawn.nextRailDist){
+    const safeGap = dopeSkate.distance - dopeSkate.lastObstacleDist > 320;
+    if(safeGap){
+      dopeSkateSpawnRail();
+      dopeSkate.spawn.nextRailDist += 680 + Math.random() * 560;
+    } else {
+      dopeSkate.spawn.nextRailDist += 180;
+    }
+  }
+  if(dopeSkate.distance >= dopeSkate.spawn.nextCdDist){
+    dopeSkateSpawnCollectible('cd');
+    dopeSkate.spawn.nextCdDist += 220 + Math.random() * 220;
+  }
+  if(dopeSkate.distance >= dopeSkate.spawn.nextLetterDist){
+    dopeSkateSpawnCollectible('bliss');
+    dopeSkate.spawn.nextLetterDist += 820 + Math.random() * 620;
+  }
+}
+
+function dopeSkateGetObstacleGap(){
+  const jumpTime = Math.abs(dopeSkate.jumpVel) / dopeSkate.gravity * 2;
+  const baseGap = Math.max(200, dopeSkate.speed * (jumpTime * 0.8 + 0.2));
+  const difficulty = Math.min(1, (dopeSkate.speed - 240) / 180);
+  const minGap = Math.max(180, baseGap * (0.92 - difficulty * 0.2));
+  return minGap + Math.random() * (200 - difficulty * 60);
 }
 
 function dopeSkateSpawnObstacle(){
@@ -3140,15 +3508,51 @@ function dopeSkateSpawnObstacle(){
     x: dopeSkate.width + 40,
     y: groundY - pick.h,
   });
+  dopeSkate.lastObstacleDist = dopeSkate.distance;
+}
+
+function dopeSkateSpawnRail(){
+  const groundY = dopeSkate.height - dopeSkate.groundHeight;
+  dopeSkate.rails.push({
+    w: 140,
+    h: 12,
+    x: dopeSkate.width + 120,
+    y: groundY - 90,
+  });
+  dopeSkate.lastRailDist = dopeSkate.distance;
+}
+
+function dopeSkateSpawnCollectible(type){
+  const groundY = dopeSkate.height - dopeSkate.groundHeight;
+  const lanes = [groundY - 120, groundY - 90, groundY - 60];
+  const laneY = lanes[Math.floor(Math.random() * lanes.length)];
+  if(type === 'cd'){
+    dopeSkate.collectibles.push({
+      type: 'cd',
+      w: 22,
+      h: 22,
+      x: dopeSkate.width + 60,
+      y: laneY,
+    });
+    return;
+  }
+  const letter = dopeSkatePickBlissLetter();
+  if(!letter) return;
+  dopeSkate.collectibles.push({
+    type: 'bliss',
+    letter,
+    w: 24,
+    h: 24,
+    x: dopeSkate.width + 60,
+    y: groundY - 140,
+  });
 }
 
 function dopeSkateGameOver(){
   dopeSkate.running = false;
+  dopeSkate.paused = false;
   dopeSkate.gameOver = true;
-  if(dopeSkate.score > state.dopeSkate.highScore){
-    state.dopeSkate.highScore = dopeSkate.score;
-    saveDopeSkateHighScore(state.dopeSkate.highScore);
-  }
+  dopeSkateFinalizeScore();
   updateDopeSkateUI();
   if(dopeSkate.els && dopeSkate.els.overOverlay){
     dopeSkate.els.overOverlay.classList.remove('hidden');
@@ -3163,9 +3567,10 @@ function dopeSkateDraw(){
   const groundY = h - dopeSkate.groundHeight;
 
   ctx.clearRect(0, 0, w, h);
-  dopeSkateDrawLayer(dopeSkate.assets && dopeSkate.assets.sky, dopeSkate.offsets.sky, 0, h);
-  dopeSkateDrawLayer(dopeSkate.assets && dopeSkate.assets.city, dopeSkate.offsets.city, 40, h - 80);
-  dopeSkateDrawLayer(dopeSkate.assets && dopeSkate.assets.ground, dopeSkate.offsets.ground, groundY, dopeSkate.groundHeight);
+  const equipped = dopeSkateGetEquippedAssets();
+  dopeSkateDrawLayer(equipped.sky, dopeSkate.offsets.sky, 0, h);
+  dopeSkateDrawLayer(equipped.background, dopeSkate.offsets.city, 40, h - 80);
+  dopeSkateDrawLayer(equipped.ground, dopeSkate.offsets.ground, groundY, dopeSkate.groundHeight);
 
   if(!dopeSkate.assetsReady){
     ctx.fillStyle = '#2b2b2b';
@@ -3182,6 +3587,45 @@ function dopeSkateDraw(){
     }
   });
 
+  dopeSkate.rails.forEach(rail => {
+    const img = dopeSkate.assets ? dopeSkate.assets.rail : null;
+    if(img){
+      ctx.drawImage(img, rail.x, rail.y, rail.w, rail.h);
+    } else {
+      ctx.fillStyle = '#b0b0b0';
+      ctx.fillRect(rail.x, rail.y, rail.w, rail.h);
+    }
+  });
+
+  dopeSkate.collectibles.forEach(item => {
+    if(item.type === 'cd'){
+      const img = dopeSkate.assets ? dopeSkate.assets.cd : null;
+      if(img){
+        ctx.drawImage(img, item.x, item.y, item.w, item.h);
+      } else {
+        ctx.fillStyle = '#cfd8e3';
+        ctx.fillRect(item.x, item.y, item.w, item.h);
+      }
+      return;
+    }
+    const img = dopeSkate.assets ? dopeSkate.assets.bliss : null;
+    if(img){
+      ctx.drawImage(img, item.x, item.y, item.w, item.h);
+      ctx.fillStyle = '#5b3a00';
+      ctx.font = '12px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(item.letter, item.x + item.w / 2, item.y + item.h / 2 + 2);
+    } else {
+      ctx.fillStyle = '#ffe36e';
+      ctx.fillRect(item.x, item.y, item.w, item.h);
+      ctx.fillStyle = '#5b3a00';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(item.letter, item.x + item.w / 2, item.y + item.h / 2 + 2);
+    }
+  });
+
+  dopeSkateDrawParticles();
   dopeSkateDrawSkater();
 }
 
@@ -3205,10 +3649,11 @@ function dopeSkateDrawSkater(){
   const ctx = dopeSkate.ctx;
   const p = dopeSkate.player;
   if(!p) return;
-  const body = dopeSkate.assets ? dopeSkate.assets.body : null;
-  const hat = dopeSkate.assets ? dopeSkate.assets.hat : null;
-  const board = dopeSkate.assets ? dopeSkate.assets.board : null;
-  const wheels = dopeSkate.assets ? dopeSkate.assets.wheels : null;
+  const equipped = dopeSkateGetEquippedAssets();
+  const body = equipped.skater;
+  const hat = equipped.hat;
+  const board = equipped.board;
+  const wheels = equipped.wheels;
 
   const bodyW = 44;
   const bodyH = 58;
@@ -3248,23 +3693,53 @@ function dopeSkateCheckGamepad(){
   if(!pads) return;
   for(const pad of pads){
     if(!pad) continue;
-    const pressed = pad.buttons && pad.buttons[0] && pad.buttons[0].pressed;
-    if(pressed && !dopeSkate.gamepad.jump){
-      dopeSkateJump();
+    const jumpPressed = pad.buttons && pad.buttons[0] && pad.buttons[0].pressed;
+    const trick1Pressed = pad.buttons && pad.buttons[2] && pad.buttons[2].pressed;
+    const trick2Pressed = pad.buttons && pad.buttons[3] && pad.buttons[3].pressed;
+    const trick3Pressed = pad.buttons && pad.buttons[1] && pad.buttons[1].pressed;
+
+    if(jumpPressed && !dopeSkate.gamepad.jump){
+      dopeSkateRegisterJump();
     }
-    dopeSkate.gamepad.jump = pressed;
+    if(trick1Pressed && !dopeSkate.gamepad.trick1){
+      dopeSkateRegisterTrick('trick1');
+    }
+    if(trick2Pressed && !dopeSkate.gamepad.trick2){
+      dopeSkateRegisterTrick('trick2');
+    }
+    if(trick3Pressed && !dopeSkate.gamepad.trick3){
+      dopeSkateRegisterTrick('trick3');
+    }
+    dopeSkate.gamepad.jump = jumpPressed;
+    dopeSkate.gamepad.trick1 = trick1Pressed;
+    dopeSkate.gamepad.trick2 = trick2Pressed;
+    dopeSkate.gamepad.trick3 = trick3Pressed;
+
+    if(pad.axes && pad.axes.length){
+      dopeSkate.inputs.left = pad.axes[0] < -0.4;
+      dopeSkate.inputs.right = pad.axes[0] > 0.4;
+    }
   }
 }
 
 function updateDopeSkateUI(){
   if(!dopeSkate.els) return;
-  if(dopeSkate.els.score) dopeSkate.els.score.textContent = String(dopeSkate.score);
-  if(dopeSkate.els.combo) dopeSkate.els.combo.textContent = `${dopeSkate.combo}x`;
+  if(dopeSkate.els.score) dopeSkate.els.score.textContent = String(dopeSkate.scoreTotal);
+  if(dopeSkate.els.combo) dopeSkate.els.combo.textContent = `${dopeSkate.combo.multiplier}x`;
   if(dopeSkate.els.cds) dopeSkate.els.cds.textContent = String(dopeSkate.cds);
   if(dopeSkate.els.best) dopeSkate.els.best.textContent = String(state.dopeSkate.highScore || 0);
   if(dopeSkate.els.localBest) dopeSkate.els.localBest.textContent = String(state.dopeSkate.highScore || 0);
-  if(dopeSkate.els.overScore) dopeSkate.els.overScore.textContent = String(dopeSkate.score);
+  if(dopeSkate.els.overScore) dopeSkate.els.overScore.textContent = String(dopeSkate.scoreTotal);
+  if(dopeSkate.els.overBase) dopeSkate.els.overBase.textContent = String(dopeSkate.scoreBase || 0);
+  if(dopeSkate.els.overCombo) dopeSkate.els.overCombo.textContent = String(dopeSkate.comboBank || 0);
+  if(dopeSkate.els.overBliss) dopeSkate.els.overBliss.textContent = String(dopeSkate.blissBonus || 0);
+  if(dopeSkate.els.overCds) dopeSkate.els.overCds.textContent = String(dopeSkate.cds);
+  if(dopeSkate.els.overMoney) dopeSkate.els.overMoney.textContent = String(dopeSkate.cds);
   if(dopeSkate.els.overBest) dopeSkate.els.overBest.textContent = String(state.dopeSkate.highScore || 0);
+  if(dopeSkate.els.wallet && dopeSkate.data) dopeSkate.els.wallet.textContent = `CD ${dopeSkate.data.wallet || 0}`;
+  if(dopeSkate.els.globalBest) dopeSkate.els.globalBest.textContent = '—';
+  dopeSkateRenderComboList();
+  dopeSkateUpdateBalanceUI();
 }
 
 function dopeSkateHandleKey(e){
@@ -3274,8 +3749,18 @@ function dopeSkateHandleKey(e){
 
   const key = e.key.toLowerCase();
   let handled = true;
-  if(key === 'arrowup' || key === 'w' || key === ' ' || key === 'spacebar'){
-    dopeSkateJump();
+  if(key === 'arrowleft' || key === 'a'){
+    dopeSkate.inputs.left = true;
+  } else if(key === 'arrowright' || key === 'd'){
+    dopeSkate.inputs.right = true;
+  } else if(key === 'arrowup' || key === 'w' || key === ' ' || key === 'spacebar'){
+    dopeSkateRegisterJump();
+  } else if(key === 'z'){
+    dopeSkateRegisterTrick('trick1');
+  } else if(key === 'x'){
+    dopeSkateRegisterTrick('trick2');
+  } else if(key === 'c'){
+    dopeSkateRegisterTrick('trick3');
   } else if(key === 'enter' && !dopeSkate.running && !dopeSkate.gameOver){
     dopeSkateStartRun();
   } else {
@@ -3286,6 +3771,433 @@ function dopeSkateHandleKey(e){
     e.preventDefault();
   }
   return handled;
+}
+
+function dopeSkateHandleKeyUp(e){
+  if(!isDopeSkateActive()) return false;
+  const key = e.key.toLowerCase();
+  if(key === 'arrowleft' || key === 'a'){
+    dopeSkate.inputs.left = false;
+    e.preventDefault();
+    return true;
+  }
+  if(key === 'arrowright' || key === 'd'){
+    dopeSkate.inputs.right = false;
+    e.preventDefault();
+    return true;
+  }
+  return false;
+}
+
+function dopeSkateHandleTrick(slot){
+  const player = dopeSkate.player;
+  if(!player || (player.mode !== 'air' && player.mode !== 'grind')) return;
+  const trick = dopeSkatePickTrick(slot);
+  if(!trick) return;
+  if(dopeSkate.time - dopeSkate.lastTrickAt < 0.14 && dopeSkate.lastTrickId !== 'ollie') return;
+  dopeSkate.lastTrickAt = dopeSkate.time;
+  dopeSkate.lastTrickId = trick.id;
+  dopeSkate.combo.active = true;
+  dopeSkate.combo.points += trick.points;
+  dopeSkate.combo.tricks.push(trick.name);
+  dopeSkate.combo.unique.add(trick.id);
+  dopeSkate.combo.multiplier = Math.max(1, dopeSkate.combo.unique.size);
+  dopeSkatePlaySound('trick');
+}
+
+function dopeSkatePickTrick(slot){
+  const left = dopeSkate.inputs.left;
+  const right = dopeSkate.inputs.right;
+  if(slot === 'trick1'){
+    if(left || right) return DOPE_SKATE_TRICKS.find(t => t.id === 'heelflip');
+    return DOPE_SKATE_TRICKS.find(t => t.id === 'kickflip');
+  }
+  if(slot === 'trick2'){
+    if(left || right) return DOPE_SKATE_TRICKS.find(t => t.id === 'varial');
+    return DOPE_SKATE_TRICKS.find(t => t.id === 'shuvit');
+  }
+  if(slot === 'trick3'){
+    return DOPE_SKATE_TRICKS.find(t => t.id === 'hardflip');
+  }
+  return null;
+}
+
+function dopeSkateResolveCombo(){
+  if(dopeSkate.combo.points <= 0) return;
+  const bonus = Math.floor(dopeSkate.combo.points * dopeSkate.combo.multiplier);
+  dopeSkate.comboBank += bonus;
+  dopeSkate.combo.points = 0;
+  dopeSkate.combo.tricks = [];
+  dopeSkate.combo.unique.clear();
+  dopeSkate.combo.multiplier = 1;
+  dopeSkate.combo.active = false;
+}
+
+function dopeSkateAddTrickById(id){
+  const trick = DOPE_SKATE_TRICKS.find(t => t.id === id);
+  if(!trick) return;
+  dopeSkate.combo.active = true;
+  dopeSkate.combo.points += trick.points;
+  dopeSkate.combo.tricks.push(trick.name);
+  dopeSkate.combo.unique.add(trick.id);
+  dopeSkate.combo.multiplier = Math.max(1, dopeSkate.combo.unique.size);
+  dopeSkate.lastTrickAt = dopeSkate.time;
+  dopeSkate.lastTrickId = trick.id;
+}
+
+function dopeSkateAddCustomTrick(id, name, points){
+  dopeSkate.combo.active = true;
+  dopeSkate.combo.points += points;
+  dopeSkate.combo.tricks.push(name);
+  dopeSkate.combo.unique.add(id);
+  dopeSkate.combo.multiplier = Math.max(1, dopeSkate.combo.unique.size);
+  dopeSkate.lastTrickAt = dopeSkate.time;
+  dopeSkate.lastTrickId = id;
+}
+
+function dopeSkatePickBlissLetter(){
+  const remaining = [];
+  const counts = dopeSkate.blissCounts;
+  if(counts.B < 1) remaining.push('B');
+  if(counts.L < 1) remaining.push('L');
+  if(counts.I < 1) remaining.push('I');
+  if(counts.S < 2) remaining.push('S');
+  if(remaining.length === 0) return null;
+  return remaining[Math.floor(Math.random() * remaining.length)];
+}
+
+function dopeSkateHasBlissComplete(){
+  const counts = dopeSkate.blissCounts;
+  return counts.B >= 1 && counts.L >= 1 && counts.I >= 1 && counts.S >= 2;
+}
+
+function dopeSkateCheckCollisions(){
+  const playerBox = dopeSkateGetPlayerHitbox();
+  for(const ob of dopeSkate.obstacles){
+    if(dopeSkateRectHit(playerBox, ob)){
+      dopeSkatePlaySound('crash');
+      dopeSkateGameOver();
+      return;
+    }
+  }
+
+  for(const rail of dopeSkate.rails){
+    if(dopeSkate.player.mode !== 'grind' && dopeSkate.player.vy > 80){
+      const railBox = { x: rail.x, y: rail.y, w: rail.w, h: rail.h };
+      const footBox = { x: playerBox.x, y: playerBox.y + playerBox.h - 6, w: playerBox.w, h: 8 };
+      if(dopeSkateRectHit(footBox, railBox)){
+        dopeSkateStartGrind(rail);
+        break;
+      }
+    }
+  }
+
+  for(const item of dopeSkate.collectibles){
+    if(dopeSkateRectHit(playerBox, item)){
+      dopeSkateCollect(item);
+      item.collected = true;
+    }
+  }
+  dopeSkate.collectibles = dopeSkate.collectibles.filter(item => !item.collected);
+}
+
+function dopeSkateStartGrind(rail){
+  const player = dopeSkate.player;
+  if(!player) return;
+  player.mode = 'grind';
+  player.onGround = false;
+  player.vy = 0;
+  player.grind = {
+    rail,
+    balance: 0.5,
+    drift: Math.random() > 0.5 ? 1 : -1,
+    trick: dopeSkatePickGrindTrick(),
+  };
+  player.grind.rate = player.grind.trick.rate;
+  dopeSkateAddCustomTrick(player.grind.trick.id, player.grind.trick.name, player.grind.trick.points);
+  dopeSkatePlaySound('grind');
+}
+
+function dopeSkatePickGrindTrick(){
+  if(dopeSkate.inputs.left) return { id: 'noseslide', name: 'Noseslide', points: 180, rate: 160 };
+  if(dopeSkate.inputs.right) return { id: 'boardslide', name: 'Boardslide', points: 180, rate: 160 };
+  return { id: '50-50', name: '50-50', points: 160, rate: 140 };
+}
+
+function dopeSkateUpdateGrind(dt){
+  const player = dopeSkate.player;
+  if(!player || !player.grind) return;
+  const rail = player.grind.rail;
+  player.y = rail.y - player.h + 10;
+  player.x = 130;
+
+  const balanceSpeed = 0.55;
+  if(dopeSkate.inputs.left) player.grind.balance -= balanceSpeed * dt;
+  if(dopeSkate.inputs.right) player.grind.balance += balanceSpeed * dt;
+  player.grind.balance += player.grind.drift * 0.18 * dt;
+  if(Math.random() < 0.02) player.grind.drift *= -1;
+
+  dopeSkate.combo.active = true;
+  dopeSkate.combo.points += Math.floor(player.grind.rate * dt);
+  dopeSkateSpawnSpark(rail.x + 30, rail.y + 6);
+
+  if(player.grind.balance < 0 || player.grind.balance > 1){
+    dopeSkatePlaySound('crash');
+    dopeSkateGameOver();
+    return;
+  }
+
+  if(rail.x + rail.w < player.x + 12){
+    player.mode = 'air';
+    player.grind = null;
+    player.vy = 140;
+  }
+}
+
+function dopeSkateCollect(item){
+  if(item.type === 'cd'){
+    dopeSkate.cds += 1;
+    dopeSkateSpawnCollectFx(item.x + item.w / 2, item.y + item.h / 2);
+    dopeSkatePlaySound('collect');
+    return;
+  }
+  if(item.type === 'bliss'){
+    const counts = dopeSkate.blissCounts;
+    if(item.letter === 'S' && counts.S < 2){
+      counts.S += 1;
+    } else if(item.letter !== 'S' && counts[item.letter] < 1){
+      counts[item.letter] += 1;
+    }
+    dopeSkateSpawnCollectFx(item.x + item.w / 2, item.y + item.h / 2);
+    dopeSkatePlaySound('collect');
+  }
+}
+
+function dopeSkateGetPlayerHitbox(){
+  const p = dopeSkate.player;
+  return {
+    x: p.x + 8,
+    y: p.y + 10,
+    w: p.w - 16,
+    h: p.h - 12,
+  };
+}
+
+function dopeSkateRectHit(a, b){
+  return !(a.x + a.w < b.x || a.x > b.x + b.w || a.y + a.h < b.y || a.y > b.y + b.h);
+}
+
+function dopeSkateRenderComboList(){
+  if(!dopeSkate.els || !dopeSkate.els.comboList) return;
+  const list = dopeSkate.combo.tricks.slice(-4);
+  if(list.length === 0){
+    dopeSkate.els.comboList.innerHTML = '';
+    return;
+  }
+  dopeSkate.els.comboList.innerHTML = list.map(name => `<span class="skate-combo-item">${name}</span>`).join('');
+}
+
+function dopeSkateUpdateBalanceUI(){
+  if(!dopeSkate.els || !dopeSkate.els.balance) return;
+  const isGrind = dopeSkate.player && dopeSkate.player.mode === 'grind' && dopeSkate.player.grind;
+  dopeSkate.els.balance.classList.toggle('hidden', !isGrind);
+  if(isGrind && dopeSkate.els.balanceIndicator){
+    const pos = Math.max(0, Math.min(1, dopeSkate.player.grind.balance));
+    dopeSkate.els.balanceIndicator.style.left = `calc(${pos * 100}% - 2px)`;
+  }
+}
+
+function dopeSkateSpawnSpark(x, y){
+  if(dopeSkate.particles.length > 80) return;
+  dopeSkate.particles.push({
+    x,
+    y,
+    vx: -40 + Math.random() * 80,
+    vy: -60 + Math.random() * 40,
+    life: 0.35 + Math.random() * 0.2,
+  });
+}
+
+function dopeSkateSpawnCollectFx(x, y){
+  if(dopeSkate.particles.length > 120) return;
+  for(let i = 0; i < 6; i += 1){
+    dopeSkate.particles.push({
+      x,
+      y,
+      vx: -60 + Math.random() * 120,
+      vy: -120 + Math.random() * 80,
+      life: 0.35 + Math.random() * 0.2,
+    });
+  }
+}
+
+function dopeSkateUpdateParticles(dt){
+  dopeSkate.particles.forEach(p => {
+    p.life -= dt;
+    p.x += p.vx * dt;
+    p.y += p.vy * dt;
+    p.vy += 220 * dt;
+  });
+  dopeSkate.particles = dopeSkate.particles.filter(p => p.life > 0);
+}
+
+function dopeSkateDrawParticles(){
+  const ctx = dopeSkate.ctx;
+  dopeSkate.particles.forEach(p => {
+    ctx.fillStyle = '#ffd27d';
+    ctx.fillRect(p.x, p.y, 2, 2);
+  });
+}
+
+function dopeSkateFinalizeScore(){
+  const base = dopeSkate.scoreBase + dopeSkate.comboBank;
+  const blissComplete = dopeSkateHasBlissComplete();
+  dopeSkate.blissBonus = blissComplete ? base : 0;
+  dopeSkate.scoreTotal = base + dopeSkate.blissBonus;
+  if(dopeSkate.scoreTotal > state.dopeSkate.highScore){
+    state.dopeSkate.highScore = dopeSkate.scoreTotal;
+    saveDopeSkateHighScore(state.dopeSkate.highScore);
+  }
+  if(dopeSkate.data){
+    dopeSkate.data.wallet = (dopeSkate.data.wallet || 0) + dopeSkate.cds;
+    saveDopeSkateData(dopeSkate.data);
+  }
+}
+
+function dopeSkateGetEquippedAssets(){
+  const assets = dopeSkate.assets || {};
+  const eq = (dopeSkate.data && dopeSkate.data.equipped) ? dopeSkate.data.equipped : {};
+  return {
+    sky: assets[DOPE_SKATE_SHOP.sky.find(item => item.id === eq.sky)?.asset || 'sky'],
+    background: assets[DOPE_SKATE_SHOP.background.find(item => item.id === eq.background)?.asset || 'city'],
+    ground: assets[DOPE_SKATE_SHOP.ground.find(item => item.id === eq.ground)?.asset || 'ground'],
+    skater: assets[DOPE_SKATE_SHOP.skater.find(item => item.id === eq.skater)?.asset || 'body'],
+    hat: assets[DOPE_SKATE_SHOP.hat.find(item => item.id === eq.hat)?.asset || 'hat'],
+    board: assets[DOPE_SKATE_SHOP.board.find(item => item.id === eq.board)?.asset || 'board'],
+    wheels: assets[DOPE_SKATE_SHOP.wheels.find(item => item.id === eq.wheels)?.asset || 'wheels'],
+  };
+}
+
+function dopeSkateRenderShop(){
+  if(!dopeSkate.els || !dopeSkate.els.shopList || !dopeSkate.data) return;
+  const wallet = dopeSkate.data.wallet || 0;
+  dopeSkate.els.wallet.textContent = `CD ${wallet}`;
+  const equipped = dopeSkate.data.equipped || {};
+
+  const html = Object.entries(DOPE_SKATE_SHOP).map(([cat, items]) => {
+    const label = cat.charAt(0).toUpperCase() + cat.slice(1);
+    const cards = items.map(item => {
+      const owned = (dopeSkate.data.owned[cat] || []).includes(item.id);
+      const active = equipped[cat] === item.id;
+      const actionLabel = owned ? (active ? t('skate.shop.equipped') : t('skate.shop.equip')) : `${t('skate.shop.buy')} CD ${item.cost}`;
+      return `
+        <div class="skate-shop-item ${active ? 'active' : ''}" data-skate-item="${item.id}" data-skate-cat="${cat}">
+          <strong>${label}: ${item.name}</strong>
+          <span class="tiny">${owned ? t('skate.shop.owned') : `CD ${item.cost}`}</span>
+          <button class="btn bevel" type="button" data-skate-shop-action>${actionLabel}</button>
+        </div>
+      `;
+    }).join('');
+    return cards;
+  }).join('');
+  dopeSkate.els.shopList.innerHTML = html;
+
+  dopeSkate.els.shopList.querySelectorAll('[data-skate-shop-action]').forEach(btn => {
+    btn.addEventListener('click', (e)=>{
+      const card = e.target.closest('[data-skate-item]');
+      if(!card) return;
+      dopeSkateHandleShopAction(card.dataset.skateCat, card.dataset.skateItem);
+    });
+  });
+
+  dopeSkateRenderPreview();
+}
+
+function dopeSkateHandleShopAction(cat, itemId){
+  if(!dopeSkate.data) return;
+  const item = (DOPE_SKATE_SHOP[cat] || []).find(entry => entry.id === itemId);
+  if(!item) return;
+  const owned = dopeSkate.data.owned[cat] || [];
+  if(!owned.includes(itemId)){
+    if((dopeSkate.data.wallet || 0) < item.cost) return;
+    dopeSkate.data.wallet -= item.cost;
+    owned.push(itemId);
+    dopeSkate.data.owned[cat] = owned;
+  }
+  dopeSkate.data.equipped[cat] = itemId;
+  saveDopeSkateData(dopeSkate.data);
+  dopeSkateRenderShop();
+}
+
+function dopeSkateRenderPreview(){
+  if(!dopeSkate.els || !dopeSkate.els.previewStage) return;
+  const assets = dopeSkateGetEquippedAssets();
+  dopeSkate.els.previewStage.innerHTML = '';
+  const stage = dopeSkate.els.previewStage;
+  const makeImg = (src, style) => {
+    if(!src) return;
+    const img = document.createElement('img');
+    img.src = src.src || src;
+    Object.assign(img.style, style);
+    stage.appendChild(img);
+  };
+  if(assets.sky) makeImg(assets.sky, { inset:'0', width:'100%', height:'100%', objectFit:'cover' });
+  if(assets.background) makeImg(assets.background, { inset:'0', width:'100%', height:'100%', objectFit:'cover', opacity:'0.85' });
+  if(assets.ground) makeImg(assets.ground, { left:'0', bottom:'0', width:'100%', height:'40px', objectFit:'cover' });
+  if(assets.board) makeImg(assets.board, { left:'45%', bottom:'24px', width:'80px', height:'18px' });
+  if(assets.wheels) makeImg(assets.wheels, { left:'49%', bottom:'16px', width:'34px', height:'12px' });
+  if(assets.skater) makeImg(assets.skater, { left:'47%', bottom:'32px', width:'48px', height:'64px' });
+  if(assets.hat) makeImg(assets.hat, { left:'50%', bottom:'84px', width:'28px', height:'16px' });
+  if(dopeSkate.els.equippedList && dopeSkate.data){
+    dopeSkate.els.equippedList.textContent = Object.entries(dopeSkate.data.equipped).map(([cat, id]) => {
+      const item = (DOPE_SKATE_SHOP[cat] || []).find(entry => entry.id === id);
+      const label = cat.charAt(0).toUpperCase() + cat.slice(1);
+      return `${label}: ${item ? item.name : id}`;
+    }).join(' • ');
+  }
+}
+
+function dopeSkateUnlockAudio(){
+  if(dopeSkate.audio.unlocked) return;
+  try{
+    if(!dopeSkate.audio.ctx){
+      dopeSkate.audio.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    dopeSkate.audio.ctx.resume();
+    dopeSkate.audio.unlocked = true;
+  } catch {}
+}
+
+function dopeSkatePlaySound(name){
+  if(!dopeSkate.audio.unlocked || !dopeSkate.audio.ctx) return;
+  const ctx = dopeSkate.audio.ctx;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  const vol = dopeSkateGetVolume();
+  gain.gain.value = 0.0001;
+  osc.type = 'square';
+  const tones = {
+    jump: 440,
+    land: 220,
+    trick: 520,
+    grind: 180,
+    collect: 660,
+    crash: 120,
+  };
+  osc.frequency.value = tones[name] || 300;
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  const now = ctx.currentTime;
+  gain.gain.exponentialRampToValueAtTime(vol * 0.25, now + 0.02);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.15);
+  osc.start(now);
+  osc.stop(now + 0.16);
+}
+
+function dopeSkateGetVolume(){
+  const volEl = document.getElementById('mpVol');
+  const val = volEl ? parseFloat(volEl.value) : 0.6;
+  return Number.isFinite(val) ? Math.max(0, Math.min(1, val)) : 0.6;
 }
 
 function loadClothesCache(){
@@ -4498,15 +5410,17 @@ function installLongPress(el, getTarget){
           'skate.action.retry': 'Retry',
           'skate.action.menu': 'Menu',
           'skate.action.jump': 'Jump',
-          'skate.action.trick': 'Trick',
-          'skate.action.grind': 'Grind',
+          'skate.action.trick1': 'Trick 1',
+          'skate.action.trick2': 'Trick 2',
+          'skate.action.trick3': 'Trick 3',
           'skate.hud.score': 'Score',
           'skate.hud.combo': 'Combo',
           'skate.hud.best': 'Best',
           'skate.hud.cds': 'CDs',
           'skate.gameOver': 'Game Over',
+          'skate.grind.balance': 'Balance',
           'skate.status.ready': 'Ready to roll',
-          'skate.status.controls': 'Jump: Space / Tap',
+          'skate.status.controls': 'Jump: Space / Tap • Tricks: Z/X/C',
           'skate.settings.camera': 'Camera',
           'skate.settings.cameraDesc': 'Classic side view',
           'skate.settings.speed': 'Speed',
@@ -4520,12 +5434,28 @@ function installLongPress(el, getTarget){
           'skate.shop.hat': 'Hat',
           'skate.shop.board': 'Skate',
           'skate.shop.wheels': 'Wheels',
+          'skate.shop.wallet': 'Wallet',
+          'skate.shop.owned': 'Owned',
+          'skate.shop.buy': 'Buy',
+          'skate.shop.equip': 'Equip',
+          'skate.shop.equipped': 'Equipped',
           'skate.howto.body': 'Jump over obstacles. Keep moving to raise your score. On mobile, use the big buttons.',
           'skate.howto.jump': 'Jump',
           'skate.howto.trick': 'Trick',
           'skate.howto.grind': 'Grind',
+          'skate.howto.tricksList': 'Ollie, Kickflip, Shuv-it, Hardflip, Heelflip, Varial Kickflip',
+          'skate.howto.grindsList': '50-50, Boardslide, Noseslide',
+          'skate.howto.balance': 'Balance',
+          'skate.howto.balanceDesc': 'Hold left/right to stay on the rail.',
           'skate.leaderboard.body': 'Local and global records will show here.',
           'skate.leaderboard.local': 'Local best',
+          'skate.leaderboard.global': 'Global best',
+          'skate.over.base': 'Base',
+          'skate.over.combo': 'Combo bonus',
+          'skate.over.bliss': 'BLISS bonus',
+          'skate.over.total': 'Total',
+          'skate.over.cds': 'CDs',
+          'skate.over.money': 'Money',
           'snake.title': 'Snake',
           'snake.start': 'Start',
           'snake.restart': 'Restart',
@@ -4903,15 +5833,17 @@ function installLongPress(el, getTarget){
           'skate.action.retry': 'Tentar de novo',
           'skate.action.menu': 'Menu',
           'skate.action.jump': 'Pular',
-          'skate.action.trick': 'Trick',
-          'skate.action.grind': 'Grind',
+          'skate.action.trick1': 'Trick 1',
+          'skate.action.trick2': 'Trick 2',
+          'skate.action.trick3': 'Trick 3',
           'skate.hud.score': 'Score',
           'skate.hud.combo': 'Combo',
           'skate.hud.best': 'Recorde',
           'skate.hud.cds': 'CDs',
           'skate.gameOver': 'Game Over',
+          'skate.grind.balance': 'Equilibrio',
           'skate.status.ready': 'Pronto para rodar',
-          'skate.status.controls': 'Pulo: Espaco / Toque',
+          'skate.status.controls': 'Pulo: Espaco / Toque • Tricks: Z/X/C',
           'skate.settings.camera': 'Camera',
           'skate.settings.cameraDesc': 'Visao lateral classica',
           'skate.settings.speed': 'Velocidade',
@@ -4925,12 +5857,28 @@ function installLongPress(el, getTarget){
           'skate.shop.hat': 'Chapeu',
           'skate.shop.board': 'Skate',
           'skate.shop.wheels': 'Rodas',
+          'skate.shop.wallet': 'Carteira',
+          'skate.shop.owned': 'Comprado',
+          'skate.shop.buy': 'Comprar',
+          'skate.shop.equip': 'Equipar',
+          'skate.shop.equipped': 'Equipado',
           'skate.howto.body': 'Pule os obstaculos. Continue correndo para aumentar o score. No mobile, use os botoes grandes.',
           'skate.howto.jump': 'Pulo',
           'skate.howto.trick': 'Trick',
           'skate.howto.grind': 'Grind',
+          'skate.howto.tricksList': 'Ollie, Kickflip, Shuv-it, Hardflip, Heelflip, Varial Kickflip',
+          'skate.howto.grindsList': '50-50, Boardslide, Noseslide',
+          'skate.howto.balance': 'Equilibrio',
+          'skate.howto.balanceDesc': 'Segure esquerda/direita para manter no rail.',
           'skate.leaderboard.body': 'Records locais e globais aparecem aqui.',
           'skate.leaderboard.local': 'Recorde local',
+          'skate.leaderboard.global': 'Recorde global',
+          'skate.over.base': 'Base',
+          'skate.over.combo': 'Bonus combo',
+          'skate.over.bliss': 'Bonus BLISS',
+          'skate.over.total': 'Total',
+          'skate.over.cds': 'CDs',
+          'skate.over.money': 'Dinheiro',
           'snake.title': 'Snake',
           'snake.start': 'Iniciar',
           'snake.restart': 'Reiniciar',
@@ -6747,12 +7695,19 @@ Eu sou o buffalo branco extinto`
                 </div>
                 <div class="skate-body">
                   <div class="skate-screen bevel-in" id="skateScreen">
-                    <canvas id="skateCanvas" class="pixel" width="640" height="360"></canvas>
+                    <div class="skate-canvas-wrap">
+                      <canvas id="skateCanvas" class="pixel" width="640" height="360"></canvas>
+                    </div>
                     <div class="skate-hud" id="skateHud">
                       <div><span data-i18n="skate.hud.score">Score</span>: <strong data-skate-score>0</strong></div>
                       <div><span data-i18n="skate.hud.combo">Combo</span>: <strong data-skate-combo>1x</strong></div>
+                      <div class="skate-combo-list" data-skate-combo-list></div>
                       <div><span data-i18n="skate.hud.best">Best</span>: <strong data-skate-best>0</strong></div>
                       <div><span data-i18n="skate.hud.cds">CDs</span>: <strong data-skate-cds>0</strong></div>
+                    </div>
+                    <div class="skate-balance hidden" id="skateBalance">
+                      <span class="tiny" data-i18n="skate.grind.balance">Balance</span>
+                      <div class="skate-balance-bar"><span class="skate-balance-indicator" data-skate-balance-indicator></span></div>
                     </div>
                     <div class="skate-overlay" id="skateMenuOverlay">
                       <div class="skate-menu bevel">
@@ -6788,34 +7743,16 @@ Eu sou o buffalo branco extinto`
                           </div>
                           <div class="skate-panel" data-skate-panel="shop">
                             <div class="skate-panel-title" data-i18n="skate.menu.shop">Shop</div>
-                            <div class="skate-shop-grid">
-                              <div class="skate-shop-item">
-                                <strong data-i18n="skate.shop.ground">Ground</strong>
-                                <span class="tiny">CD 120</span>
-                              </div>
-                              <div class="skate-shop-item">
-                                <strong data-i18n="skate.shop.background">Background</strong>
-                                <span class="tiny">CD 180</span>
-                              </div>
-                              <div class="skate-shop-item">
-                                <strong data-i18n="skate.shop.sky">Sky</strong>
-                                <span class="tiny">CD 140</span>
-                              </div>
-                              <div class="skate-shop-item">
-                                <strong data-i18n="skate.shop.skater">Skater</strong>
-                                <span class="tiny">CD 220</span>
-                              </div>
-                              <div class="skate-shop-item">
-                                <strong data-i18n="skate.shop.hat">Hat</strong>
-                                <span class="tiny">CD 90</span>
-                              </div>
-                              <div class="skate-shop-item">
-                                <strong data-i18n="skate.shop.board">Skate</strong>
-                                <span class="tiny">CD 200</span>
-                              </div>
-                              <div class="skate-shop-item">
-                                <strong data-i18n="skate.shop.wheels">Wheels</strong>
-                                <span class="tiny">CD 110</span>
+                            <div class="skate-shop-header">
+                              <div class="tiny" data-i18n="skate.shop.wallet">Wallet</div>
+                              <strong data-skate-wallet>0</strong>
+                            </div>
+                            <div class="skate-shop-layout">
+                              <div class="skate-shop-shelves" data-skate-shop-list></div>
+                              <div class="skate-shop-preview">
+                                <div class="skate-preview-stage" data-skate-preview-stage></div>
+                                <div class="tiny" data-i18n="skate.shop.equipped">Equipped</div>
+                                <div class="tiny" data-skate-equipped-list></div>
                               </div>
                             </div>
                           </div>
@@ -6829,11 +7766,15 @@ Eu sou o buffalo branco extinto`
                               </div>
                               <div class="skate-shop-item">
                                 <strong data-i18n="skate.howto.trick">Trick</strong>
-                                <span class="tiny" data-i18n="common.soon">Soon.</span>
+                                <span class="tiny" data-i18n="skate.howto.tricksList">Ollie, Kickflip, Shuv-it, Hardflip, Heelflip, Varial Kickflip</span>
                               </div>
                               <div class="skate-shop-item">
                                 <strong data-i18n="skate.howto.grind">Grind</strong>
-                                <span class="tiny" data-i18n="common.soon">Soon.</span>
+                                <span class="tiny" data-i18n="skate.howto.grindsList">50-50, Boardslide, Noseslide</span>
+                              </div>
+                              <div class="skate-shop-item">
+                                <strong data-i18n="skate.howto.balance">Balance</strong>
+                                <span class="tiny" data-i18n="skate.howto.balanceDesc">Hold left/right to stay on the rail.</span>
                               </div>
                             </div>
                           </div>
@@ -6844,6 +7785,10 @@ Eu sou o buffalo branco extinto`
                               <strong data-i18n="skate.leaderboard.local">Local best</strong>
                               <span class="tiny" data-skate-local-best>0</span>
                             </div>
+                            <div class="skate-shop-item">
+                              <strong data-i18n="skate.leaderboard.global">Global best</strong>
+                              <span class="tiny" data-skate-global-best>—</span>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -6851,7 +7796,12 @@ Eu sou o buffalo branco extinto`
                     <div class="skate-overlay hidden" id="skateOverOverlay">
                       <div class="skate-over-box bevel">
                         <strong data-i18n="skate.gameOver">Game Over</strong>
-                        <div class="tiny"><span data-i18n="skate.hud.score">Score</span>: <span data-skate-over-score>0</span></div>
+                        <div class="tiny"><span data-i18n="skate.over.base">Base</span>: <span data-skate-over-base>0</span></div>
+                        <div class="tiny"><span data-i18n="skate.over.combo">Combo bonus</span>: <span data-skate-over-combo>0</span></div>
+                        <div class="tiny"><span data-i18n="skate.over.bliss">BLISS bonus</span>: <span data-skate-over-bliss>0</span></div>
+                        <div class="tiny"><span data-i18n="skate.over.total">Total</span>: <span data-skate-over-score>0</span></div>
+                        <div class="tiny"><span data-i18n="skate.over.cds">CDs</span>: <span data-skate-over-cds>0</span></div>
+                        <div class="tiny"><span data-i18n="skate.over.money">Money</span>: <span data-skate-over-money>0</span></div>
                         <div class="tiny"><span data-i18n="skate.hud.best">Best</span>: <span data-skate-over-best>0</span></div>
                         <button class="btn bevel" type="button" data-skate-action="retry" data-i18n="skate.action.retry">Retry</button>
                         <button class="btn bevel" type="button" data-skate-action="menu" data-i18n="skate.action.menu">Menu</button>
@@ -6861,8 +7811,9 @@ Eu sou o buffalo branco extinto`
                 </div>
                 <div class="skate-controls">
                   <button class="btn bevel skate-control" type="button" data-skate-action="jump" data-i18n="skate.action.jump">Jump</button>
-                  <button class="btn bevel skate-control" type="button" data-skate-action="trick" data-i18n="skate.action.trick" disabled>Trick</button>
-                  <button class="btn bevel skate-control" type="button" data-skate-action="grind" data-i18n="skate.action.grind" disabled>Grind</button>
+                  <button class="btn bevel skate-control" type="button" data-skate-action="trick1" data-i18n="skate.action.trick1">Trick 1</button>
+                  <button class="btn bevel skate-control" type="button" data-skate-action="trick2" data-i18n="skate.action.trick2">Trick 2</button>
+                  <button class="btn bevel skate-control" type="button" data-skate-action="trick3" data-i18n="skate.action.trick3">Trick 3</button>
                 </div>
                 <div class="skate-statusbar bevel">
                   <span class="tiny" data-i18n="skate.status.ready">Ready to roll</span>
@@ -9041,6 +9992,9 @@ function renderIcons(){
             if(prev) prev.focus();
           }
         }
+      });
+      document.addEventListener('keyup', (e)=>{
+        if(dopeSkateHandleKeyUp(e)) return;
       });
       document.addEventListener('click', (e)=>{
         const poemItem = e.target.closest && e.target.closest('[data-poem-id]');
