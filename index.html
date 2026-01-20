@@ -1382,7 +1382,7 @@
       .ps1-analog{
         position:absolute;
         left:50%;
-        bottom:22px;
+        bottom:20px;
         transform:translateX(-50%);
         display:flex;
         flex-direction:column;
@@ -1406,12 +1406,13 @@
         width:18px;
         height:6px;
         border-radius:3px;
-        background:#7a1b1b;
-        box-shadow:0 0 8px rgba(255,50,50,0.6);
-        opacity:0;
+        background:#9b9386;
+        box-shadow:inset 0 1px 1px rgba(255,255,255,0.5), inset 0 -1px 1px rgba(0,0,0,0.25);
+        opacity:1;
       }
       .ps1-dock[data-mode="analog"] .ps1-analog-led-rect{
-        opacity:1;
+        background:#7a1b1b;
+        box-shadow:0 0 8px rgba(255,50,50,0.6);
       }
       .ps1-dock[data-mode="analog"] .ps1-dpad{
         display:none;
@@ -1491,6 +1492,27 @@
       }
       #win_games.mobile-game .skate-shell{
         height:100%;
+        --skate-ui-scale: 0.85;
+      }
+      #win_games.mobile-game .skate-topbar{
+        transform:scale(var(--skate-ui-scale));
+        transform-origin:top left;
+        width:calc(100% / var(--skate-ui-scale));
+      }
+      #win_games.mobile-game .skate-hud{
+        transform:scale(var(--skate-ui-scale));
+        transform-origin:top left;
+      }
+      #win_games.mobile-game .skate-balance{
+        transform:scale(var(--skate-ui-scale));
+        transform-origin:top right;
+      }
+      #win_games.mobile-game .skate-overlay{
+        inset:0;
+        transform:scale(var(--skate-ui-scale));
+        transform-origin:top left;
+        width:calc(100% / var(--skate-ui-scale));
+        height:calc(100% / var(--skate-ui-scale));
       }
       #win_games.mobile-game .skate-menu{
         max-height:calc(100dvh - 300px);
@@ -1672,6 +1694,10 @@
         border:1px solid var(--skate-border);
         border-radius:16px;
         box-shadow:var(--skate-shadow);
+      }
+      .skate-menu .skate-focus{
+        outline:2px solid var(--skate-accent);
+        outline-offset:2px;
       }
       .skate-menu-header{
         display:flex;
@@ -3415,6 +3441,13 @@ function bindMobileOverlay(gameId, overlay){
           if(action === 'right') snakeHandleDirection(1, 0);
         }
         if(gameId === 'dope-skate' && isDopeSkateActive()){
+          if(dopeSkateMenuIsOpen()){
+            if(action === 'up') dopeSkateMenuNavigate(0, -1);
+            if(action === 'down') dopeSkateMenuNavigate(0, 1);
+            if(action === 'left') dopeSkateMenuNavigate(-1, 0);
+            if(action === 'right') dopeSkateMenuNavigate(1, 0);
+            return;
+          }
           if(action === 'left') dopeSkate.inputs.left = true;
           if(action === 'right') dopeSkate.inputs.right = true;
         }
@@ -3446,15 +3479,20 @@ function bindMobileOverlay(gameId, overlay){
       }
       if(gameId === 'dope-skate' && isDopeSkateActive()){
         const action = btn.dataset.mobileAction;
+        const menuOpen = dopeSkateMenuIsOpen();
+        if(menuOpen){
+          if(action === 'jump') dopeSkateMenuActivate();
+          if(action === 'trick3') dopeSkateMenuBack();
+          if(action === 'trick2') dopeSkateHideMenu();
+          if(action === 'start') dopeSkateHideMenu();
+          if(action === 'select') dopeSkateMenuBack();
+          return;
+        }
         if(action === 'jump') dopeSkateRegisterJump();
         if(action === 'trick1') dopeSkateRegisterTrick('trick1');
         if(action === 'trick2') dopeSkateRegisterTrick('trick2');
         if(action === 'trick3') dopeSkateRegisterTrick('trick3');
-        if(action === 'start'){
-          const menuHidden = dopeSkate.els && dopeSkate.els.menuOverlay && dopeSkate.els.menuOverlay.classList.contains('hidden');
-          if(menuHidden) dopeSkateShowMenu('play');
-          else dopeSkateHideMenu();
-        }
+        if(action === 'start') dopeSkateShowMenu('play');
         if(action === 'select') dopeSkateShowMenu('play');
       }
       if(gameId === 'snake' && isSnakeActive()){
@@ -4216,6 +4254,14 @@ let dopeSkate = {
     trick1: false,
     trick2: false,
     trick3: false,
+    up: false,
+    down: false,
+    left: false,
+    right: false,
+    confirm: false,
+    back: false,
+    close: false,
+    start: false,
   },
   data: null,
   audio: {
@@ -4232,6 +4278,8 @@ let dopeSkate = {
   scoreMultiplier: 1,
   renderScaleX: 1,
   renderScaleY: 1,
+  menuPanel: 'play',
+  menuFocusEl: null,
   renderDpr: 1,
   renderTargetW: 0,
   renderTargetH: 0,
@@ -4725,6 +4773,7 @@ function dopeSkateShowMenu(panel){
     dopeSkate.els.overOverlay.classList.add('hidden');
   }
   dopeSkateSetPanel(panel);
+  dopeSkateMenuEnsureFocus();
 }
 
 function dopeSkateHideMenu(){
@@ -4735,20 +4784,102 @@ function dopeSkateHideMenu(){
   if(dopeSkate.els && dopeSkate.els.menuOverlay){
     dopeSkate.els.menuOverlay.classList.add('hidden');
   }
+  if(dopeSkate.menuFocusEl){
+    dopeSkate.menuFocusEl.classList.remove('skate-focus');
+    dopeSkate.menuFocusEl = null;
+  }
 }
 
 function dopeSkateSetPanel(panel){
   if(!dopeSkate.els) return;
+  dopeSkate.menuPanel = panel;
   dopeSkate.els.tabs.forEach(btn => {
     const active = btn.dataset.skateTab === panel;
     btn.classList.toggle('active', active);
   });
   const panels = Array.from(dopeSkate.els.menuOverlay.querySelectorAll('[data-skate-panel]'));
   panels.forEach(p => p.classList.toggle('active', p.dataset.skatePanel === panel));
+  dopeSkateMenuEnsureFocus();
   if(panel === 'shop'){
     dopeSkateRenderShop();
   } else {
     dopeSkateClearPreview();
+  }
+}
+
+function dopeSkateMenuIsOpen(){
+  return !!(dopeSkate.els && dopeSkate.els.menuOverlay && !dopeSkate.els.menuOverlay.classList.contains('hidden'));
+}
+
+function dopeSkateMenuGetItems(){
+  if(!dopeSkate.els || !dopeSkate.els.menuOverlay) return [];
+  return Array.from(dopeSkate.els.menuOverlay.querySelectorAll('button, [role="button"], select, input, a'))
+    .filter(el => !el.disabled && el.offsetParent !== null);
+}
+
+function dopeSkateMenuSetFocus(el){
+  if(!el) return;
+  if(dopeSkate.menuFocusEl && dopeSkate.menuFocusEl !== el){
+    dopeSkate.menuFocusEl.classList.remove('skate-focus');
+  }
+  dopeSkate.menuFocusEl = el;
+  el.classList.add('skate-focus');
+  if(el.focus) el.focus({ preventScroll: true });
+}
+
+function dopeSkateMenuEnsureFocus(){
+  if(!dopeSkateMenuIsOpen()) return;
+  const items = dopeSkateMenuGetItems();
+  if(!items.length) return;
+  if(!dopeSkate.menuFocusEl || !items.includes(dopeSkate.menuFocusEl)){
+    dopeSkateMenuSetFocus(items[0]);
+  }
+}
+
+function dopeSkateMenuNavigate(dx, dy){
+  if(!dopeSkateMenuIsOpen()) return;
+  const items = dopeSkateMenuGetItems();
+  if(!items.length) return;
+  dopeSkateMenuEnsureFocus();
+  const current = dopeSkate.menuFocusEl || items[0];
+  const curRect = current.getBoundingClientRect();
+  const curX = curRect.left + curRect.width / 2;
+  const curY = curRect.top + curRect.height / 2;
+  let best = null;
+  let bestScore = Infinity;
+  items.forEach(el => {
+    if(el === current) return;
+    const r = el.getBoundingClientRect();
+    const x = r.left + r.width / 2;
+    const y = r.top + r.height / 2;
+    const vx = x - curX;
+    const vy = y - curY;
+    if(dx !== 0 && Math.sign(vx) !== dx) return;
+    if(dy !== 0 && Math.sign(vy) !== dy) return;
+    const primary = dx !== 0 ? Math.abs(vx) : Math.abs(vy);
+    const secondary = dx !== 0 ? Math.abs(vy) : Math.abs(vx);
+    const score = primary * 1000 + secondary;
+    if(score < bestScore){
+      bestScore = score;
+      best = el;
+    }
+  });
+  if(best) dopeSkateMenuSetFocus(best);
+}
+
+function dopeSkateMenuActivate(){
+  if(!dopeSkateMenuIsOpen()) return;
+  if(dopeSkate.menuFocusEl && dopeSkate.menuFocusEl.click){
+    dopeSkate.menuFocusEl.click();
+  }
+}
+
+function dopeSkateMenuBack(){
+  if(!dopeSkateMenuIsOpen()) return;
+  if(dopeSkate.menuPanel && dopeSkate.menuPanel !== 'play'){
+    dopeSkateSetPanel('play');
+  } else {
+    dopeSkateHideMenu();
   }
 }
 
@@ -5202,29 +5333,59 @@ function dopeSkateCheckGamepad(){
   if(!pads) return;
   for(const pad of pads){
     if(!pad) continue;
+    const menuOpen = dopeSkateMenuIsOpen();
     const jumpPressed = pad.buttons && pad.buttons[0] && pad.buttons[0].pressed;
     const trick1Pressed = pad.buttons && pad.buttons[2] && pad.buttons[2].pressed;
     const trick2Pressed = pad.buttons && pad.buttons[3] && pad.buttons[3].pressed;
     const trick3Pressed = pad.buttons && pad.buttons[1] && pad.buttons[1].pressed;
+    const upPressed = pad.buttons && pad.buttons[12] && pad.buttons[12].pressed;
+    const downPressed = pad.buttons && pad.buttons[13] && pad.buttons[13].pressed;
+    const leftPressed = pad.buttons && pad.buttons[14] && pad.buttons[14].pressed;
+    const rightPressed = pad.buttons && pad.buttons[15] && pad.buttons[15].pressed;
+    const startPressed = pad.buttons && pad.buttons[9] && pad.buttons[9].pressed;
+    const backPressed = pad.buttons && pad.buttons[1] && pad.buttons[1].pressed;
+    const closePressed = pad.buttons && pad.buttons[3] && pad.buttons[3].pressed;
 
-    if(jumpPressed && !dopeSkate.gamepad.jump){
-      dopeSkateRegisterJump();
+    if(menuOpen){
+      if(upPressed && !dopeSkate.gamepad.up) dopeSkateMenuNavigate(0, -1);
+      if(downPressed && !dopeSkate.gamepad.down) dopeSkateMenuNavigate(0, 1);
+      if(leftPressed && !dopeSkate.gamepad.left) dopeSkateMenuNavigate(-1, 0);
+      if(rightPressed && !dopeSkate.gamepad.right) dopeSkateMenuNavigate(1, 0);
+      if(jumpPressed && !dopeSkate.gamepad.confirm) dopeSkateMenuActivate();
+      if(backPressed && !dopeSkate.gamepad.back) dopeSkateMenuBack();
+      if(closePressed && !dopeSkate.gamepad.close) dopeSkateHideMenu();
+    } else {
+      if(jumpPressed && !dopeSkate.gamepad.jump){
+        dopeSkateRegisterJump();
+      }
+      if(trick1Pressed && !dopeSkate.gamepad.trick1){
+        dopeSkateRegisterTrick('trick1');
+      }
+      if(trick2Pressed && !dopeSkate.gamepad.trick2){
+        dopeSkateRegisterTrick('trick2');
+      }
+      if(trick3Pressed && !dopeSkate.gamepad.trick3){
+        dopeSkateRegisterTrick('trick3');
+      }
     }
-    if(trick1Pressed && !dopeSkate.gamepad.trick1){
-      dopeSkateRegisterTrick('trick1');
-    }
-    if(trick2Pressed && !dopeSkate.gamepad.trick2){
-      dopeSkateRegisterTrick('trick2');
-    }
-    if(trick3Pressed && !dopeSkate.gamepad.trick3){
-      dopeSkateRegisterTrick('trick3');
+    if(startPressed && !dopeSkate.gamepad.start){
+      if(dopeSkateMenuIsOpen()) dopeSkateHideMenu();
+      else dopeSkateShowMenu('play');
     }
     dopeSkate.gamepad.jump = jumpPressed;
     dopeSkate.gamepad.trick1 = trick1Pressed;
     dopeSkate.gamepad.trick2 = trick2Pressed;
     dopeSkate.gamepad.trick3 = trick3Pressed;
+    dopeSkate.gamepad.up = upPressed;
+    dopeSkate.gamepad.down = downPressed;
+    dopeSkate.gamepad.left = leftPressed;
+    dopeSkate.gamepad.right = rightPressed;
+    dopeSkate.gamepad.confirm = jumpPressed;
+    dopeSkate.gamepad.back = backPressed;
+    dopeSkate.gamepad.close = closePressed;
+    dopeSkate.gamepad.start = startPressed;
 
-    if(pad.axes && pad.axes.length){
+    if(!menuOpen && pad.axes && pad.axes.length){
       dopeSkate.inputs.left = pad.axes[0] < -0.4;
       dopeSkate.inputs.right = pad.axes[0] > 0.4;
     }
