@@ -163,6 +163,48 @@
       }
       .hidden{display:none !important;}
       .pixel{image-rendering:pixelated; image-rendering:crisp-edges;}
+      /* --- Mobile touch fixes (avoid double-tap-to-activate on iOS) --- */
+@media (hover:none) and (pointer:coarse){
+  /* Prefer immediate activation; avoid iOS “first tap = hover, second tap = click” */
+  button, a, input, select, textarea,
+  .btn, .menu-item, .ctx-item,
+  .games-tab, .games-item, .music-item,
+  .blissos-menu-item, .blissos-menu-brand, .blissos-appmenu,
+  .wctl{
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  /* Make clickable rows feel clickable */
+  .menu-item, .ctx-item, .games-tab, .games-item, .music-item{ cursor:pointer; }
+}
+
+/* Only apply :hover styles on devices that actually support hover */
+@media (hover:hover){
+  .menu-item:hover{ background:var(--select); color:var(--select-text); }
+  .ctx-item:hover{ background:var(--select); color:var(--select-text); }
+
+  body[data-theme="blissos"] .blissos-menu-item:hover,
+  body[data-theme="blissos"] .blissos-menu-brand:hover,
+  body[data-theme="blissos"] .blissos-appmenu-drop .menu-item:hover,
+  body[data-theme="blissos"] .blissos-apple-menu .menu-item:hover{
+    background:var(--blissos-highlight);
+    color:var(--blissos-text-invert);
+  }
+}
+
+/* Touch feedback without relying on hover */
+@media (hover:none) and (pointer:coarse){
+  .menu-item:active{ background:var(--select); color:var(--select-text); }
+  .ctx-item:active{ background:var(--select); color:var(--select-text); }
+
+  body[data-theme="blissos"] .blissos-menu-item:active,
+  body[data-theme="blissos"] .blissos-menu-brand:active,
+  body[data-theme="blissos"] .blissos-appmenu-drop .menu-item:active,
+  body[data-theme="blissos"] .blissos-apple-menu .menu-item:active{
+    background:var(--blissos-highlight);
+    color:var(--blissos-text-invert);
+  }
+}
 
       .bevel{
         background:var(--task);
@@ -1328,7 +1370,7 @@
         border:0;
         text-align:left;
         font:inherit;
-        cursor:default;
+        cursor:pointer;
         position:relative;
       }
       .menu-item:hover,
@@ -4118,10 +4160,21 @@ function renderGamesWindow(){
         state.games.selectedId = id;
         items.forEach(btn => btn.classList.toggle('selected', btn === item));
       });
-      item.addEventListener('dblclick', (e)=>{
-        e.stopPropagation();
-        openGameFromHub(id);
-      });
+      // On touch devices: single tap opens; on desktop: double-click opens
+      const isTouchDevice = () => (('ontouchstart' in window) || (navigator.maxTouchPoints > 0));
+      if(isTouchDevice()){
+        item.addEventListener('click', (e)=>{
+          if(e.detail === 1){
+            e.stopPropagation();
+            openGameFromHub(id);
+          }
+        });
+      } else {
+        item.addEventListener('dblclick', (e)=>{
+          e.stopPropagation();
+          openGameFromHub(id);
+        });
+      }
       item.addEventListener('keydown', (e)=>{
         if(e.key === 'Enter' || e.key === ' '){
           e.preventDefault();
@@ -12672,6 +12725,10 @@ function getDisplayTime(){
       });
 
       document.addEventListener('dblclick', (e)=>{
+        // Skip double-click on touch devices (they use pointerdown instead)
+        const isTouchDevice = () => (('ontouchstart' in window) || (navigator.maxTouchPoints > 0));
+        if(isTouchDevice()) return;
+        
         const card = e.target.closest && e.target.closest('[data-music-id]');
         if(card && card.dataset && card.dataset.musicLink){
           e.preventDefault();
@@ -12837,14 +12894,24 @@ function renderIcons(){
               el.dataset.dragged = '0';
               return;
             }
-      selectIcon(id);
+            const isTouchDevice = () => (('ontouchstart' in window) || (navigator.maxTouchPoints > 0));
+            const isSelected = el.classList.contains('selected');
+            if(isTouchDevice() && isSelected){
+              // On touch: if already selected, single tap opens
+              openIconById(id);
+              return;
+            }
+            selectIcon(id);
     });
 
-          // Double click open
-          el.addEventListener('dblclick', (e)=>{
-            e.stopPropagation();
-      openIconById(id);
-    });
+          // Double click open (desktop only)
+          const isTouchDevice = () => (('ontouchstart' in window) || (navigator.maxTouchPoints > 0));
+          if(!isTouchDevice()){
+            el.addEventListener('dblclick', (e)=>{
+              e.stopPropagation();
+        openIconById(id);
+      });
+          }
 
     makeIconDraggable(el);
     el.addEventListener('contextmenu', (ev)=>{
