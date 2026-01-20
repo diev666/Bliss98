@@ -1048,6 +1048,7 @@
         border:1px solid transparent;
         width:140px;
         max-width:140px;
+        height:140px;
         display:flex;
         flex-direction:column;
         align-items:center;
@@ -1074,11 +1075,23 @@
         display:flex;
         align-items:center;
         justify-content:center;
+        margin-top:17px;
+      }
+      .games-item[data-game-id="snake"] .games-icon{
+        margin-top:27px;
       }
       .games-icon img{
         width:64px;
         height:64px;
         object-fit:contain;
+      }
+      .games-item[data-game-id="dope-skate"] .games-icon{
+        width:88px;
+        height:88px;
+      }
+      .games-item[data-game-id="dope-skate"] .games-icon img{
+        width:88px;
+        height:88px;
       }
       .games-item.selected{
         border:1px dotted var(--selection-border);
@@ -1089,6 +1102,8 @@
         line-height:1.1;
         max-width:120px;
         word-break:break-word;
+        margin-top:auto;
+        padding-bottom:4px;
       }
       .games-skin .games-item{
         color:#f4f0e6;
@@ -1493,6 +1508,7 @@
       #win_games.mobile-game .skate-shell{
         height:100%;
         --skate-ui-scale: 0.85;
+        padding-top:env(safe-area-inset-top);
       }
       #win_games.mobile-game .skate-topbar{
         transform:scale(var(--skate-ui-scale));
@@ -1513,29 +1529,43 @@
         transform-origin:top left;
         width:calc(100% / var(--skate-ui-scale));
         height:calc(100% / var(--skate-ui-scale));
+        overflow:auto;
+        -webkit-overflow-scrolling:touch;
+        align-items:flex-start;
+        padding-top:10px;
+        padding-bottom:12px;
       }
       #win_games.mobile-game .skate-menu{
-        max-height:calc(100dvh - 300px);
+        max-height:100%;
         overflow:auto;
+        -webkit-overflow-scrolling:touch;
       }
       #win_games.mobile-game .skate-menu-panels{
-        max-height:calc(100dvh - 340px);
+        max-height:100%;
         overflow:auto;
+        -webkit-overflow-scrolling:touch;
       }
       #win_games.mobile-game .skate-panel{
         padding-bottom:16px;
       }
+      #win_games.mobile-game .skate-shop-layout{
+        flex-direction:column;
+      }
+      #win_games.mobile-game .skate-shop-preview{
+        min-width:0;
+      }
       #win_games.mobile-game .skate-body{
         flex-direction:column;
         flex:1;
+        min-height:0;
       }
       #win_games.mobile-game .skate-screen{
-        flex:1;
+        flex:0 0 auto;
         padding:4px;
-        height:100%;
-        width:min(92vw, calc((38vh - 6px) * 16 / 9));
+        width:min(92vw, calc((100dvh - 420px) * 16 / 9));
         max-width:92vw;
-        max-height:calc(38vh - 6px);
+        height:auto;
+        max-height:calc(100dvh - 420px);
         align-self:center;
         aspect-ratio:16/9;
       }
@@ -3201,7 +3231,8 @@ function renderGamesWindow(){
     }
     const listEl = win.querySelector('#gamesList');
     if(listEl){
-      listEl.className = 'games-grid';
+      const layout = state.games.layout === 'list' ? 'games-list' : 'games-grid';
+      listEl.className = layout + (state.games.layout === 'grid' && state.games.bigIcons ? ' games-big' : '');
     }
 
     items.forEach(item => {
@@ -7529,8 +7560,9 @@ function openCtxMenu(x, y, target='desktop', appId=null){
   const menu = $('#ctxMenu');
   if(menu){
     menu.classList.remove('hidden');
-    const first = menu.querySelector('.ctx-item');
-    if(first) first.focus();
+    menu.setAttribute('tabindex', '-1');
+    if(document.activeElement && document.activeElement.blur) document.activeElement.blur();
+    menu.focus();
   }
 }
 
@@ -9289,6 +9321,15 @@ function installLongPress(el, getTarget){
           return;
         }
 
+        if(action === 'games:grid'){
+          state.games.layout = (state.games.layout === 'grid') ? 'list' : 'grid';
+          saveGamesLayout();
+          if(state.activeWindowId === 'games' && state.games.view === 'list'){
+            renderGamesWindow();
+          }
+          return;
+        }
+
         if(action === 'art:openGallery' || action === 'art:saveImage' || action === 'art:slideshow' || action === 'art:credits'){
           showMessage('dialog.notAvailable.title', 'dialog.notAvailable.body');
           return;
@@ -9316,7 +9357,7 @@ function installLongPress(el, getTarget){
           return;
         }
 
-        if(action === 'games:openFolder' || action === 'games:download' || action === 'games:grid' || action === 'games:sortNew' || action === 'games:sortFavorite' || action === 'games:requirements'){
+        if(action === 'games:openFolder' || action === 'games:download' || action === 'games:sortNew' || action === 'games:sortFavorite' || action === 'games:requirements'){
           showMessage('dialog.notAvailable.title', 'dialog.notAvailable.body');
           return;
         }
@@ -10284,7 +10325,7 @@ Eu sou o buffalo branco extinto`
                     <button class="games-tab${state.games.view === 'list' ? ' active' : ''}" type="button" data-games-tab="hub" data-i18n="games.tab.hub">Games</button>
                     <button class="games-tab${state.games.view === 'leaderboard' ? ' active' : ''}" type="button" data-games-tab="leaderboard" data-i18n="games.tab.leaderboard">Leaderboard</button>
                   </div>
-                  <div id="gamesList" class="games-grid">
+                  <div id="gamesList" class="${state.games.layout === 'list' ? 'games-list' : `games-grid${state.games.bigIcons ? ' games-big' : ''}`}">
                     ${items || `<div class="tiny" data-i18n="games.empty">${t('games.empty')}</div>`}
                   </div>
                 </div>
