@@ -184,6 +184,49 @@
   }
   /* Make clickable rows feel clickable */
   .menu-item, .ctx-item, .games-tab, .games-item, .music-item{ cursor:pointer; }
+
+  /* NOVO: Forçar layering quando em mobile game mode */
+  body.mobile-game-active #win_games{
+    z-index: 2000 !important;
+  }
+  body.mobile-game-active .ps1-dock{
+    z-index: 2300 !important;
+  }
+  body.mobile-game-active .snake-overlay{
+    z-index: 2400 !important;
+  }
+
+  /* NOVO: Snake board maior e centralizado no mobile */
+  body.mobile-game-active #win_games .snake-layout{
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+  }
+  body.mobile-game-active #win_games .snake-board{
+    width: min(92vw, 360px);
+    height: auto;
+    min-width: 0;
+    min-height: 0;
+    padding: 6px;
+    flex: 0 0 auto;
+    max-height: min(44vh, 360px);
+    align-self: center;
+    aspect-ratio: 1/1;
+    margin-top: 10px;
+  }
+  body.mobile-game-active #win_games .snake-board canvas{
+    width: 100%;
+    height: 100%;
+  }
+  body.mobile-game-active #win_games .snake-side{
+    width: 100%;
+    min-width: 0;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    padding: 6px 8px;
+  }
 }
 
 /* Only apply :hover styles on devices that actually support hover */
@@ -4236,6 +4279,7 @@ function renderGamesWindow(){
   }
   if(state.games.view === 'snake'){
     initSnakeInWindow(win);
+    snakeEnterView();
     mountMobileGameDock('snake', win);
   }
   if(!mobileGameView) autoFitWindow(win, 'games');
@@ -4552,6 +4596,7 @@ function openGameFromHub(id){
   if(id === 'snake'){
     state.games.view = 'snake';
     state.games.selectedId = 'snake';
+    snakeEnterView();
     renderGamesWindow();
     return;
   }
@@ -4838,7 +4883,6 @@ function snakeStartGame(){
   snake.paused = false;
   snake.gameOver = false;
   snake.started = true;
-  enterMobileGameMode('snake');
   recordGameScore('snake', state.snake.highScore || 0, new Date().toISOString());
   snakePlaceFood();
   snakeStartLoop();
@@ -13710,6 +13754,10 @@ function autoFitWindow(winEl, appId){
         document.body.classList.remove('mobile-game-active');
         const dock = document.getElementById('blissosDock');
         if(dock) dock.style.display = '';
+      }
+      function snakeEnterView(){
+        if(!window.matchMedia('(pointer:coarse)').matches) return;
+        enterMobileGameMode('snake');
       }
 
       function focusWindow(appId){
