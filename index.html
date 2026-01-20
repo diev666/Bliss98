@@ -13705,14 +13705,6 @@ function autoFitWindow(winEl, appId){
         `;
 
         el.addEventListener('mousedown', (e)=>{ e.stopPropagation(); focusWindow(appId); closeStartMenu(); });
-        // Mobile fix: Also focus window on pointerdown (touchstart) since mobile doesn't have mousedown
-        // This ensures single-tap on window controls (close/min/max) and settings doesn't require double-tap
-        el.addEventListener('pointerdown', (e)=>{
-          if(e.pointerType === 'mouse') return; // Avoid duplicate focus on desktop (already handled by mousedown)
-          focusWindow(appId);
-          closeStartMenu();
-          // Important: Do NOT preventDefault() here - let the click event propagate normally
-        }, { capture: false });
         el.addEventListener('contextmenu', (e)=>{
           e.preventDefault();
           e.stopPropagation();
@@ -14815,6 +14807,21 @@ function renderBlissOSAppMenu(){
       }, true);
 
       (function init(){
+        // MOBILE FIX: Focus window on pointerdown (touch) before click handlers run
+        // This ensures single-tap in window controls/settings executes immediately on iOS/Android
+        // Using capture:true makes this run before any descendant click handlers
+        document.addEventListener('pointerdown', (e)=>{
+          if(e.pointerType !== 'touch') return; // Only for touch, avoid desktop interference
+          const winEl = e.target && e.target.closest ? e.target.closest('.window') : null;
+          if(!winEl) return; // Not inside a window
+          const appId = winEl.id ? winEl.id.replace('win_','') : null;
+          if(appId && state.windows.has(appId)){
+            if(state.activeWindowId !== appId){
+              focusWindow(appId);
+            }
+          }
+        }, { capture: true, passive: true });
+
         const savedLang = localStorage.getItem('bliss98_lang') || 'en';
         state.lang = (savedLang === 'pt') ? 'pt' : 'en';
 
@@ -14864,12 +14871,6 @@ function renderBlissOSAppMenu(){
 
         initSfx();
         showLogin(true);
-      document.addEventListener('pointerdown', (e)=>{
-        const winEl = e.target && e.target.closest ? e.target.closest('.window') : null;
-        if(!winEl) return;
-        const appId = winEl.id ? winEl.id.replace('win_','') : null;
-        if(appId && state.windows.has(appId)) focusWindow(appId);
-      }, true);
         const cm = $('#ctxMenu');
         if(cm){
           cm.addEventListener('click', (ev)=>{
@@ -14941,6 +14942,21 @@ function renderBlissOSAppMenu(){
       // ✓ Long-press → shows context menu (still works)
       // ✓ Swipe in dope-skate → jumps (not broken by preventDefault changes)
       // ✓ Scroll inside windows → works smoothly
+      //
+      // 5. CRITICAL: Double-tap still required on mobile for window controls/Settings (FINAL FIX)
+      //    - ROOT CAUSE: First pointerdown listener inside window was not running early enough
+      //    - Desktop clicked (mousedown → focus → click) works in sequence
+      //    - Mobile touch didn't focus before click handler evaluated (race condition)
+      //    - SOLUTION: Implemented global pointerdown listener with capture:true at init start
+      //      * Listener fires in capture phase (before any descendant handlers)
+      //      * Only applies to touch (e.pointerType !== 'touch' → return)
+      //      * Checks if click is inside .window and focuses immediately if needed
+      //      * passive:true to avoid blocking scroll/drag
+      //      * This ensures focusWindow() completes before click handlers run
+      //      * Removed duplicate pointerdown listener from individual window creation
+      //      * Now:
+      //        - First tap in window → focusWindow(appId) completes → click handler can execute
+      //        - No more "focus only on first tap, action on second tap"
       //
       // TESTING CHECKLIST (Desktop: Chrome/Safari/Firefox):
       // ✓ Click → selects/activates (no change from before)
