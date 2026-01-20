@@ -13705,6 +13705,14 @@ function autoFitWindow(winEl, appId){
         `;
 
         el.addEventListener('mousedown', (e)=>{ e.stopPropagation(); focusWindow(appId); closeStartMenu(); });
+        // Mobile fix: Also focus window on pointerdown (touchstart) since mobile doesn't have mousedown
+        // This ensures single-tap on window controls (close/min/max) and settings doesn't require double-tap
+        el.addEventListener('pointerdown', (e)=>{
+          if(e.pointerType === 'mouse') return; // Avoid duplicate focus on desktop (already handled by mousedown)
+          focusWindow(appId);
+          closeStartMenu();
+          // Important: Do NOT preventDefault() here - let the click event propagate normally
+        }, { capture: false });
         el.addEventListener('contextmenu', (e)=>{
           e.preventDefault();
           e.stopPropagation();
@@ -14912,11 +14920,24 @@ function renderBlissOSAppMenu(){
       //      * Interactive targets (buttons, tabs) are always allowed to bubble
       //    - NO FIX NEEDED
       //
+      // 4. CRITICAL: Double-tap required for window controls and Settings on mobile (lines 13707-13716)
+      //    - ROOT CAUSE: Window only received focus on mousedown event
+      //    - Mobile doesn't have mousedown (uses pointerdown/touchstart instead)
+      //    - Result: First touch didn't focus window, second touch did → apparent double-tap requirement
+      //    - FIX: Added el.addEventListener('pointerdown', ...) specifically for touch events
+      //      * Listener fires on touch (e.pointerType !== 'mouse') but skips desktop (where mousedown already fires)
+      //      * Calls focusWindow(appId) to bring window to front before click event
+      //      * Does NOT call preventDefault() to allow click event to propagate normally
+      //      * Window controls (close/min/max) now execute on first tap
+      //      * Settings options now execute on first tap
+      //
       // TESTING CHECKLIST (Mobile: iOS Safari + Android Chrome):
       // ✓ Tap icon → opens immediately (single tap, no double-tap needed)
       // ✓ Tap menu item → selects/activates immediately
       // ✓ Tap settings button → applies setting immediately
       // ✓ Tap music card → opens link on first tap
+      // ✓ Tap window close/min/max buttons → executes on first tap (FIXED)
+      // ✓ Tap Settings language/theme options → executes on first tap (FIXED)
       // ✓ Long-press → shows context menu (still works)
       // ✓ Swipe in dope-skate → jumps (not broken by preventDefault changes)
       // ✓ Scroll inside windows → works smoothly
