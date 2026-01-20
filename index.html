@@ -189,6 +189,324 @@
         cursor:pointer;
         color:var(--btn-text);
       }
+
+      body[data-theme="blissos"]{
+        font-family:"Geneva","Chicago","Charcoal",system-ui,-apple-system,Segoe UI,Arial,sans-serif;
+        background:#c2c2be;
+        color:#111;
+        font-size:12px;
+      }
+      body[data-theme="blissos"] #desktop{
+        background-color:#8ea2bf;
+      }
+      body[data-theme="blissos"] .desktop-area{
+        inset:22px 0 44px 0;
+      }
+      body[data-theme="blissos"] #taskbar,
+      body[data-theme="blissos"] #startMenu{
+        display:none !important;
+      }
+      body[data-theme="blissos"] .icon{
+        width:86px;
+        height:84px;
+        gap:4px;
+      }
+      body[data-theme="blissos"] .icon span{
+        color:#000;
+        text-shadow:none;
+        background:#e6e6e2;
+        border:1px solid #9a9a96;
+        border-radius:2px;
+        padding:1px 4px;
+        font-size:11px;
+        box-shadow:inset 1px 1px 0 #f8f8f6;
+      }
+      body[data-theme="blissos"] .icon.selected{
+        border:1px solid #3a5a8c;
+        background:rgba(60,90,140,0.2);
+      }
+      body[data-theme="blissos"] .icon.selected span{
+        background:#9db5e3;
+        color:#000;
+        outline:none;
+      }
+
+      body[data-theme="blissos"] .window .frame{
+        border-radius:2px;
+        background:#e5e5e0;
+        border:1px solid #8d8d88;
+        box-shadow:inset 1px 1px 0 #f8f8f6, inset -1px -1px 0 #9a9a94;
+      }
+      body[data-theme="blissos"] .titlebar{
+        height:20px;
+        padding:1px 6px;
+        background:
+          repeating-linear-gradient(180deg, rgba(255,255,255,0.6) 0 1px, rgba(0,0,0,0.05) 1px 2px),
+          #d9d9d4;
+        color:#111;
+        border-bottom:1px solid #8d8d88;
+        position:relative;
+      }
+      body[data-theme="blissos"] .window:focus-within .titlebar,
+      body[data-theme="blissos"] .window[data-active="1"] .titlebar{
+        background:
+          repeating-linear-gradient(180deg, rgba(255,255,255,0.5) 0 1px, rgba(0,0,0,0.08) 1px 2px),
+          #c8c8c2;
+      }
+      body[data-theme="blissos"] .titlebar .title-left strong{
+        font-size:11px;
+        font-weight:600;
+      }
+      body[data-theme="blissos"] .title-left img{
+        display:none;
+      }
+      body[data-theme="blissos"] .titlebar{
+        justify-content:flex-start;
+      }
+      body[data-theme="blissos"] .title-controls{
+        order:0;
+        margin-right:6px;
+        position:relative;
+        z-index:2;
+      }
+      body[data-theme="blissos"] .title-left{
+        order:1;
+        flex:1;
+        justify-content:center;
+        text-align:center;
+        position:absolute;
+        left:0;
+        right:0;
+        pointer-events:none;
+      }
+      body[data-theme="blissos"] .wctl{
+        width:12px;
+        height:12px;
+        border-radius:2px;
+        background:#d2d2cd;
+        border:1px solid #7f7f7a;
+        box-shadow:inset 1px 1px 0 #f5f5f2, inset -1px -1px 0 #9b9b95;
+        font-size:10px;
+        color:#1d1d1d;
+      }
+      body[data-theme="blissos"] .menubar{
+        height:18px;
+        background:#d9d9d4;
+        border-bottom:1px solid #8d8d88;
+        color:#111;
+      }
+      body[data-theme="blissos"] .menubar span{
+        padding:0 6px;
+      }
+      body[data-theme="blissos"] .menubar span.active{
+        background:#2b4c8a;
+        color:#fff;
+      }
+      body[data-theme="blissos"] .menu-drop,
+      body[data-theme="blissos"] .menu-sub{
+        background:#e5e5e0;
+        border:1px solid #8d8d88;
+        box-shadow:none;
+        color:#111;
+      }
+      body[data-theme="blissos"] .menu-item:hover,
+      body[data-theme="blissos"] .menu-item:focus{
+        background:#2b4c8a;
+        color:#fff;
+      }
+      body[data-theme="blissos"] .statusbar{
+        background:#d9d9d4;
+        border-top:1px solid #8d8d88;
+        color:#2b2b2b;
+      }
+      body[data-theme="blissos"] .btn,
+      body[data-theme="blissos"] .bevel{
+        background:#d9d9d4;
+        border:1px solid #8d8d88;
+        box-shadow:inset 1px 1px 0 #f8f8f6, inset -1px -1px 0 #9a9a94;
+        color:#1f1f1f;
+        border-radius:2px;
+      }
+      body[data-theme="blissos"] .bevel-in,
+      body[data-theme="blissos"] input,
+      body[data-theme="blissos"] select,
+      body[data-theme="blissos"] textarea{
+        background:#f2f2ee;
+        border:1px solid #9a9a96;
+        box-shadow:inset 1px 1px 0 #cfcfca;
+        border-radius:2px;
+      }
+      body[data-theme="blissos"] .content{
+        background:#f3f3ef;
+      }
+      body[data-theme="blissos"] ::-webkit-scrollbar{
+        width:14px;
+        height:14px;
+      }
+      body[data-theme="blissos"] ::-webkit-scrollbar-track{
+        background:#d9d9d4;
+        border:1px solid #9a9a96;
+      }
+      body[data-theme="blissos"] ::-webkit-scrollbar-thumb{
+        background:#b6b6b0;
+        border:1px solid #7f7f7a;
+        box-shadow:inset 1px 1px 0 #e6e6e2, inset -1px -1px 0 #9a9a94;
+      }
+      body[data-theme="blissos"] ::-webkit-scrollbar-button{
+        width:14px;
+        height:14px;
+        background:#d2d2cd;
+        border:1px solid #8d8d88;
+        box-shadow:inset 1px 1px 0 #f8f8f6, inset -1px -1px 0 #9a9a94;
+      }
+      body[data-theme="blissos"] ::-webkit-scrollbar-button:vertical:decrement{
+        background:
+          linear-gradient(135deg, transparent 48%, #2b2b2b 48% 52%, transparent 52%),
+          linear-gradient(225deg, transparent 48%, #2b2b2b 48% 52%, transparent 52%),
+          #d2d2cd;
+      }
+      body[data-theme="blissos"] ::-webkit-scrollbar-button:vertical:increment{
+        background:
+          linear-gradient(-45deg, transparent 48%, #2b2b2b 48% 52%, transparent 52%),
+          linear-gradient(45deg, transparent 48%, #2b2b2b 48% 52%, transparent 52%),
+          #d2d2cd;
+      }
+      body[data-theme="blissos"] ::-webkit-scrollbar-button:horizontal:decrement{
+        background:
+          linear-gradient(45deg, transparent 48%, #2b2b2b 48% 52%, transparent 52%),
+          linear-gradient(135deg, transparent 48%, #2b2b2b 48% 52%, transparent 52%),
+          #d2d2cd;
+      }
+      body[data-theme="blissos"] ::-webkit-scrollbar-button:horizontal:increment{
+        background:
+          linear-gradient(225deg, transparent 48%, #2b2b2b 48% 52%, transparent 52%),
+          linear-gradient(315deg, transparent 48%, #2b2b2b 48% 52%, transparent 52%),
+          #d2d2cd;
+      }
+
+      body[data-theme="blissos"] .ctx-menu{
+        background:#e5e5e0;
+        border:1px solid #8d8d88;
+        box-shadow:none;
+      }
+      body[data-theme="blissos"] .ctx-item:hover,
+      body[data-theme="blissos"] .ctx-item:focus{
+        background:#2b4c8a;
+        color:#fff;
+      }
+      body[data-theme="blissos"] .modal-box{
+        border-radius:2px;
+        background:#e5e5e0;
+        border:1px solid #8d8d88;
+        box-shadow:none;
+      }
+      body[data-theme="blissos"] .modal-titlebar{
+        background:#d9d9d4;
+        border-bottom:1px solid #8d8d88;
+      }
+
+      .blissos-menubar{
+        position:absolute;
+        top:0;
+        left:0;
+        right:0;
+        height:22px;
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        padding:0 8px;
+        background:#d9d9d4;
+        border-bottom:1px solid #8d8d88;
+        z-index:20;
+        gap:12px;
+        font-size:12px;
+      }
+      .blissos-menu-left{
+        display:flex;
+        align-items:center;
+        gap:8px;
+      }
+      .blissos-menu-right{
+        display:flex;
+        align-items:center;
+        gap:10px;
+        color:#111;
+        font-variant-numeric:tabular-nums;
+      }
+      .blissos-menu-item,
+      .blissos-menu-brand{
+        border:0;
+        background:transparent;
+        padding:1px 6px;
+        font:inherit;
+        color:#111;
+        cursor:pointer;
+      }
+      .blissos-menu-item:hover,
+      .blissos-menu-brand:hover,
+      .blissos-menu-item:focus,
+      .blissos-menu-brand:focus{
+        background:#2b4c8a;
+        color:#fff;
+        outline:none;
+      }
+      .blissos-menu-item:active,
+      .blissos-menu-brand:active{
+        background:#1e3a6a;
+        color:#fff;
+      }
+      .blissos-menu-brand{
+        font-weight:700;
+        letter-spacing:0.2px;
+      }
+
+      .blissos-dock{
+        position:absolute;
+        left:0;
+        right:0;
+        bottom:0;
+        padding:4px 6px 6px;
+        z-index:20;
+        display:flex;
+        justify-content:center;
+      }
+      .blissos-dock-inner{
+        display:flex;
+        align-items:center;
+        gap:6px;
+        padding:4px 8px;
+        background:#d9d9d4;
+        border:1px solid #8d8d88;
+        box-shadow:inset 1px 1px 0 #f8f8f6, inset -1px -1px 0 #9a9a94;
+        border-radius:2px;
+      }
+      .blissos-dock-item{
+        width:32px;
+        height:32px;
+        border-radius:2px;
+        border:1px solid transparent;
+        background:#e5e5e0;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        position:relative;
+        cursor:pointer;
+      }
+      .blissos-dock-item:hover{
+        border-color:#8d8d88;
+        background:#dcdcd7;
+      }
+      .blissos-dock-item .dock-indicator{
+        position:absolute;
+        bottom:-3px;
+        width:10px;
+        height:2px;
+        background:#2b2b2b;
+        opacity:0;
+      }
+      .blissos-dock-item.open .dock-indicator{
+        opacity:1;
+      }
       .btn:active{ filter:brightness(0.97); }
       .btn.pressed{
         border-top:2px solid var(--shadow-dark);
@@ -2526,6 +2844,21 @@
       </div>
 
       <div id="desktop" class="hidden">
+        <div id="blissosMenubar" class="blissos-menubar hidden" role="menubar" aria-label="BlissOS Menu Bar">
+          <div class="blissos-menu-left">
+            <button class="blissos-menu-brand" type="button" data-blissos-menu="blissos">BlissOS</button>
+            <button class="blissos-menu-item" type="button" data-blissos-menu="file">File</button>
+            <button class="blissos-menu-item" type="button" data-blissos-menu="edit">Edit</button>
+            <button class="blissos-menu-item" type="button" data-blissos-menu="view">View</button>
+            <button class="blissos-menu-item" type="button" data-blissos-menu="special">Special</button>
+            <button class="blissos-menu-item" type="button" data-blissos-menu="help">Help</button>
+          </div>
+          <div class="blissos-menu-right">
+            <span class="blissos-menu-status">Classic</span>
+            <span class="blissos-menu-clock" id="blissosClock"></span>
+          </div>
+        </div>
+        <div id="blissosDock" class="blissos-dock hidden" role="toolbar" aria-label="BlissOS Dock"></div>
         <div class="desktop-area" id="desktopArea">
           <div class="icons" id="iconGrid"></div>
           <div class="drag-layer" id="dragLayer"></div>
@@ -2623,6 +2956,7 @@
           tab: 'general',
           darkMode: false,
           retroGlow: false,
+          theme: 'bliss98',
         },
         theme: {
           preset: 'default',
@@ -2682,6 +3016,8 @@
       const TITLEBAR_KEY = 'bliss98_titlebar_theme';
       const THEME_PRESET_KEY = 'bliss98_theme_preset';
       const THEME_CUSTOM_KEY = 'bliss98_theme_custom';
+      const OS_THEME_KEY = 'bliss98_os_theme';
+      const OS_PROFILE_KEY = 'bliss98_os_profiles';
       const FOLDER_KEY = 'bliss98_folders';
       const GAMES_VIEW_KEY = 'bliss98_games_view';
       const GAMES_BIG_KEY = 'bliss98_games_big';
@@ -2719,6 +3055,14 @@ const MOBILE_CONTROLS_KEY = 'bliss98_mobile_controls_mode';
         }
       };
       const WALLPAPERS = [
+        {
+          id: 'blissos',
+          labelKey: 'wallpaper.blissos',
+          background: 'url("./assets/BlissOS/BlissOSWall.png")',
+          size: 'cover',
+          repeat: 'no-repeat',
+          position: 'center'
+        },
         {
           id: 'classic',
           labelKey: 'wallpaper.classic',
@@ -3028,29 +3372,47 @@ function getIconLabel(app){
   return state.iconLabels[app.id] || t(app.titleKey);
 }
 
+function getThemedIconHtml(item, label, size=32){
+  const theme = state.settings.theme || 'bliss98';
+  const iconFile = typeof item.iconFile === 'function' ? item.iconFile() : item.iconFile;
+  if(theme === 'blissos'){
+    if(iconFile){
+      const blissSrc = getBlissOSAssetPath(iconFile);
+      const fallback = getBlissOSFallbackPath(blissSrc);
+      return `<img class="pixel" src="${blissSrc}" data-fallback-src="${fallback}" width="${size}" height="${size}" alt="${label}" style="display:block;" />`;
+    }
+    return iconSVG(item.icon || 'file', 'blissos');
+  }
+  return iconFile
+    ? `<img class="pixel" src="${iconFile}" width="${size}" height="${size}" alt="${label}" style="display:block;" />`
+    : iconSVG(item.icon);
+}
+
 function getTrashIconFile(){
-  return state.trash && state.trash.size > 0
+  const base = state.trash && state.trash.size > 0
     ? './assets/icons/trash2.png'
     : './assets/icons/trash1.png';
+  return state.settings.theme === 'blissos' ? getBlissOSAssetPath(base) : base;
 }
 
 function updateTrashIconUI(){
   const trashFile = getTrashIconFile();
+  const fallback = getBlissOSFallbackPath(trashFile);
 
   const desktopIcon = document.querySelector('.icon[data-app-id="trash"] img');
-  if(desktopIcon) desktopIcon.src = trashFile;
+  if(desktopIcon) setImageWithFallback(desktopIcon, trashFile, fallback);
 
   const startIcon = document.querySelector('#startMenu .menu-item img[data-app-id="trash"]');
-  if(startIcon) startIcon.src = trashFile;
+  if(startIcon) setImageWithFallback(startIcon, trashFile, fallback);
 
   const win = document.getElementById('win_trash');
   if(win){
     const titleIcon = win.querySelector('.title-left img');
-    if(titleIcon) titleIcon.src = trashFile;
+    if(titleIcon) setImageWithFallback(titleIcon, trashFile, fallback);
   }
 
   const taskBtn = document.querySelector('#taskButtons img[data-app-id="trash"]');
-  if(taskBtn) taskBtn.src = trashFile;
+  if(taskBtn) setImageWithFallback(taskBtn, trashFile, fallback);
 }
 
 function buildOccupied(excludeIds, metrics){
@@ -6769,6 +7131,7 @@ function setRetroGlow(enabled){
   state.settings.retroGlow = !!enabled;
   applyRetroGlow();
   updateRetroGlowButtons();
+  syncOsProfile();
 }
 
 function updateDarkModeButtons(root=document){
@@ -6782,7 +7145,8 @@ function setDarkMode(enabled, fromPreset=false){
   state.settings.darkMode = !!enabled;
   applyDarkMode();
   updateDarkModeButtons();
-  if(!fromPreset && !themeApplying) setThemePresetCustom();
+  if(!fromPreset && !themeApplying && state.settings.theme !== 'blissos') setThemePresetCustom();
+  syncOsProfile();
 }
 
 function loadScanlines(){
@@ -6901,11 +7265,17 @@ function loadWallpaper(){
   }
 }
 
-function updateWallpaperButtons(root=document){
-  $$('[data-set-wallpaper]', root).forEach(btn => {
-    btn.classList.toggle('pressed', btn.dataset.setWallpaper === state.wallpaper);
-  });
-}
+      function updateWallpaperButtons(root=document){
+        $$('[data-set-wallpaper]', root).forEach(btn => {
+          btn.classList.toggle('pressed', btn.dataset.setWallpaper === state.wallpaper);
+        });
+      }
+
+      function updateOsThemeButtons(root=document){
+        $$('[data-set-os-theme]', root).forEach(btn => {
+          btn.classList.toggle('pressed', btn.dataset.setOsTheme === state.settings.theme);
+        });
+      }
 
 let themeApplying = false;
 
@@ -6937,6 +7307,127 @@ function saveGamesBigIcons(){
   try{
     localStorage.setItem(GAMES_BIG_KEY, state.games.bigIcons ? '1' : '0');
   } catch {}
+}
+
+function loadOsTheme(){
+  try{
+    const raw = localStorage.getItem(OS_THEME_KEY);
+    return raw === 'blissos' ? 'blissos' : 'bliss98';
+  } catch {
+    return 'bliss98';
+  }
+}
+
+function saveOsTheme(){
+  try{
+    localStorage.setItem(OS_THEME_KEY, state.settings.theme);
+  } catch {}
+}
+
+function getDefaultOsProfiles(){
+  return {
+    bliss98: {
+      wallpaper: loadWallpaper(),
+      themePreset: loadThemePreset(),
+      titlebar: loadTitlebarTheme(),
+      darkMode: loadDarkMode(),
+      retroGlow: loadRetroGlow(),
+    },
+    blissos: {
+      wallpaper: 'blissos',
+      themePreset: 'default',
+      titlebar: 'defaultBlue',
+      darkMode: false,
+      retroGlow: false,
+    },
+  };
+}
+
+function loadOsProfiles(){
+  try{
+    const raw = localStorage.getItem(OS_PROFILE_KEY);
+    if(raw){
+      const parsed = JSON.parse(raw);
+      const defaults = getDefaultOsProfiles();
+      return {
+        bliss98: { ...defaults.bliss98, ...(parsed.bliss98 || {}) },
+        blissos: { ...defaults.blissos, ...(parsed.blissos || {}) },
+      };
+    }
+  } catch {}
+  return getDefaultOsProfiles();
+}
+
+function saveOsProfiles(){
+  try{
+    localStorage.setItem(OS_PROFILE_KEY, JSON.stringify(state.settings.osProfiles || getDefaultOsProfiles()));
+  } catch {}
+}
+
+function syncOsProfile(){
+  if(!state.settings.osProfiles) state.settings.osProfiles = getDefaultOsProfiles();
+  const theme = state.settings.theme || 'bliss98';
+  state.settings.osProfiles[theme] = {
+    wallpaper: state.wallpaper,
+    themePreset: state.theme.preset,
+    titlebar: state.theme.titlebar,
+    darkMode: state.settings.darkMode,
+    retroGlow: state.settings.retroGlow,
+  };
+  saveOsProfiles();
+}
+
+function applyOsProfile(theme){
+  if(!state.settings.osProfiles) state.settings.osProfiles = getDefaultOsProfiles();
+  const profile = state.settings.osProfiles[theme] || getDefaultOsProfiles()[theme];
+  state.wallpaper = profile.wallpaper || (theme === 'blissos' ? 'blissos' : 'classic');
+  state.theme.preset = profile.themePreset || 'default';
+  state.theme.titlebar = profile.titlebar || 'defaultBlue';
+  if(theme === 'blissos' && state.theme.titlebar === 'blank'){
+    state.theme.titlebar = 'defaultBlue';
+  }
+  state.settings.darkMode = !!profile.darkMode;
+  state.settings.retroGlow = !!profile.retroGlow;
+
+  if(theme === 'bliss98'){
+    if(state.theme.preset !== 'custom'){
+      setThemePreset(state.theme.preset, { init:true });
+    } else {
+      applyThemePalette();
+      applyTitlebarTheme();
+    }
+  } else {
+    applyThemePalette();
+    applyTitlebarTheme();
+  }
+  applyWallpaper(state.wallpaper);
+  applyDarkMode();
+  applyRetroGlow();
+  updateWallpaperButtons();
+  updateOsThemeButtons();
+}
+
+function applyOsTheme(){
+  const theme = state.settings.theme || 'bliss98';
+  document.body.dataset.theme = theme;
+  const blissos = theme === 'blissos';
+  const menubar = $('#blissosMenubar');
+  const dock = $('#blissosDock');
+  if(menubar) menubar.classList.toggle('hidden', !blissos);
+  if(dock) dock.classList.toggle('hidden', !blissos);
+  if(!blissos) closeStartMenu();
+  updateOsThemeButtons();
+  renderBlissOSDock();
+  renderIcons();
+  renderTaskButtons();
+}
+
+function setOsTheme(theme){
+  syncOsProfile();
+  state.settings.theme = (theme === 'blissos') ? 'blissos' : 'bliss98';
+  saveOsTheme();
+  applyOsProfile(state.settings.theme);
+  applyOsTheme();
 }
 
 function loadRetroGlow(){
@@ -6984,6 +7475,7 @@ function setThemePresetCustom(){
     updateThemeButtons();
     updateThemeThumbs();
   }
+  syncOsProfile();
 }
 
 function applyWallpaper(id){
@@ -7005,10 +7497,13 @@ function applyWallpaper(id){
       desktop.style.backgroundPosition = wp.position || 'top left';
     }
   }
-  try{ localStorage.setItem(WALLPAPER_KEY, wp.id); } catch {}
+  if(state.settings.theme !== 'blissos'){
+    try{ localStorage.setItem(WALLPAPER_KEY, wp.id); } catch {}
+  }
   updateWallpaperButtons();
   renderCtxMenu();
-  if(!themeApplying) setThemePresetCustom();
+  if(!themeApplying && state.settings.theme !== 'blissos') setThemePresetCustom();
+  syncOsProfile();
 }
 
 function setTitlebarTheme(id, fromPreset=false){
@@ -7016,12 +7511,17 @@ function setTitlebarTheme(id, fromPreset=false){
   saveTitlebarTheme();
   applyTitlebarTheme();
   updateTitlebarButtons();
-  if(!fromPreset && !themeApplying) setThemePresetCustom();
+  if(!fromPreset && !themeApplying && state.settings.theme !== 'blissos') setThemePresetCustom();
+  syncOsProfile();
 }
 
 function applyTitlebarTheme(){
-  const cur = TITLEBAR_THEMES[state.theme.titlebar] || TITLEBAR_THEMES.defaultBlue;
-  document.body.classList.toggle('titlebar-blank', state.theme.titlebar === 'blank');
+  const isBlissOS = state.settings.theme === 'blissos';
+  const isBlank = state.theme.titlebar === 'blank';
+  const cur = (isBlissOS && isBlank)
+    ? TITLEBAR_THEMES.defaultBlue
+    : (TITLEBAR_THEMES[state.theme.titlebar] || TITLEBAR_THEMES.defaultBlue);
+  document.body.classList.toggle('titlebar-blank', !isBlissOS && isBlank);
   document.body.style.setProperty('--title', cur.bar1);
   document.body.style.setProperty('--title2', cur.bar2);
   document.body.style.setProperty('--titlebar-text', cur.text);
@@ -7042,6 +7542,7 @@ function setThemePreset(id, opts={}){
   updateThemeButtons();
   updateThemeThumbs();
   if(!opts.init) renderCtxMenu();
+  syncOsProfile();
 }
 
 function loadCustomTheme(){
@@ -7848,6 +8349,10 @@ function installLongPress(el, getTarget){
           'settings.lang.pt': 'Português (BR)',
           'settings.appearanceTab': 'Appearance',
           'settings.appearanceDesc': 'Customize how BLISS 98 looks.',
+          'settings.osTheme.title': 'Choose your OS',
+          'settings.osTheme.desc': 'Switch between Bliss 98 and BlissOS.',
+          'settings.osTheme.bliss98': 'Bliss 98',
+          'settings.osTheme.blissos': 'BlissOS',
           'settings.themes.title': 'Themes',
           'settings.themes.desc': 'Select a theme to change wallpaper, title color, and dark mode.',
           'settings.themes.current': 'Current theme:',
@@ -8056,6 +8561,8 @@ function installLongPress(el, getTarget){
           'dialog.trash.emptyAction': 'Empty Recycle Bin',
 
           'wallpaper.classic': 'Classic Teal',
+          'wallpaper.blissos': 'BlissOS Platinum',
+          'wallpaper.blissos': 'BlissOS Platinum',
           'wallpaper.bliss': 'Sunrise',
           'wallpaper.clouds': 'Clouds',
           'wallpaper.diev': 'Grid',
@@ -8284,6 +8791,10 @@ function installLongPress(el, getTarget){
           'settings.lang.pt': 'Português (BR)',
           'settings.appearanceTab': 'Aparência',
           'settings.appearanceDesc': 'Personalize o visual do BLISS 98.',
+          'settings.osTheme.title': 'Escolha seu OS',
+          'settings.osTheme.desc': 'Alterna entre Bliss 98 e BlissOS.',
+          'settings.osTheme.bliss98': 'Bliss 98',
+          'settings.osTheme.blissos': 'BlissOS',
           'settings.themes.title': 'Temas',
           'settings.themes.desc': 'Selecione um tema para mudar papel de parede, cor do topo e dark mode.',
           'settings.themes.current': 'Tema atual:',
@@ -8492,6 +9003,7 @@ function installLongPress(el, getTarget){
           'dialog.trash.emptyAction': 'Esvaziar Lixeira',
 
           'wallpaper.classic': 'Teal clássico',
+          'wallpaper.blissos': 'BlissOS Platinum',
           'wallpaper.bliss': 'Nascer do Sol',
           'wallpaper.clouds': 'Nuvens',
           'wallpaper.diev': 'Grid',
@@ -9482,7 +9994,64 @@ function installLongPress(el, getTarget){
       });
       }
 
-      function iconSVG(type){
+      const BLISSOS_ICON_MAP = {
+        enabled: true,
+        base: './assets/BlissOS/',
+      };
+
+      function getBlissOSAssetPath(src){
+        if(!src || typeof src !== 'string') return null;
+        if(src.startsWith('./assets/BlissOS/')) return src;
+        if(src.startsWith('./assets/icons/')){
+          return src.replace('./assets/icons/', './assets/BlissOS/');
+        }
+        return src;
+      }
+
+      function getBlissOSFallbackPath(src){
+        if(!src || typeof src !== 'string') return null;
+        if(src.startsWith('./assets/BlissOS/')){
+          return src.replace('./assets/BlissOS/', './assets/icons/');
+        }
+        return src;
+      }
+
+      function setImageWithFallback(img, primary, fallback){
+        if(!img) return;
+        if(primary) img.src = primary;
+        if(fallback) img.dataset.fallbackSrc = fallback;
+        img.dataset.failed = '';
+      }
+
+      function iconSVG(type, theme){
+        const activeTheme = theme || document.body.dataset.theme || 'bliss98';
+        if(activeTheme === 'blissos'){
+          const common = `viewBox="0 0 18 18" class="pixel" aria-hidden="true"`;
+          switch(type){
+            case 'folder':
+              return `<svg ${common}><rect width="18" height="18" fill="none"/><path d="M2 5h6l2 2h6v8H2z" fill="#f6d37a" stroke="#6f5a2a"/><path d="M2 5h6l2 2H2z" fill="#ffdfa0" stroke="#6f5a2a"/></svg>`;
+            case 'music':
+              return `<svg ${common}><rect x="2" y="2" width="14" height="14" rx="3" fill="#f2f2ef" stroke="#7f7f79"/><path d="M10 5v6.4a2 2 0 1 1-1-1.7V6h-3V5z" fill="#3a3a3a"/></svg>`;
+            case 'art':
+              return `<svg ${common}><rect x="2" y="2" width="14" height="14" rx="3" fill="#f2f2ef" stroke="#7f7f79"/><rect x="4" y="4" width="10" height="10" fill="#d6d4cd" stroke="#7f7f79"/><path d="M5 12l2-2 2 2 2-3 3 3" stroke="#5a6a7a" stroke-width="1" fill="none"/></svg>`;
+            case 'game':
+              return `<svg ${common}><rect x="2" y="4" width="14" height="10" rx="3" fill="#d9d5cc" stroke="#7f7f79"/><rect x="6" y="7" width="1" height="4" fill="#2b2b2b"/><rect x="5" y="8" width="3" height="1" fill="#2b2b2b"/><circle cx="12.5" cy="8" r="1.2" fill="#d05a6c"/><circle cx="13.8" cy="10" r="1.2" fill="#5a8fd0"/></svg>`;
+            case 'video':
+              return `<svg ${common}><rect x="2" y="4" width="12" height="10" rx="2" fill="#f2f2ef" stroke="#7f7f79"/><path d="M14 7l2-1v6l-2-1z" fill="#4a4a4a"/></svg>`;
+            case 'info':
+              return `<svg ${common}><rect x="2" y="2" width="14" height="14" rx="3" fill="#f2f2ef" stroke="#7f7f79"/><circle cx="9" cy="6" r="1.4" fill="#4a4a4a"/><rect x="8" y="8" width="2" height="6" fill="#4a4a4a"/></svg>`;
+            case 'mail':
+              return `<svg ${common}><rect x="2" y="4" width="14" height="10" rx="2" fill="#f2f2ef" stroke="#7f7f79"/><path d="M2 5l7 5 7-5" fill="none" stroke="#6a6a64"/></svg>`;
+            case 'user':
+              return `<svg ${common}><rect x="2" y="2" width="14" height="14" rx="3" fill="#f2f2ef" stroke="#7f7f79"/><circle cx="9" cy="7" r="2.2" fill="#4a4a4a"/><path d="M4.5 14c1.5-2.4 7.5-2.4 9 0" stroke="#4a4a4a" fill="none"/></svg>`;
+            case 'settings':
+              return `<svg ${common}><rect x="2" y="2" width="14" height="14" rx="3" fill="#f2f2ef" stroke="#7f7f79"/><circle cx="9" cy="9" r="3" fill="#cfcfc8" stroke="#7f7f79"/><path d="M9 4v2M9 12v2M4 9h2M12 9h2" stroke="#5a5a54"/></svg>`;
+            case 'trash':
+              return `<svg ${common}><rect x="3" y="5" width="12" height="10" rx="1" fill="#f2f2ef" stroke="#7f7f79"/><rect x="5" y="3" width="8" height="2" fill="#cfcfc8" stroke="#7f7f79"/><path d="M6 7v6M9 7v6M12 7v6" stroke="#6a6a64"/></svg>`;
+            default:
+              return `<svg ${common}><rect x="2" y="2" width="14" height="14" rx="3" fill="#f2f2ef" stroke="#7f7f79"/><rect x="5" y="5" width="8" height="8" fill="#6a7a8a"/></svg>`;
+          }
+        }
         const common = `viewBox="0 0 16 16" class="pixel" aria-hidden="true"`;
         switch(type){
           case 'folder':
@@ -10286,7 +10855,7 @@ Eu sou o buffalo branco extinto`
               return `
                 <button class="games-item games-card" type="button" data-game-id="snake">
                   <div class="games-icon pixel">
-                    <img class="pixel" src="./assets/icons/snake.png" width="64" height="64" alt="${t('games.snake')}" style="display:block;" />
+                    ${getThemedIconHtml({ icon:'game', id:'snake', iconFile:'./assets/icons/snake.png' }, t('games.snake'), 64)}
                   </div>
                   <span data-i18n="games.snake">Snake</span>
                 </button>
@@ -10296,7 +10865,7 @@ Eu sou o buffalo branco extinto`
               return `
                 <button class="games-item games-card" type="button" data-game-id="dope-skate">
                   <div class="games-icon pixel">
-                    <img class="pixel" src="./assets/icons/dope-skate.png" width="64" height="64" alt="${t('games.dopeSkate')}" style="display:block;" />
+                    ${getThemedIconHtml({ icon:'game', id:'dope-skate', iconFile:'./assets/icons/dope-skate.png' }, t('games.dopeSkate'), 64)}
                   </div>
                   <span data-i18n="games.dopeSkate">Dope Skate</span>
                 </button>
@@ -10305,10 +10874,7 @@ Eu sou o buffalo branco extinto`
             const app = getAppById(id);
             if(!app) return '';
             const label = t(app.titleKey);
-            const iconFile = typeof app.iconFile === 'function' ? app.iconFile() : app.iconFile;
-            const iconHtml = iconFile
-              ? `<img class="pixel" src="${iconFile}" width="32" height="32" alt="${label}" style="display:block;" />`
-              : iconSVG(app.icon);
+            const iconHtml = getThemedIconHtml(app, label, 32);
             return `
               <button class="games-item games-card" type="button" data-game-id="${id}">
                 <div class="games-icon pixel">${iconHtml}</div>
@@ -10397,12 +10963,9 @@ Eu sou o buffalo branco extinto`
           const grid = items.map(id => {
             const app = APPS.find(a => a.id === id);
             const label = app ? getIconLabel(app) : id;
-            const iconFile = app && app.iconFile
-              ? (typeof app.iconFile === 'function' ? app.iconFile() : app.iconFile)
-              : null;
-            const iconHtml = iconFile
-              ? `<img class="pixel" src="${iconFile}" width="32" height="32" alt="${label}" style="display:block;" />`
-              : iconSVG(app ? app.icon : 'file');
+            const iconHtml = app
+              ? getThemedIconHtml(app, label, 32)
+              : iconSVG('file', state.settings.theme);
             return `
                   <button class="trash-item" type="button" data-trash-id="${id}">
                 <div class="pixel" style="width:34px;height:34px;display:flex;align-items:center;justify-content:center;">${iconHtml}</div>
@@ -10479,6 +11042,14 @@ Eu sou o buffalo branco extinto`
                   <div>
                     <strong data-i18n="settings.appearanceTab">Appearance</strong>
                     <div class="tiny" data-i18n="settings.appearanceDesc">Customize how BLISS 98 looks.</div>
+                  </div>
+                </div>
+                <div class="settings-block" id="settingsOsTheme">
+                  <strong data-i18n="settings.osTheme.title">Choose your OS</strong>
+                  <p style="margin:6px 0 10px 0;" data-i18n="settings.osTheme.desc">Switch between Bliss 98 and BlissOS.</p>
+                  <div class="settings-actions">
+                    <button class="btn bevel" type="button" data-set-os-theme="bliss98" data-i18n="settings.osTheme.bliss98">Bliss 98</button>
+                    <button class="btn bevel" type="button" data-set-os-theme="blissos" data-i18n="settings.osTheme.blissos">BlissOS</button>
                   </div>
                 </div>
                 <div class="settings-block" id="settingsThemes">
@@ -11324,10 +11895,9 @@ function renderIcons(){
     }
 
     const label = (type === 'virtual') ? t(item.titleKey) : getIconLabel(item);
-    const iconFile = type === 'virtual' ? item.iconFile : (typeof item.iconFile === 'function' ? item.iconFile() : item.iconFile);
-    const iconHtml = iconFile
-      ? `<img class="pixel" src="${iconFile}" width="32" height="32" alt="${label}" style="display:block;" />`
-      : iconSVG(item.icon);
+    const iconHtml = (type === 'virtual')
+      ? getThemedIconHtml({ icon: 'game', id: item.id, iconFile: item.iconFile }, label, 32)
+      : getThemedIconHtml(item, label, 32);
 
           el.innerHTML = `
             <div class="pixel" style="width:34px;height:34px;display:flex;align-items:center;justify-content:center;">${iconHtml}</div>
@@ -11734,9 +12304,8 @@ function renderIcons(){
         APPS.filter(app => app.showInStart !== false).forEach(app => {
           const item = document.createElement('div');
           item.className = 'menu-item';
-          const iconFile = typeof app.iconFile === 'function' ? app.iconFile() : app.iconFile;
           item.innerHTML = `
-            <div style="width:18px;height:18px;display:flex;align-items:center;justify-content:center;">${iconFile ? `<img class="pixel" src="${iconFile}" width="16" height="16" alt="" style="display:block;" data-app-id="${app.id}" />` : iconSVG(app.icon)}</div>
+            <div style="width:18px;height:18px;display:flex;align-items:center;justify-content:center;">${getThemedIconHtml(app, t(app.titleKey), 16)}</div>
             <div>${t(app.titleKey)}</div>
           `;
           item.addEventListener('click', ()=>{ openApp(app.id); closeStartMenu(); });
@@ -12140,7 +12709,7 @@ function autoFitWindow(winEl, appId){
           <div class="frame bevel">
             <div class="titlebar" data-drag="1">
               <div class="title-left">
-                <span style="width:16px;height:16px;display:inline-flex;">${wstate.iconFile ? `<img class="pixel" src="${wstate.iconFile}" width="16" height="16" alt="" style="display:block;" />` : iconSVG(wstate.icon)}</span>
+                <span style="width:16px;height:16px;display:inline-flex;">${getThemedIconHtml(wstate, wstate.title, 16)}</span>
                 <strong>${wstate.title}</strong>
               </div>
               <div class="title-controls">
@@ -12457,7 +13026,7 @@ function autoFitWindow(winEl, appId){
           b.style.whiteSpace = 'nowrap';
           b.style.textOverflow = 'ellipsis';
           b.innerHTML = `
-            <span style="width:16px;height:16px;display:inline-flex;">${w.iconFile ? `<img class="pixel" src="${w.iconFile}" width="16" height="16" alt="" style="display:block;" data-app-id="${w.id}" />` : iconSVG(w.icon)}</span>
+            <span style="width:16px;height:16px;display:inline-flex;">${getThemedIconHtml(w, w.title, 16)}</span>
             <span>${w.title}</span>
           `;
           b.addEventListener('click', (e)=>{
@@ -12495,10 +13064,59 @@ function autoFitWindow(winEl, appId){
           });
           host.appendChild(b);
         });
+        renderBlissOSDock();
+      }
+
+      function renderBlissOSDock(){
+        const dock = $('#blissosDock');
+        if(!dock) return;
+        const blissos = state.settings.theme === 'blissos';
+        dock.classList.toggle('hidden', !blissos);
+        if(!blissos){
+          dock.innerHTML = '';
+          return;
+        }
+        const order = ['clothes','music','art','games','videos','about','contact','diev','settings','trash'];
+        const openIds = new Set(Array.from(state.windows.values()).map(w => w.id));
+        const apps = order.map(id => getAppById(id)).filter(Boolean);
+        const inner = document.createElement('div');
+        inner.className = 'blissos-dock-inner';
+        apps.forEach(app => {
+          const btn = document.createElement('button');
+          btn.className = 'blissos-dock-item';
+          btn.type = 'button';
+          btn.dataset.appId = app.id;
+          if(openIds.has(app.id)) btn.classList.add('open');
+          const label = getIconLabel(app);
+          btn.title = label;
+          btn.innerHTML = `
+            <span class="pixel" style="width:20px;height:20px;display:flex;align-items:center;justify-content:center;">${getThemedIconHtml(app, label, 20)}</span>
+            <span class="dock-indicator"></span>
+          `;
+          btn.addEventListener('click', (e)=>{
+            e.stopPropagation();
+            if(state.windows.has(app.id)){
+              const win = state.windows.get(app.id);
+              if(win.minimized){
+                win.minimized = false;
+                const el = document.getElementById(`win_${app.id}`);
+                if(el) el.classList.remove('hidden');
+              }
+              focusWindow(app.id);
+            } else {
+              openApp(app.id);
+            }
+          });
+          inner.appendChild(btn);
+        });
+        dock.innerHTML = '';
+        dock.appendChild(inner);
       }
 
       function tickClock(){
         $('#clock').textContent = getDisplayTime();
+        const blissClock = $('#blissosClock');
+        if(blissClock) blissClock.textContent = getDisplayTime();
         setTimeout(tickClock, 1000);
       }
 
@@ -12702,6 +13320,10 @@ function autoFitWindow(winEl, appId){
         if(retroBtn && retroBtn.dataset && retroBtn.dataset.setRetro){
           setRetroGlow(retroBtn.dataset.setRetro === 'on');
         }
+        const osThemeBtn = e.target.closest && e.target.closest('[data-set-os-theme]');
+        if(osThemeBtn && osThemeBtn.dataset && osThemeBtn.dataset.setOsTheme){
+          setOsTheme(osThemeBtn.dataset.setOsTheme);
+        }
         const titleBtn = e.target.closest && e.target.closest('[data-set-titlebar]');
         if(titleBtn && titleBtn.dataset && titleBtn.dataset.setTitlebar){
           setTitlebarTheme(titleBtn.dataset.setTitlebar);
@@ -12782,6 +13404,16 @@ function autoFitWindow(winEl, appId){
         }
       });
 
+      document.addEventListener('error', (e)=>{
+        const img = e.target;
+        if(!img || img.tagName !== 'IMG') return;
+        const fallback = img.dataset ? img.dataset.fallbackSrc : null;
+        if(!fallback) return;
+        if(img.dataset.failed === '1') return;
+        img.dataset.failed = '1';
+        img.src = fallback;
+      }, true);
+
       (function init(){
         const savedLang = localStorage.getItem('bliss98_lang') || 'en';
         state.lang = (savedLang === 'pt') ? 'pt' : 'en';
@@ -12795,6 +13427,8 @@ function autoFitWindow(winEl, appId){
         state.settings.scanlines = loadScanlines();
         state.settings.darkMode = loadDarkMode();
         state.settings.retroGlow = loadRetroGlow();
+        state.settings.theme = loadOsTheme();
+        state.settings.osProfiles = loadOsProfiles();
         state.theme.preset = loadThemePreset();
         state.theme.titlebar = loadTitlebarTheme();
         if(state.theme.titlebar === 'transparent') state.theme.titlebar = 'blank';
@@ -12817,18 +13451,11 @@ function autoFitWindow(winEl, appId){
         state.iconLabels = loadIconLabels();
         state.trashSelection = new Set();
 
-        if(state.theme.preset && state.theme.preset !== 'custom'){
-          setThemePreset(state.theme.preset, { init:true });
-        } else {
-          applyThemePalette();
-          applyTitlebarTheme();
-        }
-
         // Apply translations immediately (default is English)
         applyI18n();
-        applyDarkMode();
+        applyOsProfile(state.settings.theme);
         applyScanlines();
-        applyRetroGlow();
+        applyOsTheme();
         updateTrashIconUI();
 
         initSfx();
