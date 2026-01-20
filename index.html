@@ -170,7 +170,15 @@
   .btn, .menu-item, .ctx-item,
   .games-tab, .games-item, .music-item,
   .blissos-menu-item, .blissos-menu-brand, .blissos-appmenu,
-  .wctl{
+  .wctl, .settings-tab,
+  [data-set-theme], [data-set-lang], [data-set-wallpaper], [data-set-animations],
+  [data-set-scanlines], [data-set-darkmode], [data-set-blissos-darkmode], [data-set-retro],
+  [data-set-clock], [data-set-oldcrt], [data-set-os-theme], [data-set-titlebar],
+  [data-theme-custom], [data-games-tab], [data-music-id], [data-poem-id], [data-trash-id],
+  [data-video-id], [data-trash-action], [data-modal-action], [data-menu-action],
+  [data-blissos-action], [data-blissos-open-app], [data-blissos-settings-tab],
+  [data-blissos-appmenu-action], [data-blissos-appmenu-app], [data-poetry-action],
+  [data-mp-action], [data-mp-pick], [data-videos-action], [data-sound-slider]{
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
   }
@@ -203,6 +211,10 @@
   body[data-theme="blissos"] .blissos-apple-menu .menu-item:active{
     background:var(--blissos-highlight);
     color:var(--blissos-text-invert);
+  }
+  /* Ensure input sliders respond immediately */
+  input[type="range"]{
+    touch-action: manipulation;
   }
 }
 
@@ -4160,21 +4172,10 @@ function renderGamesWindow(){
         state.games.selectedId = id;
         items.forEach(btn => btn.classList.toggle('selected', btn === item));
       });
-      // On touch devices: single tap opens; on desktop: double-click opens
-      const isTouchDevice = () => (('ontouchstart' in window) || (navigator.maxTouchPoints > 0));
-      if(isTouchDevice()){
-        item.addEventListener('click', (e)=>{
-          if(e.detail === 1){
-            e.stopPropagation();
-            openGameFromHub(id);
-          }
-        });
-      } else {
-        item.addEventListener('dblclick', (e)=>{
-          e.stopPropagation();
-          openGameFromHub(id);
-        });
-      }
+      item.addEventListener('dblclick', (e)=>{
+        e.stopPropagation();
+        openGameFromHub(id);
+      });
       item.addEventListener('keydown', (e)=>{
         if(e.key === 'Enter' || e.key === ' '){
           e.preventDefault();
@@ -12725,10 +12726,6 @@ function getDisplayTime(){
       });
 
       document.addEventListener('dblclick', (e)=>{
-        // Skip double-click on touch devices (they use pointerdown instead)
-        const isTouchDevice = () => (('ontouchstart' in window) || (navigator.maxTouchPoints > 0));
-        if(isTouchDevice()) return;
-        
         const card = e.target.closest && e.target.closest('[data-music-id]');
         if(card && card.dataset && card.dataset.musicLink){
           e.preventDefault();
@@ -12894,24 +12891,14 @@ function renderIcons(){
               el.dataset.dragged = '0';
               return;
             }
-            const isTouchDevice = () => (('ontouchstart' in window) || (navigator.maxTouchPoints > 0));
-            const isSelected = el.classList.contains('selected');
-            if(isTouchDevice() && isSelected){
-              // On touch: if already selected, single tap opens
-              openIconById(id);
-              return;
-            }
-            selectIcon(id);
+      selectIcon(id);
     });
 
-          // Double click open (desktop only)
-          const isTouchDevice = () => (('ontouchstart' in window) || (navigator.maxTouchPoints > 0));
-          if(!isTouchDevice()){
-            el.addEventListener('dblclick', (e)=>{
-              e.stopPropagation();
-        openIconById(id);
-      });
-          }
+          // Double click open
+          el.addEventListener('dblclick', (e)=>{
+            e.stopPropagation();
+      openIconById(id);
+    });
 
     makeIconDraggable(el);
     el.addEventListener('contextmenu', (ev)=>{
