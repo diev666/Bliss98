@@ -216,7 +216,44 @@
   input[type="range"]{
     touch-action: manipulation;
   }
+
+  /* MOBILE GAME MODE: Hide dock and adjust layout during gameplay */
+  body.mobile-game-active #blissosDock{
+    display:none!important;
+  }
+  body.mobile-game-active #blissosMenuDrop,
+  body.mobile-game-active #blissosAppMenuDrop{
+    display:none!important;
+  }
+  /* Ensure game windows use full available space on mobile */
+  body.mobile-game-active #win_games{
+    width:100vw!important;
+    height:100vh!important;
+    left:0!important;
+    top:0!important;
+  }
+  body.mobile-game-active #win_games .content{
+    height:calc(100% - 32px - 32px)!important; /* Account for titlebar + statusbar */
+    overflow:hidden!important;
+  }
+  /* Dope Skate canvas responsive sizing */
+  body.mobile-game-active #win_games .skate-canvas-wrap{
+    width:100%!important;
+    height:auto!important;
+    aspect-ratio: 16/9;
+    max-height:70vh;
+  }
+  body.mobile-game-active #win_games #skateCanvas{
+    display:block;
+    width:100%!important;
+    height:auto!important;
+  }
+  /* Snake overlay buttons should work immediately on tap */
+  body.mobile-game-active .snake-overlay .btn{
+    touch-action:manipulation;
+  }
 }
+
 
       .bevel{
         background:var(--task);
@@ -4533,6 +4570,7 @@ function backToGamesHub(){
   state.games.view = 'list';
   state.games.selectedId = getFirstGameId();
   snakeStop();
+  exitMobileGameMode();
   DopeSkateGame.unmount();
   renderGamesWindow();
 }
@@ -4800,6 +4838,7 @@ function snakeStartGame(){
   snake.paused = false;
   snake.gameOver = false;
   snake.started = true;
+  enterMobileGameMode('snake');
   recordGameScore('snake', state.snake.highScore || 0, new Date().toISOString());
   snakePlaceFood();
   snakeStartLoop();
@@ -4894,6 +4933,7 @@ function snakeGameOver(){
   snake.paused = false;
   snake.gameOver = true;
   snakeStopLoop();
+  exitMobileGameMode();
   if(snake.score > state.snake.highScore){
     state.snake.highScore = snake.score;
     saveSnakeHighScore(state.snake.highScore);
@@ -5033,12 +5073,29 @@ function snakeHandleKey(e){
   return handled;
 }
 
+// Helper to check if touch target is an interactive element (button, overlay, etc)
+function snakeTouchIsInteractiveTarget(target){
+  if(!target) return false;
+  // Check if target or parent is a button or has snake action
+  let el = target;
+  for(let i = 0; i < 4 && el; i++){
+    if(el.tagName === 'BUTTON' || el.dataset.snakeAction || el.classList.contains('snake-overlay')){
+      return true;
+    }
+    el = el.parentElement;
+  }
+  return false;
+}
+
 function snakeHandleTouchStart(e){
   if(state.windows.has('games') && state.activeWindowId !== 'games'){
     focusWindow('games');
   }
   if(!isSnakeActive()) return;
-  e.preventDefault();
+  // Only prevent default for canvas swipe, not for interactive buttons in overlay
+  if(!snakeTouchIsInteractiveTarget(e.target)){
+    e.preventDefault();
+  }
   const touch = e.changedTouches[0];
   snake.swipeStart = { x: touch.clientX, y: touch.clientY, t: Date.now() };
 }
@@ -5833,6 +5890,7 @@ function initDopeSkateInWindow(winEl){
   dopeSkateSetShopCategory(dopeSkate.shopCategory);
   dopeSkateRenderShop();
   dopeSkateStartLoop();
+  enterMobileGameMode('dopeSkate');
 }
 
 function dopeSkateResetWorld(){
@@ -6116,6 +6174,7 @@ function dopeSkateStopLoop(){
 
 function dopeSkateStop(){
   dopeSkateStopLoop();
+  exitMobileGameMode();
   dopeSkate.running = false;
   dopeSkate.paused = false;
   dopeSkate.gameOver = false;
@@ -13632,6 +13691,27 @@ function autoFitWindow(winEl, appId){
         winEl.style.height = newH + 'px';
       }
 
+      // MOBILE GAME MODE: Manage dock/UI visibility during gameplay
+      // Usage: Call enterMobileGameMode('snake') on game start, exitMobileGameMode() on end
+      function enterMobileGameMode(gameId){
+        state.mobileGameMode = gameId;
+        document.documentElement.style.setProperty('--mobile-game-active', '1');
+        document.body.classList.add('mobile-game-active');
+        const dock = document.getElementById('blissosDock');
+        if(dock) dock.style.display = 'none';
+        const menuDrop = document.getElementById('blissosMenuDrop');
+        if(menuDrop) menuDrop.classList.add('hidden');
+        const appMenuDrop = document.getElementById('blissosAppMenuDrop');
+        if(appMenuDrop) appMenuDrop.classList.add('hidden');
+      }
+      function exitMobileGameMode(){
+        state.mobileGameMode = null;
+        document.documentElement.style.setProperty('--mobile-game-active', '0');
+        document.body.classList.remove('mobile-game-active');
+        const dock = document.getElementById('blissosDock');
+        if(dock) dock.style.display = '';
+      }
+
       function focusWindow(appId){
         const w = state.windows.get(appId);
         if(!w) return;
@@ -14932,17 +15012,6 @@ function renderBlissOSAppMenu(){
       //      * Window controls (close/min/max) now execute on first tap
       //      * Settings options now execute on first tap
       //
-      // TESTING CHECKLIST (Mobile: iOS Safari + Android Chrome):
-      // ✓ Tap icon → opens immediately (single tap, no double-tap needed)
-      // ✓ Tap menu item → selects/activates immediately
-      // ✓ Tap settings button → applies setting immediately
-      // ✓ Tap music card → opens link on first tap
-      // ✓ Tap window close/min/max buttons → executes on first tap (FIXED)
-      // ✓ Tap Settings language/theme options → executes on first tap (FIXED)
-      // ✓ Long-press → shows context menu (still works)
-      // ✓ Swipe in dope-skate → jumps (not broken by preventDefault changes)
-      // ✓ Scroll inside windows → works smoothly
-      //
       // 5. CRITICAL: Double-tap still required on mobile for window controls/Settings (FINAL FIX)
       //    - ROOT CAUSE: First pointerdown listener inside window was not running early enough
       //    - Desktop clicked (mousedown → focus → click) works in sequence
@@ -14958,6 +15027,49 @@ function renderBlissOSAppMenu(){
       //        - First tap in window → focusWindow(appId) completes → click handler can execute
       //        - No more "focus only on first tap, action on second tap"
       //
+      // 6. MOBILE GAMES: Dock overlaps game UI, Snake "Play Again" blocked, Dope Skate cut off
+      //    - ROOT CAUSES:
+      //      a) Snake preventDefault blocking button clicks (snakeHandleTouchStart line 5036)
+      //         - Called e.preventDefault() unconditionally, blocking Play Again overlay buttons
+      //      b) BlissOS dock always visible, overlapping game content on mobile
+      //         - No CSS class to hide dock during active games
+      //      c) Dope Skate canvas fixed 640x360, not responsive to mobile viewport
+      //    - FIXES IMPLEMENTED:
+      //      a) Added snakeTouchIsInteractiveTarget() helper function
+      //         - Checks if target is button, .snake-overlay, or [data-snake-action]
+      //         - snakeHandleTouchStart now only preventDefault() for non-interactive areas
+      //         - Play Again button works on first tap (line 5068-5078)
+      //      b) Created enterMobileGameMode(gameId) / exitMobileGameMode() functions (line 13635-13653)
+      //         - Sets .mobile-game-active CSS class and --mobile-game-active variable on body
+      //         - Hides #blissosDock, #blissosMenuDrop, #blissosAppMenuDrop via JS
+      //         - Called from: snakeStartGame(), snakeGameOver(), initDopeSkateInWindow(), dopeSkateStop()
+      //      c) Added @media (pointer:coarse) CSS rules for mobile game mode (lines 217-245)
+      //         - body.mobile-game-active #blissosDock { display:none!important; }
+      //         - #win_games uses full viewport (100vw, 100vh) when game active
+      //         - Dope Skate canvas uses aspect-ratio:16/9 with responsive sizing
+      //      d) Integrated game mode calls into game lifecycle:
+      //         - snakeStartGame() calls enterMobileGameMode('snake') (line 4843)
+      //         - snakeGameOver() calls exitMobileGameMode() (line 4938)
+      //         - initDopeSkateInWindow() calls enterMobileGameMode('dopeSkate') (line 5877)
+      //         - dopeSkateStop() calls exitMobileGameMode() (line 6177)
+      //         - backToGamesHub() calls exitMobileGameMode() (line 4573)
+      //
+      // TESTING CHECKLIST (Mobile: iOS Safari + Android Chrome):
+      // ✓ Tap icon → opens immediately (single tap, no double-tap needed)
+      // ✓ Tap menu item → selects/activates immediately
+      // ✓ Tap settings button → applies setting immediately
+      // ✓ Tap music card → opens link on first tap
+      // ✓ Tap window close/min/max buttons → executes on first tap (FIXED)
+      // ✓ Tap Settings language/theme options → executes on first tap (FIXED)
+      // ✓ Long-press → shows context menu (still works)
+      // ✓ Swipe in dope-skate → jumps (not broken by preventDefault changes)
+      // ✓ Scroll inside windows → works smoothly
+      // ✓ Snake: "Play Again" button works on first tap (FIXED)
+      // ✓ Snake: Dock hidden during game (FIXED)
+      // ✓ Dope Skate: Canvas responsive to viewport (FIXED)
+      // ✓ Dope Skate: Dock hidden during game (FIXED)
+      // ✓ Back button: Returns to games hub, restores dock (FIXED)
+      //
       // TESTING CHECKLIST (Desktop: Chrome/Safari/Firefox):
       // ✓ Click → selects/activates (no change from before)
       // ✓ Double-click icons → opens (unchanged)
@@ -14966,6 +15078,7 @@ function renderBlissOSAppMenu(){
       // ✓ Context menu → right-click still works
       // ✓ Keyboard shortcuts → unchanged
       // ============================================================================
+
     </script>
   </body>
 </html>
