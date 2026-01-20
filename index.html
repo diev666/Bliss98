@@ -1287,13 +1287,16 @@
         font-size:14px;
         color:rgba(0,0,0,0.22);
         text-shadow:0 1px 0 rgba(255,255,255,0.2);
-        pointer-events:none;
+        pointer-events:auto;
         user-select:none;
+        border:0;
+        background:transparent;
+        padding:0;
       }
-      .ps1-dpad-corner.ne{ top:6px; right:6px; }
-      .ps1-dpad-corner.se{ bottom:6px; right:6px; }
-      .ps1-dpad-corner.sw{ bottom:6px; left:6px; }
-      .ps1-dpad-corner.nw{ top:6px; left:6px; }
+      .ps1-dpad-corner.ne{ top:4px; right:4px; }
+      .ps1-dpad-corner.se{ bottom:4px; right:4px; }
+      .ps1-dpad-corner.sw{ bottom:4px; left:4px; }
+      .ps1-dpad-corner.nw{ top:4px; left:4px; }
       .ps1-dpad-btn{
         position:absolute;
         width:34px;
@@ -3272,10 +3275,10 @@ function mountMobileGameDock(gameId, winEl){
       <div class="ps1-dock-body">
         <div class="ps1-brand">BLISS</div>
         <div class="ps1-dpad" data-mobile-dpad>
-          <span class="ps1-dpad-corner ne">↗</span>
-          <span class="ps1-dpad-corner se">↘</span>
-          <span class="ps1-dpad-corner sw">↙</span>
-          <span class="ps1-dpad-corner nw">↖</span>
+          <button class="ps1-dpad-corner ne" type="button" data-mobile-action="ne" aria-label="Up-right">↗</button>
+          <button class="ps1-dpad-corner se" type="button" data-mobile-action="se" aria-label="Down-right">↘</button>
+          <button class="ps1-dpad-corner sw" type="button" data-mobile-action="sw" aria-label="Down-left">↙</button>
+          <button class="ps1-dpad-corner nw" type="button" data-mobile-action="nw" aria-label="Up-left">↖</button>
           <button class="ps1-dpad-btn up" type="button" data-mobile-action="up">▲</button>
           <button class="ps1-dpad-btn down" type="button" data-mobile-action="down">▼</button>
           <button class="ps1-dpad-btn left" type="button" data-mobile-action="left">◀</button>
@@ -3446,6 +3449,26 @@ function bindMobileOverlay(gameId, overlay){
       }
       if(gameId === 'snake' && isSnakeActive()){
         const action = btn.dataset.mobileAction;
+        if(action === 'ne' || action === 'nw' || action === 'se' || action === 'sw'){
+          const dir = snake.dir || { x: 1, y: 0 };
+          if(action === 'ne'){
+            if(dir.x !== 0) snakeHandleDirection(0, -1);
+            else snakeHandleDirection(1, 0);
+          }
+          if(action === 'nw'){
+            if(dir.x !== 0) snakeHandleDirection(0, -1);
+            else snakeHandleDirection(-1, 0);
+          }
+          if(action === 'se'){
+            if(dir.x !== 0) snakeHandleDirection(0, 1);
+            else snakeHandleDirection(1, 0);
+          }
+          if(action === 'sw'){
+            if(dir.x !== 0) snakeHandleDirection(0, 1);
+            else snakeHandleDirection(-1, 0);
+          }
+          return;
+        }
         if(action === 'start') snakeTogglePause();
         if(action === 'select') snakeStartGame();
       }
