@@ -279,6 +279,18 @@
     height:calc(100% - 32px - 32px)!important; /* Account for titlebar + statusbar */
     overflow:hidden!important;
   }
+  /* Snake layout improvements for mobile */
+  body.mobile-game-active #win_games .snake-layout{
+    justify-content:center;
+    align-items:center;
+  }
+  body.mobile-game-active #win_games .snake-board{
+    width:min(94vw, 420px);
+    height:auto;
+    max-height:min(52vh, 420px);
+    aspect-ratio:1 / 1;
+    flex: 0 0 auto;
+  }
   /* Dope Skate canvas responsive sizing */
   body.mobile-game-active #win_games .skate-canvas-wrap{
     width:100%!important;
@@ -4977,7 +4989,6 @@ function snakeGameOver(){
   snake.paused = false;
   snake.gameOver = true;
   snakeStopLoop();
-  exitMobileGameMode();
   if(snake.score > state.snake.highScore){
     state.snake.highScore = snake.score;
     saveSnakeHighScore(state.snake.highScore);
