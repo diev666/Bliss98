@@ -191,13 +191,143 @@
       }
 
       body[data-theme="blissos"]{
+        --blissos-bg:#c2c2be;
+        --blissos-desktop:#8ea2bf;
+        --blissos-text:#111;
+        --blissos-text-muted:#2b2b2b;
+        --blissos-text-disabled:#7a7a74;
+        --blissos-text-invert:#ffffff;
+        --blissos-link:#1b4f9c;
+        --blissos-border:#8d8d88;
+        --blissos-border-hi:#f8f8f6;
+        --blissos-border-lo:#9a9a94;
+        --blissos-surface:#e5e5e0;
+        --blissos-surface-2:#d9d9d4;
+        --blissos-surface-3:#f2f2ee;
+        --blissos-content:#f3f3ef;
+        --blissos-titlebar-base:#d9d9d4;
+        --blissos-titlebar-active:#c8c8c2;
+        --blissos-titlebar-line-hi:rgba(255,255,255,0.6);
+        --blissos-titlebar-line-lo:rgba(0,0,0,0.05);
+        --blissos-highlight:#2b4c8a;
+        --blissos-highlight-press:#1e3a6a;
+        --blissos-icon-label-bg:#e6e6e2;
+        --blissos-icon-label-border:#9a9a96;
+        --blissos-icon-selected-bg:rgba(60,90,140,0.2);
+        --blissos-icon-selected-border:#3a5a8c;
+        --blissos-icon-selected-label:#9db5e3;
+        --blissos-scroll-track:#d9d9d4;
+        --blissos-scroll-thumb:#b6b6b0;
+        --blissos-scroll-button:#d2d2cd;
+        --blissos-scroll-arrow:#2b2b2b;
+        --blissos-dock-bg:#e5e5e0;
+        --blissos-dock-item:#dcdcd6;
+        --blissos-dock-item-hover:#e1e1db;
+        --blissos-dock-item-open:#d2d2cc;
+        --blissos-dock-indicator:#4a4a45;
+        --blissos-shadow:#5f5f59;
+        --bg:var(--blissos-bg);
+        --text:var(--blissos-text);
+        --task:var(--blissos-surface-2);
+        --menu:var(--blissos-surface-2);
+        --content-bg:var(--blissos-content);
+        --content-text:var(--blissos-text);
+        --panel-bg:var(--blissos-surface);
+        --panel-in:var(--blissos-surface-3);
+        --panel-border:var(--blissos-border);
+        --input-bg:var(--blissos-surface-3);
+        --input-text:var(--blissos-text);
+        --menu-text:var(--blissos-text);
+        --btn-text:var(--blissos-text);
+        --muted-text:var(--blissos-text-muted);
+        --link:var(--blissos-link);
+        --sep:var(--blissos-border);
+        --sep-light:var(--blissos-border-hi);
+        --selection-bg:var(--blissos-icon-selected-bg);
+        --selection-border:var(--blissos-icon-selected-border);
+        --select:var(--blissos-highlight);
+        --select-text:var(--blissos-text-invert);
+        --kbd-bg:var(--blissos-surface-3);
+        --kbd-border:var(--blissos-border);
+        --shadow-dark:#6b6b66;
+        --shadow-mid:#b7b7b2;
+        --shadow-light:#f0f0ec;
+        --shadow-white:#ffffff;
         font-family:"Geneva","Chicago","Charcoal",system-ui,-apple-system,Segoe UI,Arial,sans-serif;
-        background:#c2c2be;
-        color:#111;
+        background:var(--blissos-bg);
+        color:var(--blissos-text);
         font-size:12px;
       }
+      body[data-theme="blissos"][data-blissos-mode="dark"]{
+        --blissos-bg:#1b1d22;
+        --blissos-desktop:#1b1d22;
+        --blissos-text:#d8dce6;
+        --blissos-text-muted:#a6adbb;
+        --blissos-text-disabled:#6e7686;
+        --blissos-text-invert:#f2f4f8;
+        --blissos-link:#7aa2ff;
+        --blissos-border:#2e3440;
+        --blissos-border-hi:#3b4352;
+        --blissos-border-lo:#0c0e12;
+        --blissos-surface:#20232a;
+        --blissos-surface-2:#1d2026;
+        --blissos-surface-3:#262a33;
+        --blissos-content:#1e2128;
+        --blissos-titlebar-base:#20232a;
+        --blissos-titlebar-active:#262a33;
+        --blissos-titlebar-line-hi:rgba(255,255,255,0.08);
+        --blissos-titlebar-line-lo:rgba(0,0,0,0.4);
+        --blissos-highlight:#2b65d9;
+        --blissos-highlight-press:#1f4fb2;
+        --blissos-icon-label-bg:#262a33;
+        --blissos-icon-label-border:#2e3440;
+        --blissos-icon-selected-bg:rgba(43,101,217,0.25);
+        --blissos-icon-selected-border:#2b65d9;
+        --blissos-icon-selected-label:#2b65d9;
+        --blissos-scroll-track:#1e2128;
+        --blissos-scroll-thumb:#2e3440;
+        --blissos-scroll-button:#262a33;
+        --blissos-scroll-arrow:#c7cdd8;
+        --blissos-dock-bg:#20232a;
+        --blissos-dock-item:#262a33;
+        --blissos-dock-item-hover:#2d3340;
+        --blissos-dock-item-open:#1f242e;
+        --blissos-dock-indicator:#a3acbc;
+        --blissos-shadow:rgba(0,0,0,0.55);
+        --bg:var(--blissos-bg);
+        --text:var(--blissos-text);
+        --task:var(--blissos-surface-2);
+        --menu:var(--blissos-surface-2);
+        --content-bg:var(--blissos-content);
+        --content-text:var(--blissos-text);
+        --panel-bg:var(--blissos-surface);
+        --panel-in:var(--blissos-surface-3);
+        --panel-border:var(--blissos-border);
+        --input-bg:var(--blissos-surface-3);
+        --input-text:var(--blissos-text);
+        --menu-text:var(--blissos-text);
+        --btn-text:var(--blissos-text);
+        --muted-text:var(--blissos-text-muted);
+        --link:var(--blissos-link);
+        --sep:var(--blissos-border);
+        --sep-light:var(--blissos-border-hi);
+        --selection-bg:rgba(43,101,217,0.3);
+        --selection-border:var(--blissos-highlight);
+        --select:var(--blissos-highlight);
+        --select-text:var(--blissos-text-invert);
+        --kbd-bg:var(--blissos-surface-3);
+        --kbd-border:var(--blissos-border);
+        --shadow-dark:#0c0e12;
+        --shadow-mid:#161a20;
+        --shadow-light:#2a303a;
+        --shadow-white:#3b4352;
+      }
       body[data-theme="blissos"] #desktop{
-        background-color:#8ea2bf;
+        background-color:var(--blissos-desktop);
+      }
+      body[data-theme="blissos"][data-blissos-mode="dark"] #desktop{
+        background-color:var(--blissos-desktop);
+        background-blend-mode:multiply;
       }
       body[data-theme="blissos"] .desktop-area{
         inset:22px 0 36px 0;
@@ -212,46 +342,46 @@
         gap:4px;
       }
       body[data-theme="blissos"] .icon span{
-        color:#000;
+        color:var(--blissos-text);
         text-shadow:none;
-        background:#e6e6e2;
-        border:1px solid #9a9a96;
+        background:var(--blissos-icon-label-bg);
+        border:1px solid var(--blissos-icon-label-border);
         border-radius:2px;
         padding:1px 4px;
         font-size:11px;
-        box-shadow:inset 1px 1px 0 #f8f8f6;
+        box-shadow:inset 1px 1px 0 var(--blissos-border-hi);
       }
       body[data-theme="blissos"] .icon.selected{
-        border:1px solid #3a5a8c;
-        background:rgba(60,90,140,0.2);
+        border:1px solid var(--blissos-icon-selected-border);
+        background:var(--blissos-icon-selected-bg);
       }
       body[data-theme="blissos"] .icon.selected span{
-        background:#9db5e3;
-        color:#000;
+        background:var(--blissos-icon-selected-label);
+        color:var(--blissos-text);
         outline:none;
       }
 
       body[data-theme="blissos"] .window .frame{
         border-radius:2px;
-        background:#e5e5e0;
-        border:1px solid #8d8d88;
-        box-shadow:inset 1px 1px 0 #f8f8f6, inset -1px -1px 0 #9a9a94;
+        background:var(--blissos-surface);
+        border:1px solid var(--blissos-border);
+        box-shadow:inset 1px 1px 0 var(--blissos-border-hi), inset -1px -1px 0 var(--blissos-border-lo);
       }
       body[data-theme="blissos"] .titlebar{
         height:20px;
         padding:1px 6px;
         background:
-          repeating-linear-gradient(180deg, rgba(255,255,255,0.6) 0 1px, rgba(0,0,0,0.05) 1px 2px),
-          #d9d9d4;
-        color:#111;
-        border-bottom:1px solid #8d8d88;
+          repeating-linear-gradient(180deg, var(--blissos-titlebar-line-hi) 0 1px, var(--blissos-titlebar-line-lo) 1px 2px),
+          var(--blissos-titlebar-base);
+        color:var(--blissos-text);
+        border-bottom:1px solid var(--blissos-border);
         position:relative;
       }
       body[data-theme="blissos"] .window:focus-within .titlebar,
       body[data-theme="blissos"] .window[data-active="1"] .titlebar{
         background:
-          repeating-linear-gradient(180deg, rgba(255,255,255,0.5) 0 1px, rgba(0,0,0,0.08) 1px 2px),
-          #c8c8c2;
+          repeating-linear-gradient(180deg, var(--blissos-titlebar-line-hi) 0 1px, var(--blissos-titlebar-line-lo) 1px 2px),
+          var(--blissos-titlebar-active);
       }
       body[data-theme="blissos"] .titlebar .title-left strong{
         font-size:11px;
@@ -285,11 +415,11 @@
         width:12px;
         height:12px;
         border-radius:2px;
-        background:#d2d2cd;
-        border:1px solid #7f7f7a;
-        box-shadow:inset 1px 1px 0 #f5f5f2, inset -1px -1px 0 #9b9b95;
+        background:var(--blissos-surface-2);
+        border:1px solid var(--blissos-border);
+        box-shadow:inset 1px 1px 0 var(--blissos-border-hi), inset -1px -1px 0 var(--blissos-border-lo);
         font-size:10px;
-        color:#1d1d1d;
+        color:var(--blissos-text);
       }
       body[data-theme="blissos"] .title-controls .wctl{
         position:absolute;
@@ -306,9 +436,9 @@
       }
       body[data-theme="blissos"] .menubar{
         height:18px;
-        background:#d9d9d4;
-        border-bottom:1px solid #8d8d88;
-        color:#111;
+        background:var(--blissos-surface-2);
+        border-bottom:1px solid var(--blissos-border);
+        color:var(--blissos-text);
       }
       body[data-theme="blissos"] .window .menubar{
         display:none;
@@ -317,111 +447,141 @@
         padding:0 6px;
       }
       body[data-theme="blissos"] .menubar span.active{
-        background:#2b4c8a;
-        color:#fff;
+        background:var(--blissos-highlight);
+        color:var(--blissos-text-invert);
       }
       body[data-theme="blissos"] .menu-drop,
       body[data-theme="blissos"] .menu-sub{
-        background:#e5e5e0;
-        border:1px solid #8d8d88;
+        background:var(--blissos-surface);
+        border:1px solid var(--blissos-border);
         box-shadow:none;
-        color:#111;
+        color:var(--blissos-text);
       }
       body[data-theme="blissos"] .menu-item:hover,
       body[data-theme="blissos"] .menu-item:focus{
-        background:#2b4c8a;
-        color:#fff;
+        background:var(--blissos-highlight);
+        color:var(--blissos-text-invert);
       }
       body[data-theme="blissos"] .statusbar{
-        background:#d9d9d4;
-        border-top:1px solid #8d8d88;
-        color:#2b2b2b;
+        background:var(--blissos-surface-2);
+        border-top:1px solid var(--blissos-border);
+        color:var(--blissos-text-muted);
       }
       body[data-theme="blissos"] .btn,
       body[data-theme="blissos"] .bevel{
-        background:#d9d9d4;
-        border:1px solid #8d8d88;
-        box-shadow:inset 1px 1px 0 #f8f8f6, inset -1px -1px 0 #9a9a94;
-        color:#1f1f1f;
+        background:var(--blissos-surface-2);
+        border:1px solid var(--blissos-border);
+        box-shadow:inset 1px 1px 0 var(--blissos-border-hi), inset -1px -1px 0 var(--blissos-border-lo);
+        color:var(--blissos-text);
         border-radius:2px;
       }
       body[data-theme="blissos"] .bevel-in,
       body[data-theme="blissos"] input,
       body[data-theme="blissos"] select,
       body[data-theme="blissos"] textarea{
-        background:#f2f2ee;
-        border:1px solid #9a9a96;
-        box-shadow:inset 1px 1px 0 #cfcfca;
+        background:var(--blissos-surface-3);
+        border:1px solid var(--blissos-icon-label-border);
+        box-shadow:inset 1px 1px 0 var(--blissos-border-hi);
         border-radius:2px;
+        color:var(--blissos-text);
       }
       body[data-theme="blissos"] .content{
-        background:#f3f3ef;
+        background:var(--blissos-content);
+        color:var(--blissos-text);
+      }
+      body[data-theme="blissos"][data-blissos-mode="dark"] .window,
+      body[data-theme="blissos"][data-blissos-mode="dark"] .window .content,
+      body[data-theme="blissos"][data-blissos-mode="dark"] .window .statusbar,
+      body[data-theme="blissos"][data-blissos-mode="dark"] .window .card{
+        color:var(--content-text);
       }
       body[data-theme="blissos"] ::-webkit-scrollbar{
         width:14px;
         height:14px;
       }
       body[data-theme="blissos"] ::-webkit-scrollbar-track{
-        background:#d9d9d4;
-        border:1px solid #9a9a96;
+        background:var(--blissos-scroll-track);
+        border:1px solid var(--blissos-icon-label-border);
       }
       body[data-theme="blissos"] ::-webkit-scrollbar-thumb{
-        background:#b6b6b0;
-        border:1px solid #7f7f7a;
-        box-shadow:inset 1px 1px 0 #e6e6e2, inset -1px -1px 0 #9a9a94;
+        background:var(--blissos-scroll-thumb);
+        border:1px solid var(--blissos-border);
+        box-shadow:inset 1px 1px 0 var(--blissos-border-hi), inset -1px -1px 0 var(--blissos-border-lo);
       }
       body[data-theme="blissos"] ::-webkit-scrollbar-button{
         width:14px;
         height:14px;
-        background:#d2d2cd;
-        border:1px solid #8d8d88;
-        box-shadow:inset 1px 1px 0 #f8f8f6, inset -1px -1px 0 #9a9a94;
+        background:var(--blissos-scroll-button);
+        border:1px solid var(--blissos-border);
+        box-shadow:inset 1px 1px 0 var(--blissos-border-hi), inset -1px -1px 0 var(--blissos-border-lo);
       }
       body[data-theme="blissos"] ::-webkit-scrollbar-button:vertical:decrement{
         background:
-          linear-gradient(135deg, transparent 48%, #2b2b2b 48% 52%, transparent 52%),
-          linear-gradient(225deg, transparent 48%, #2b2b2b 48% 52%, transparent 52%),
-          #d2d2cd;
+          linear-gradient(135deg, transparent 48%, var(--blissos-scroll-arrow) 48% 52%, transparent 52%),
+          linear-gradient(225deg, transparent 48%, var(--blissos-scroll-arrow) 48% 52%, transparent 52%),
+          var(--blissos-scroll-button);
       }
       body[data-theme="blissos"] ::-webkit-scrollbar-button:vertical:increment{
         background:
-          linear-gradient(-45deg, transparent 48%, #2b2b2b 48% 52%, transparent 52%),
-          linear-gradient(45deg, transparent 48%, #2b2b2b 48% 52%, transparent 52%),
-          #d2d2cd;
+          linear-gradient(-45deg, transparent 48%, var(--blissos-scroll-arrow) 48% 52%, transparent 52%),
+          linear-gradient(45deg, transparent 48%, var(--blissos-scroll-arrow) 48% 52%, transparent 52%),
+          var(--blissos-scroll-button);
       }
       body[data-theme="blissos"] ::-webkit-scrollbar-button:horizontal:decrement{
         background:
-          linear-gradient(45deg, transparent 48%, #2b2b2b 48% 52%, transparent 52%),
-          linear-gradient(135deg, transparent 48%, #2b2b2b 48% 52%, transparent 52%),
-          #d2d2cd;
+          linear-gradient(45deg, transparent 48%, var(--blissos-scroll-arrow) 48% 52%, transparent 52%),
+          linear-gradient(135deg, transparent 48%, var(--blissos-scroll-arrow) 48% 52%, transparent 52%),
+          var(--blissos-scroll-button);
       }
       body[data-theme="blissos"] ::-webkit-scrollbar-button:horizontal:increment{
         background:
-          linear-gradient(225deg, transparent 48%, #2b2b2b 48% 52%, transparent 52%),
-          linear-gradient(315deg, transparent 48%, #2b2b2b 48% 52%, transparent 52%),
-          #d2d2cd;
+          linear-gradient(225deg, transparent 48%, var(--blissos-scroll-arrow) 48% 52%, transparent 52%),
+          linear-gradient(315deg, transparent 48%, var(--blissos-scroll-arrow) 48% 52%, transparent 52%),
+          var(--blissos-scroll-button);
       }
 
       body[data-theme="blissos"] .ctx-menu{
-        background:#e5e5e0;
-        border:1px solid #8d8d88;
+        background:var(--blissos-surface);
+        border:1px solid var(--blissos-border);
         box-shadow:none;
+        color:var(--blissos-text);
       }
       body[data-theme="blissos"] .ctx-item:hover,
       body[data-theme="blissos"] .ctx-item:focus{
-        background:#2b4c8a;
-        color:#fff;
+        background:var(--blissos-highlight);
+        color:var(--blissos-text-invert);
       }
       body[data-theme="blissos"] .modal-box{
         border-radius:2px;
-        background:#e5e5e0;
-        border:1px solid #8d8d88;
+        background:var(--blissos-surface);
+        border:1px solid var(--blissos-border);
         box-shadow:none;
+        color:var(--blissos-text);
       }
       body[data-theme="blissos"] .modal-titlebar{
-        background:#d9d9d4;
-        border-bottom:1px solid #8d8d88;
+        background:var(--blissos-surface-2);
+        border-bottom:1px solid var(--blissos-border);
       }
+      body[data-theme="blissos"] input::placeholder,
+      body[data-theme="blissos"] textarea::placeholder{
+        color:var(--blissos-text-muted);
+      }
+      body[data-theme="blissos"][data-blissos-mode="dark"] .menu-drop,
+      body[data-theme="blissos"][data-blissos-mode="dark"] .menu-drop .menu-item,
+      body[data-theme="blissos"][data-blissos-mode="dark"] .menu-sub,
+      body[data-theme="blissos"][data-blissos-mode="dark"] .menu-sub .menu-item,
+      body[data-theme="blissos"][data-blissos-mode="dark"] .blissos-menu-drop,
+      body[data-theme="blissos"][data-blissos-mode="dark"] .blissos-menu-drop .menu-item{
+        color:var(--blissos-text);
+      }
+      body[data-theme="blissos"][data-blissos-mode="dark"] .menu-drop .menu-item:disabled,
+      body[data-theme="blissos"][data-blissos-mode="dark"] .menu-drop .menu-item.disabled,
+      body[data-theme="blissos"][data-blissos-mode="dark"] .blissos-menu-drop .menu-item.disabled{
+        color:var(--blissos-text-disabled);
+      }
+      .blissos-only{display:none;}
+      body[data-theme="blissos"] .blissos-only{display:block;}
+      body[data-theme="blissos"] .bliss98-only{display:none;}
 
       .blissos-menubar{
         position:fixed;
@@ -433,8 +593,8 @@
         align-items:center;
         justify-content:space-between;
         padding:0 8px;
-        background:#d9d9d4;
-        border-bottom:1px solid #8d8d88;
+        background:var(--blissos-surface-2);
+        border-bottom:1px solid var(--blissos-border);
         z-index:20;
         gap:12px;
         font-size:12px;
@@ -450,7 +610,7 @@
         display:flex;
         align-items:center;
         gap:10px;
-        color:#111;
+        color:var(--blissos-text);
         font-variant-numeric:tabular-nums;
         font-weight:700;
         direction:ltr;
@@ -463,19 +623,17 @@
         align-items:center;
         gap:6px;
         padding:1px 8px;
-        border:1px solid #8d8d88;
-        background:#d9d9d4;
-        color:#111;
+        border:none;
+        background:var(--blissos-surface-2);
+        color:var(--blissos-text);
         font-weight:700;
+        font-size:13px;
         cursor:pointer;
       }
       .blissos-appmenu.active{
-        background:#2b4c8a;
-        border-color:#1e3a6a;
-        color:#fff;
-      }
-      .blissos-appmenu.active{
-        background:#1e3a6a;
+        background:var(--blissos-highlight);
+        border-color:var(--blissos-highlight-press);
+        color:var(--blissos-text-invert);
       }
       .blissos-appmenu-icon{
         width:16px;
@@ -498,7 +656,7 @@
         background:transparent;
         padding:1px 6px;
         font:inherit;
-        color:#111;
+        color:var(--blissos-text);
         cursor:pointer;
         display:inline-flex;
         align-items:center;
@@ -515,18 +673,18 @@
       .blissos-menu-item:focus,
       .blissos-menu-brand:focus,
       .blissos-menu-item.active{
-        background:#2b4c8a;
-        color:#fff;
+        background:var(--blissos-highlight);
+        color:var(--blissos-text-invert);
         outline:none;
       }
       .blissos-menu-item:active,
       .blissos-menu-brand:active{
-        background:#1e3a6a;
-        color:#fff;
+        background:var(--blissos-highlight-press);
+        color:var(--blissos-text-invert);
       }
       .blissos-menu-brand.active{
-        background:#2b4c8a;
-        color:#fff;
+        background:var(--blissos-highlight);
+        color:var(--blissos-text-invert);
       }
       .blissos-menu-brand{
         font-weight:700;
@@ -548,22 +706,22 @@
         align-items:center;
         gap:6px;
         padding:4px 6px;
-        background:#e5e5e0;
-        border-top:1px solid #f8f8f6;
-        border-left:1px solid #f8f8f6;
-        border-right:1px solid #8d8d88;
-        border-bottom:1px solid #8d8d88;
+        background:var(--blissos-dock-bg);
+        border-top:1px solid var(--blissos-border-hi);
+        border-left:1px solid var(--blissos-border-hi);
+        border-right:1px solid var(--blissos-border);
+        border-bottom:1px solid var(--blissos-border);
         height:46px;
         position:relative;
       }
       .blissos-dock-cap{
         width:16px;
         height:42px;
-        background:#e5e5e0;
-        border-top:1px solid #f8f8f6;
-        border-left:1px solid #f8f8f6;
-        border-right:1px solid #8d8d88;
-        border-bottom:1px solid #8d8d88;
+        background:var(--blissos-dock-bg);
+        border-top:1px solid var(--blissos-border-hi);
+        border-left:1px solid var(--blissos-border-hi);
+        border-right:1px solid var(--blissos-border);
+        border-bottom:1px solid var(--blissos-border);
       }
       .blissos-dock-cap.left{
         border-top-left-radius:3px;
@@ -584,11 +742,11 @@
         width:42px;
         height:42px;
         border-radius:2px;
-        border-top:1px solid #f8f8f6;
-        border-left:1px solid #f8f8f6;
-        border-right:1px solid #8d8d88;
-        border-bottom:1px solid #8d8d88;
-        background:#dcdcd6;
+        border-top:1px solid var(--blissos-border-hi);
+        border-left:1px solid var(--blissos-border-hi);
+        border-right:1px solid var(--blissos-border);
+        border-bottom:1px solid var(--blissos-border);
+        background:var(--blissos-dock-item);
         display:flex;
         align-items:center;
         justify-content:center;
@@ -596,21 +754,21 @@
         cursor:pointer;
       }
       .blissos-dock-item:hover{
-        background:#e1e1db;
+        background:var(--blissos-dock-item-hover);
       }
       .blissos-dock-item.open{
-        background:#d2d2cc;
-        border-top:1px solid #8d8d88;
-        border-left:1px solid #8d8d88;
-        border-right:1px solid #f8f8f6;
-        border-bottom:1px solid #f8f8f6;
+        background:var(--blissos-dock-item-open);
+        border-top:1px solid var(--blissos-border);
+        border-left:1px solid var(--blissos-border);
+        border-right:1px solid var(--blissos-border-hi);
+        border-bottom:1px solid var(--blissos-border-hi);
       }
       .blissos-dock-item .dock-indicator{
         position:absolute;
         bottom:-1px;
         width:8px;
         height:1px;
-        background:#4a4a45;
+        background:var(--blissos-dock-indicator);
         opacity:0;
       }
       .blissos-dock-item.open .dock-indicator{
@@ -622,9 +780,9 @@
         top:22px;
         left:6px;
         min-width:180px;
-        background:#e5e5e0;
-        border:1px solid #8d8d88;
-        box-shadow:1px 1px 0 #5f5f59;
+        background:var(--blissos-surface);
+        border:1px solid var(--blissos-border);
+        box-shadow:1px 1px 0 var(--blissos-shadow);
         z-index:1001;
         padding:2px 0;
         direction:ltr;
@@ -639,7 +797,7 @@
         font-size:12px;
         border:none;
         background:none;
-        color:#111;
+        color:var(--blissos-text);
         cursor:pointer;
         white-space:nowrap;
         direction:ltr;
@@ -666,8 +824,8 @@
       }
       .blissos-apple-menu .menu-item:hover,
       .blissos-apple-menu .menu-item:focus{
-        background:#2b4c8a;
-        color:#fff;
+        background:var(--blissos-highlight);
+        color:var(--blissos-text-invert);
         outline:none;
       }
       .blissos-apple-menu button{
@@ -677,13 +835,13 @@
         font-size:12px;
         border:none;
         background:none;
-        color:#111;
+        color:var(--blissos-text);
         cursor:pointer;
       }
       .blissos-apple-menu button:hover,
       .blissos-apple-menu button:focus{
-        background:#2b4c8a;
-        color:#fff;
+        background:var(--blissos-highlight);
+        color:var(--blissos-text-invert);
         outline:none;
       }
       .blissos-apple-menu .has-submenu{
@@ -695,9 +853,9 @@
         top:-2px;
         left:100%;
         min-width:180px;
-        background:#e5e5e0;
-        border:1px solid #8d8d88;
-        box-shadow:1px 1px 0 #5f5f59;
+        background:var(--blissos-surface);
+        border:1px solid var(--blissos-border);
+        box-shadow:1px 1px 0 var(--blissos-shadow);
         padding:2px 0;
         direction:ltr;
       }
@@ -710,18 +868,18 @@
       }
       .blissos-apple-menu .menu-sep{
         height:1px;
-        background:#8d8d88;
+        background:var(--blissos-border);
         margin:4px 6px;
       }
       .blissos-menu-drop{
         position:fixed;
         min-width:180px;
         padding:2px;
-        background:#e5e5e0;
-        border:1px solid #8d8d88;
-        box-shadow:1px 1px 0 #5f5f59;
+        background:var(--blissos-surface);
+        border:1px solid var(--blissos-border);
+        box-shadow:1px 1px 0 var(--blissos-shadow);
         z-index:1001;
-        color:#111;
+        color:var(--blissos-text);
       }
       .blissos-menu-drop.hidden{
         display:none;
@@ -731,19 +889,19 @@
       }
       .blissos-menu-drop .menu-item:hover,
       .blissos-menu-drop .menu-item:focus{
-        background:#2b4c8a;
-        color:#fff;
+        background:var(--blissos-highlight);
+        color:var(--blissos-text-invert);
         outline:none;
       }
       .blissos-appmenu-drop{
         position:fixed;
         min-width:200px;
         padding:2px;
-        background:#e5e5e0;
-        border:1px solid #8d8d88;
-        box-shadow:1px 1px 0 #5f5f59;
+        background:var(--blissos-surface);
+        border:1px solid var(--blissos-border);
+        box-shadow:1px 1px 0 var(--blissos-shadow);
         z-index:1001;
-        color:#111;
+        color:var(--blissos-text);
       }
       .blissos-appmenu-drop.hidden{
         display:none;
@@ -758,24 +916,24 @@
         font-size:12px;
         border:none;
         background:none;
-        color:#111;
+        color:var(--blissos-text);
         cursor:pointer;
         white-space:nowrap;
         justify-content:flex-start;
       }
       .blissos-appmenu-drop .menu-item:hover,
       .blissos-appmenu-drop .menu-item:focus{
-        background:#2b4c8a;
-        color:#fff;
+        background:var(--blissos-highlight);
+        color:var(--blissos-text-invert);
         outline:none;
       }
       .blissos-appmenu-drop .menu-item.disabled{
-        color:#7a7a74;
+        color:var(--blissos-text-disabled);
         pointer-events:none;
       }
       .blissos-appmenu-drop .menu-sep{
         height:1px;
-        background:#8d8d88;
+        background:var(--blissos-border);
         margin:4px 6px;
       }
       .blissos-appmenu-drop .menu-check{
@@ -2663,6 +2821,38 @@
         z-index:1;
         color:var(--content-text);
       }
+      .retro-slider{
+        -webkit-appearance:none;
+        appearance:none;
+        width:220px;
+        height:6px;
+        background:var(--panel-bg);
+        border-top:1px solid var(--panel-border);
+        border-left:1px solid var(--panel-border);
+        border-right:1px solid var(--sep-light);
+        border-bottom:1px solid var(--sep-light);
+      }
+      .retro-slider::-webkit-slider-thumb{
+        -webkit-appearance:none;
+        appearance:none;
+        width:12px;
+        height:14px;
+        background:var(--task);
+        border-top:1px solid var(--sep-light);
+        border-left:1px solid var(--sep-light);
+        border-right:1px solid var(--panel-border);
+        border-bottom:1px solid var(--panel-border);
+      }
+      .retro-slider::-moz-range-thumb{
+        width:12px;
+        height:14px;
+        background:var(--task);
+        border-top:1px solid var(--sep-light);
+        border-left:1px solid var(--sep-light);
+        border-right:1px solid var(--panel-border);
+        border-bottom:1px solid var(--panel-border);
+        border-radius:0;
+      }
       .settings-panels{
         padding:0 6px 6px;
       }
@@ -2846,6 +3036,7 @@
         grid-template-columns: repeat(auto-fill, 92px);
         gap:12px;
         justify-items:start;
+        color:var(--content-text);
       }
       .poetry-item{
         background:transparent;
@@ -2858,6 +3049,7 @@
         gap:6px;
         padding:6px 4px;
         cursor:default;
+        color:var(--content-text);
       }
       .poetry-item.selected{
         border:1px dotted var(--selection-border);
@@ -2872,6 +3064,7 @@
       .poem-body{
         white-space:pre-line;
         line-height:1.4;
+        color:var(--content-text);
       }
       .trash-grid{
         display:grid;
@@ -3262,9 +3455,12 @@
           scanlines: false,
           tab: 'general',
           darkMode: false,
+          blissosDarkMode: false,
           retroGlow: false,
           clock24: true,
           oldCrt: false,
+          masterVolume: 0.8,
+          systemVolume: 0.8,
           theme: 'bliss98',
         },
         theme: {
@@ -3320,6 +3516,8 @@
       const SCANLINES_KEY = 'bliss98_scanlines';
       const CLOCK_KEY = 'bliss98_clock24';
       const OLDCRT_KEY = 'bliss98_oldcrt';
+      const MASTER_VOL_KEY = 'bliss98_master_volume';
+      const SYSTEM_VOL_KEY = 'bliss98_system_volume';
       const DARKMODE_KEY = 'bliss98_darkmode';
       const TRASH_KEY = 'bliss98_trash';
       const ICON_LABELS_KEY = 'bliss98_icon_labels';
@@ -3457,6 +3655,7 @@ const MOBILE_CONTROLS_KEY = 'bliss98_mobile_controls_mode';
           entry.audio.preload = 'auto';
           entry.audio.volume = 0.5;
         });
+        applySoundVolumes();
       }
 
       function playSfx(name){
@@ -7294,7 +7493,7 @@ function initClothesWindow(winEl){
   });
 }
 
-function initSettingsTabs(winEl){
+      function initSettingsTabs(winEl){
   const win = winEl || document.getElementById('win_settings');
   if(!win) return;
   const tabs = Array.from(win.querySelectorAll('.settings-tab'));
@@ -7317,8 +7516,11 @@ function initSettingsTabs(winEl){
     updateAnimationButtons(win);
     updateScanlinesButtons(win);
     updateRetroGlowButtons(win);
+    updateDarkModeButtons(win);
+    updateBlissOSDarkButtons(win);
     updateClockButtons(win);
     updateOldCrtButtons(win);
+    updateSoundUI(win);
     const content = win.querySelector('.content');
     if(content){
       content.dataset.fitKey = `settings:${tabId}`;
@@ -7488,11 +7690,26 @@ function updateDarkModeButtons(root=document){
   });
 }
 
+function updateBlissOSDarkButtons(root=document){
+  $$('[data-set-blissos-darkmode]', root).forEach(btn => {
+    const on = btn.dataset.setBlissosDarkmode === 'on';
+    btn.classList.toggle('pressed', on === state.settings.blissosDarkMode);
+  });
+}
+
 function setDarkMode(enabled, fromPreset=false){
   state.settings.darkMode = !!enabled;
   applyDarkMode();
   updateDarkModeButtons();
   if(!fromPreset && !themeApplying && state.settings.theme !== 'blissos') setThemePresetCustom();
+  syncOsProfile();
+}
+
+function setBlissOSDarkMode(enabled){
+  if(state.settings.theme !== 'blissos') return;
+  state.settings.blissosDarkMode = !!enabled;
+  applyDarkMode();
+  updateBlissOSDarkButtons();
   syncOsProfile();
 }
 
@@ -7536,6 +7753,76 @@ function saveOldCrt(){
   try{
     localStorage.setItem(OLDCRT_KEY, state.settings.oldCrt ? '1' : '0');
   } catch {}
+}
+
+function loadMasterVolume(){
+  try{
+    const raw = localStorage.getItem(MASTER_VOL_KEY);
+    if(raw === null) return 0.8;
+    const val = parseFloat(raw);
+    return Number.isFinite(val) ? clamp(val, 0, 1) : 0.8;
+  } catch {
+    return 0.8;
+  }
+}
+
+function saveMasterVolume(){
+  try{
+    localStorage.setItem(MASTER_VOL_KEY, String(state.settings.masterVolume));
+  } catch {}
+}
+
+function loadSystemVolume(){
+  try{
+    const raw = localStorage.getItem(SYSTEM_VOL_KEY);
+    if(raw === null) return 0.8;
+    const val = parseFloat(raw);
+    return Number.isFinite(val) ? clamp(val, 0, 1) : 0.8;
+  } catch {
+    return 0.8;
+  }
+}
+
+function saveSystemVolume(){
+  try{
+    localStorage.setItem(SYSTEM_VOL_KEY, String(state.settings.systemVolume));
+  } catch {}
+}
+
+function applySoundVolumes(){
+  const master = state.settings.masterVolume ?? 0.8;
+  const system = state.settings.systemVolume ?? 0.8;
+  const vol = clamp(master * system, 0, 1);
+  Object.values(SFX).forEach(entry => {
+    if(entry.audio) entry.audio.volume = vol;
+  });
+}
+
+function updateSoundUI(root=document){
+  const masterSlider = root.querySelector('[data-sound-slider="master"]');
+  const systemSlider = root.querySelector('[data-sound-slider="system"]');
+  const masterLabel = root.querySelector('[data-sound-value="master"]');
+  const systemLabel = root.querySelector('[data-sound-value="system"]');
+  if(masterSlider) masterSlider.value = Math.round((state.settings.masterVolume ?? 0.8) * 100);
+  if(systemSlider) systemSlider.value = Math.round((state.settings.systemVolume ?? 0.8) * 100);
+  if(masterLabel) masterLabel.textContent = `${Math.round((state.settings.masterVolume ?? 0.8) * 100)}%`;
+  if(systemLabel) systemLabel.textContent = `${Math.round((state.settings.systemVolume ?? 0.8) * 100)}%`;
+}
+
+function setMasterVolume(val){
+  state.settings.masterVolume = clamp(val, 0, 1);
+  saveMasterVolume();
+  applySoundVolumes();
+  updateSoundUI();
+  syncOsProfile();
+}
+
+function setSystemVolume(val){
+  state.settings.systemVolume = clamp(val, 0, 1);
+  saveSystemVolume();
+  applySoundVolumes();
+  updateSoundUI();
+  syncOsProfile();
 }
 
 function loadDarkMode(){
@@ -7710,20 +7997,26 @@ function getDefaultOsProfiles(){
       themePreset: loadThemePreset(),
       titlebar: loadTitlebarTheme(),
       darkMode: loadDarkMode(),
+      blissosDarkMode: false,
       retroGlow: loadRetroGlow(),
       scanlines: loadScanlines(),
       clock24: loadClockFormat(),
       oldCrt: loadOldCrt(),
+      masterVolume: loadMasterVolume(),
+      systemVolume: loadSystemVolume(),
     },
     blissos: {
       wallpaper: 'blissos',
       themePreset: 'default',
       titlebar: 'defaultBlue',
       darkMode: false,
+      blissosDarkMode: false,
       retroGlow: false,
       scanlines: false,
       clock24: true,
       oldCrt: false,
+      masterVolume: loadMasterVolume(),
+      systemVolume: loadSystemVolume(),
     },
   };
 }
@@ -7757,10 +8050,13 @@ function syncOsProfile(){
     themePreset: state.theme.preset,
     titlebar: state.theme.titlebar,
     darkMode: state.settings.darkMode,
+    blissosDarkMode: state.settings.blissosDarkMode,
     retroGlow: state.settings.retroGlow,
     scanlines: state.settings.scanlines,
     clock24: state.settings.clock24,
     oldCrt: state.settings.oldCrt,
+    masterVolume: state.settings.masterVolume,
+    systemVolume: state.settings.systemVolume,
   };
   saveOsProfiles();
 }
@@ -7775,10 +8071,13 @@ function applyOsProfile(theme){
     state.theme.titlebar = 'defaultBlue';
   }
   state.settings.darkMode = !!profile.darkMode;
+  state.settings.blissosDarkMode = !!profile.blissosDarkMode;
   state.settings.retroGlow = !!profile.retroGlow;
   state.settings.scanlines = !!profile.scanlines;
   state.settings.clock24 = profile.clock24 !== false;
   state.settings.oldCrt = !!profile.oldCrt;
+  state.settings.masterVolume = typeof profile.masterVolume === 'number' ? profile.masterVolume : loadMasterVolume();
+  state.settings.systemVolume = typeof profile.systemVolume === 'number' ? profile.systemVolume : loadSystemVolume();
 
   if(theme === 'bliss98'){
     if(state.theme.preset !== 'custom'){
@@ -7796,6 +8095,8 @@ function applyOsProfile(theme){
   applyRetroGlow();
   applyScanlines();
   applyOldCrt();
+  applySoundVolumes();
+  updateSoundUI();
   updateClockButtons();
   updateWallpaperButtons();
   updateOsThemeButtons();
@@ -7816,6 +8117,7 @@ function applyOsTheme(){
   if(!blissos) closeStartMenu();
   updateOsThemeButtons();
   renderBlissOSDock();
+  applySettingsIcons();
   renderIcons();
   renderTaskButtons();
   updateBlissOSActiveApp();
@@ -8360,9 +8662,12 @@ function applyOldCrt(){
 }
 
 function applyDarkMode(){
-  document.body.classList.toggle('dark', state.settings.darkMode);
-  saveDarkMode();
+  const isBlissOS = state.settings.theme === 'blissos';
+  document.body.classList.toggle('dark', !isBlissOS && state.settings.darkMode);
+  document.body.dataset.blissosMode = (isBlissOS && state.settings.blissosDarkMode) ? 'dark' : 'classic';
+  if(!isBlissOS) saveDarkMode();
   updateDarkModeButtons();
+  if(isBlissOS) updateBlissOSDarkButtons();
   renderCtxMenu();
   applyTitlebarTheme();
 }
@@ -8739,6 +9044,7 @@ function installLongPress(el, getTarget){
           'settings.tab.general': 'General',
           'settings.tab.language': 'Language',
           'settings.tab.appearance': 'Appearance',
+          'settings.tab.sound': 'Sound',
           'settings.tab.system': 'System',
           'settings.tab.performance': 'Performance',
           'settings.general.title': 'BLISS 98',
@@ -8755,6 +9061,10 @@ function installLongPress(el, getTarget){
           'settings.lang.pt': 'Português (BR)',
           'settings.appearanceTab': 'Appearance',
           'settings.appearanceDesc': 'Customize how BLISS 98 looks.',
+          'settings.soundTab': 'Sound',
+          'settings.soundDesc': 'Control system volume levels.',
+          'settings.sound.master': 'Master Volume',
+          'settings.sound.system': 'System Sounds',
           'settings.osTheme.title': 'Choose your OS',
           'settings.osTheme.desc': 'Switch between Bliss98 and BlissOS.',
           'settings.tab.system': 'System',
@@ -8785,6 +9095,10 @@ function installLongPress(el, getTarget){
           'settings.darkMode.desc': 'Makes BLISS 98 darker and easier on the eyes.',
           'settings.darkMode.on': 'On',
           'settings.darkMode.off': 'Off',
+          'settings.blissosDark.title': 'BlissOS Dark Mode',
+          'settings.blissosDark.desc': 'Enables a dark Mac OS 9 inspired look for BlissOS.',
+          'settings.blissosDark.on': 'On',
+          'settings.blissosDark.off': 'Off',
           'settings.retro.title': 'Retro Glow',
           'settings.retro.desc': 'Add a soft glow to windows and icons.',
           'settings.retro.on': 'On',
@@ -9206,6 +9520,7 @@ function installLongPress(el, getTarget){
           'settings.tab.general': 'Geral',
           'settings.tab.language': 'Idioma',
           'settings.tab.appearance': 'Aparência',
+          'settings.tab.sound': 'Som',
           'settings.tab.system': 'Sistema',
           'settings.tab.performance': 'Performance',
           'settings.general.title': 'BLISS 98',
@@ -9222,6 +9537,10 @@ function installLongPress(el, getTarget){
           'settings.lang.pt': 'Português (BR)',
           'settings.appearanceTab': 'Aparência',
           'settings.appearanceDesc': 'Personalize o visual do BLISS 98.',
+          'settings.soundTab': 'Som',
+          'settings.soundDesc': 'Controle os volumes do sistema.',
+          'settings.sound.master': 'Volume geral',
+          'settings.sound.system': 'Sons do sistema',
           'settings.osTheme.title': 'Escolha seu OS',
           'settings.osTheme.desc': 'Alterna entre Bliss98 e BlissOS.',
           'settings.tab.system': 'Sistema',
@@ -9252,6 +9571,10 @@ function installLongPress(el, getTarget){
           'settings.darkMode.desc': 'Deixa o BLISS 98 mais escuro e confortável.',
           'settings.darkMode.on': 'Ligado',
           'settings.darkMode.off': 'Desligado',
+          'settings.blissosDark.title': 'Modo Escuro do BlissOS',
+          'settings.blissosDark.desc': 'Ativa um visual escuro inspirado no Mac OS 9 para o BlissOS.',
+          'settings.blissosDark.on': 'Ligado',
+          'settings.blissosDark.off': 'Desligado',
           'settings.retro.title': 'Brilho Retro',
           'settings.retro.desc': 'Adicione um brilho suave nas janelas e ícones.',
           'settings.retro.on': 'Ligado',
@@ -9553,6 +9876,7 @@ function installLongPress(el, getTarget){
         updateScanlinesButtons(root);
         updateClockButtons(root);
         updateOldCrtButtons(root);
+        updateSoundUI(root);
       }
 
       function applyI18n(){
@@ -10495,6 +10819,7 @@ function installLongPress(el, getTarget){
           }
           if(id === 'settings'){
             initSettingsTabs(winEl);
+            applySettingsIcons(winEl);
           }
           if(id === 'videos'){
             initVideosWindow(winEl);
@@ -10530,6 +10855,24 @@ function installLongPress(el, getTarget){
         if(primary) img.src = primary;
         if(fallback) img.dataset.fallbackSrc = fallback;
         img.dataset.failed = '';
+      }
+
+      function applySettingsIcons(winEl){
+        const win = winEl || document.getElementById('win_settings');
+        if(!win) return;
+        const themed = state.settings.theme === 'blissos';
+        win.querySelectorAll('img[data-settings-icon]').forEach(img => {
+          const name = img.dataset.settingsIcon;
+          if(!name) return;
+          const base = `./assets/icons/${name}`;
+          if(themed){
+            const bliss = getBlissOSAssetPath(base);
+            setImageWithFallback(img, bliss, base);
+          } else {
+            const bliss = getBlissOSAssetPath(base);
+            setImageWithFallback(img, base, bliss);
+          }
+        });
       }
 
       function iconSVG(type, theme){
@@ -11112,7 +11455,7 @@ Eu sou o buffalo branco extinto`
               <div class="tiny mp-status" id="mpMsg"></div>
               <div class="mp-vol">
                 <span class="kbd" data-i18n="player.vol">Vol</span>
-                <input id="mpVol" type="range" min="0" max="1" step="0.01" value="0.8" />
+                <input id="mpVol" class="retro-slider" type="range" min="0" max="1" step="0.01" value="0.8" />
               </div>
             </div>
             <div class="tiny mp-drop hidden" id="mpDropHint" data-i18n="player.drop">Drop audio files here</div>
@@ -11502,13 +11845,14 @@ Eu sou o buffalo branco extinto`
               <button class="settings-tab" type="button" role="tab" data-tab="language" aria-controls="settingsPanel_language" data-i18n="settings.tab.language">Language</button>
               <button class="settings-tab" type="button" role="tab" data-tab="appearance" aria-controls="settingsPanel_appearance" data-i18n="settings.tab.appearance">Appearance</button>
               <button class="settings-tab" type="button" role="tab" data-tab="system" aria-controls="settingsPanel_system" data-i18n="settings.tab.system">System</button>
+              <button class="settings-tab" type="button" role="tab" data-tab="sound" aria-controls="settingsPanel_sound" data-i18n="settings.tab.sound">Sound</button>
               <button class="settings-tab" type="button" role="tab" data-tab="performance" aria-controls="settingsPanel_performance" data-i18n="settings.tab.performance">Performance</button>
             </div>
             <div class="settings-panels">
               <div class="settings-panel" role="tabpanel" data-tab="general" id="settingsPanel_general">
                 <div class="settings-general">
                   <div class="settings-logo">
-                    <img class="pixel" src="./assets/icons/computer.png" width="48" height="48" alt="" />
+                    <img class="pixel" src="./assets/icons/computer.png" data-settings-icon="computer.png" width="48" height="48" alt="" />
                   </div>
                   <div class="settings-summary">
                     <strong data-i18n="settings.general.title">BLISS 98</strong>
@@ -11532,7 +11876,7 @@ Eu sou o buffalo branco extinto`
               <div class="settings-panel" role="tabpanel" data-tab="language" id="settingsPanel_language">
                 <div class="settings-panel-header">
                   <div class="settings-panel-icon">
-                    <img class="pixel" src="./assets/icons/language.png" width="48" height="48" alt="" />
+                    <img class="pixel" src="./assets/icons/language.png" data-settings-icon="language.png" width="48" height="48" alt="" />
                   </div>
                   <div>
                     <strong data-i18n="settings.languageTab">Language</strong>
@@ -11547,7 +11891,7 @@ Eu sou o buffalo branco extinto`
               <div class="settings-panel" role="tabpanel" data-tab="appearance" id="settingsPanel_appearance">
                 <div class="settings-panel-header">
                   <div class="settings-panel-icon">
-                    <img class="pixel" src="./assets/icons/appearance.png" width="48" height="48" alt="" />
+                    <img class="pixel" src="./assets/icons/appearance.png" data-settings-icon="appearance.png" width="48" height="48" alt="" />
                   </div>
                   <div>
                     <strong data-i18n="settings.appearanceTab">Appearance</strong>
@@ -11652,12 +11996,20 @@ Eu sou o buffalo branco extinto`
                     </button>
                   </div>
                 </div>
-                <div class="settings-block" id="settingsDarkMode">
+                <div class="settings-block bliss98-only" id="settingsDarkMode">
                   <strong data-i18n="settings.darkMode.title">Dark Mode</strong>
                   <p style="margin:6px 0 10px 0;" data-i18n="settings.darkMode.desc">Makes BLISS 98 darker and easier on the eyes.</p>
                   <div class="settings-actions">
                     <button class="btn bevel" type="button" data-set-darkmode="on"><span data-i18n="settings.darkMode.on">On</span></button>
                     <button class="btn bevel" type="button" data-set-darkmode="off"><span data-i18n="settings.darkMode.off">Off</span></button>
+                  </div>
+                </div>
+                <div class="settings-block blissos-only" id="settingsBlissOSDarkMode">
+                  <strong data-i18n="settings.blissosDark.title">BlissOS Dark Mode</strong>
+                  <p style="margin:6px 0 10px 0;" data-i18n="settings.blissosDark.desc">Enables a dark Mac OS 9 inspired look for BlissOS.</p>
+                  <div class="settings-actions">
+                    <button class="btn bevel" type="button" data-set-blissos-darkmode="on"><span data-i18n="settings.blissosDark.on">On</span></button>
+                    <button class="btn bevel" type="button" data-set-blissos-darkmode="off"><span data-i18n="settings.blissosDark.off">Off</span></button>
                   </div>
                 </div>
                 <div class="settings-block" id="settingsWallpaper">
@@ -11699,10 +12051,35 @@ Eu sou o buffalo branco extinto`
                   </div>
                 </div>
               </div>
+              <div class="settings-panel" role="tabpanel" data-tab="sound" id="settingsPanel_sound">
+                <div class="settings-panel-header">
+                  <div class="settings-panel-icon">
+                    <img class="pixel" src="./assets/icons/Sound.png" data-settings-icon="Sound.png" width="48" height="48" alt="" />
+                  </div>
+                  <div>
+                    <strong data-i18n="settings.soundTab">Sound</strong>
+                    <div class="tiny" data-i18n="settings.soundDesc">Control system volume levels.</div>
+                  </div>
+                </div>
+                <div class="settings-block">
+                  <strong data-i18n="settings.sound.master">Master Volume</strong>
+                  <div style="display:flex; align-items:center; gap:10px; margin-top:6px;">
+                    <input class="retro-slider" type="range" min="0" max="100" step="1" data-sound-slider="master" />
+                    <span class="tiny" data-sound-value="master">80%</span>
+                  </div>
+                </div>
+                <div class="settings-block">
+                  <strong data-i18n="settings.sound.system">System Sounds</strong>
+                  <div style="display:flex; align-items:center; gap:10px; margin-top:6px;">
+                    <input class="retro-slider" type="range" min="0" max="100" step="1" data-sound-slider="system" />
+                    <span class="tiny" data-sound-value="system">80%</span>
+                  </div>
+                </div>
+              </div>
               <div class="settings-panel" role="tabpanel" data-tab="system" id="settingsPanel_system">
                 <div class="settings-panel-header">
                   <div class="settings-panel-icon">
-                    <img class="pixel" src="./assets/icons/settings.png" width="48" height="48" alt="" />
+                    <img class="pixel" src="./assets/icons/settings.png" data-settings-icon="settings.png" width="48" height="48" alt="" />
                   </div>
                   <div>
                     <strong data-i18n="settings.systemTab">System</strong>
@@ -11745,7 +12122,7 @@ Eu sou o buffalo branco extinto`
               <div class="settings-panel" role="tabpanel" data-tab="performance" id="settingsPanel_performance">
                 <div class="settings-panel-header">
                   <div class="settings-panel-icon">
-                    <img class="pixel" src="./assets/icons/performance.png" width="48" height="48" alt="" />
+                    <img class="pixel" src="./assets/icons/performance.png" data-settings-icon="performance.png" width="48" height="48" alt="" />
                   </div>
                   <div>
                     <strong data-i18n="settings.animationsTab">Animations</strong>
@@ -13325,7 +13702,12 @@ function autoFitWindow(winEl, appId){
         if(appId === 'mediaplayer') { setTimeout(mpInitInWindow, 0); }
         if(appId === 'trash') { updateTrashIconUI(); }
         if(appId === 'clothes') { setTimeout(()=>initClothesWindow(el), 0); }
-        if(appId === 'settings') { setTimeout(()=>initSettingsTabs(el), 0); }
+        if(appId === 'settings') {
+          setTimeout(()=>{
+            initSettingsTabs(el);
+            applySettingsIcons(el);
+          }, 0);
+        }
         if(appId === 'games') { setTimeout(()=>initGamesWindow(el), 0); }
         if(appId === 'videos') { setTimeout(()=>initVideosWindow(el), 0); }
 
@@ -13708,6 +14090,7 @@ function renderBlissOSAppleMenu(){
     { id:'general', icon:'./assets/icons/computer.png', labelKey:'settings.tab.general' },
     { id:'language', icon:'./assets/icons/language.png', labelKey:'settings.tab.language' },
     { id:'appearance', icon:'./assets/icons/appearance.png', labelKey:'settings.tab.appearance' },
+    { id:'sound', icon:'./assets/icons/Sound.png', labelKey:'settings.tab.sound' },
     { id:'system', icon:'./assets/icons/settings.png', labelKey:'settings.tab.system' },
     { id:'performance', icon:'./assets/icons/performance.png', labelKey:'settings.tab.performance' },
   ];
@@ -14028,6 +14411,14 @@ function renderBlissOSAppMenu(){
       document.addEventListener('keyup', (e)=>{
         if(dopeSkateHandleKeyUp(e)) return;
       });
+      document.addEventListener('input', (e)=>{
+        const soundSlider = e.target && e.target.closest && e.target.closest('[data-sound-slider]');
+        if(soundSlider && soundSlider.dataset && soundSlider.dataset.soundSlider){
+          const val = clamp(parseFloat(soundSlider.value) / 100, 0, 1);
+          if(soundSlider.dataset.soundSlider === 'master') setMasterVolume(val);
+          if(soundSlider.dataset.soundSlider === 'system') setSystemVolume(val);
+        }
+      });
       document.addEventListener('click', (e)=>{
         const poemItem = e.target.closest && e.target.closest('[data-poem-id]');
         if(poemItem){
@@ -14239,9 +14630,19 @@ function renderBlissOSAppMenu(){
         if(darkBtn && darkBtn.dataset && darkBtn.dataset.setDarkmode){
           setDarkMode(darkBtn.dataset.setDarkmode === 'on');
         }
+        const blissosDarkBtn = e.target.closest && e.target.closest('[data-set-blissos-darkmode]');
+        if(blissosDarkBtn && blissosDarkBtn.dataset && blissosDarkBtn.dataset.setBlissosDarkmode){
+          setBlissOSDarkMode(blissosDarkBtn.dataset.setBlissosDarkmode === 'on');
+        }
         const retroBtn = e.target.closest && e.target.closest('[data-set-retro]');
         if(retroBtn && retroBtn.dataset && retroBtn.dataset.setRetro){
           setRetroGlow(retroBtn.dataset.setRetro === 'on');
+        }
+        const soundSlider = e.target.closest && e.target.closest('[data-sound-slider]');
+        if(soundSlider && soundSlider.dataset && soundSlider.dataset.soundSlider){
+          const val = clamp(parseFloat(soundSlider.value) / 100, 0, 1);
+          if(soundSlider.dataset.soundSlider === 'master') setMasterVolume(val);
+          if(soundSlider.dataset.soundSlider === 'system') setSystemVolume(val);
         }
         const clockBtn = e.target.closest && e.target.closest('[data-set-clock]');
         if(clockBtn && clockBtn.dataset && clockBtn.dataset.setClock){
@@ -14360,6 +14761,8 @@ function renderBlissOSAppMenu(){
         state.settings.retroGlow = loadRetroGlow();
         state.settings.clock24 = loadClockFormat();
         state.settings.oldCrt = loadOldCrt();
+        state.settings.masterVolume = loadMasterVolume();
+        state.settings.systemVolume = loadSystemVolume();
         state.settings.theme = loadOsTheme();
         state.settings.osProfiles = loadOsProfiles();
         state.theme.preset = loadThemePreset();
