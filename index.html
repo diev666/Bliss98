@@ -41,6 +41,7 @@
         --kbd-border:#999999;
         --btn-text:#000000;
         --muted-text:#4b4b4b;
+        --ps1-dock-gap: 28px;
       }
       body.theme-xp98{
         --shadow-dark:#2b3a52;
@@ -2443,7 +2444,7 @@
         min-height:0;
         display:flex;
         flex-direction:column;
-        padding-bottom: calc(var(--ps1-dock-h, 260px) + env(safe-area-inset-bottom, 0px));
+        padding-bottom: calc(var(--ps1-dock-h, 260px) + env(safe-area-inset-bottom, 0px) + var(--ps1-dock-gap, 28px));
         position:relative;
       }
       #win_games.mobile-game{
@@ -13803,6 +13804,8 @@ function autoFitWindow(winEl, appId){
           // Fallback to default
           document.documentElement.style.setProperty('--ps1-dock-h', '260px');
         }
+        // Ensure gap is set for consistency
+        document.documentElement.style.setProperty('--ps1-dock-gap', '28px');
       }
       function updateMobileGameLayoutVars(){
         syncPs1DockHeightVar();
