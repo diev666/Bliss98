@@ -3490,6 +3490,10 @@
       const $ = (sel, root=document) => root.querySelector(sel);
       const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
 
+      // Mobile tap fix: detect coarse pointer (touch) and suppress phantom clicks
+      const IS_COARSE = window.matchMedia && window.matchMedia('(hover:none) and (pointer:coarse)').matches;
+      let suppressClickUntil = 0;
+
       const state = {
         user: null,
         windows: new Map(),
@@ -7617,15 +7621,10 @@ function initClothesWindow(winEl){
     tab.addEventListener('click', ()=>{
       activate(tab.dataset.tab);
     });
-
-    // On touch devices, the synthetic click event dispatched by browsers
-    // does not always fire immediately on a single tap, which can lead to
-    // the user needing to tap twice to change tabs. To ensure a single
-    // tap toggles the active tab on mobile, listen for the pointerup
-    // event and call activate() manually when the pointer type is touch.
-    tab.addEventListener('pointerup', (e) => {
-      if (e.pointerType === 'touch') {
+    tab.addEventListener('pointerup', (e)=>{
+      if(e.pointerType === 'touch'){
         e.preventDefault();
+        e.stopPropagation();
         activate(tab.dataset.tab);
       }
     });
@@ -13777,38 +13776,41 @@ function autoFitWindow(winEl, appId){
           <div class="resize" title="${t('win.resize')}"></div>
         `;
 
-        el.addEventListener('mousedown', (e)=>{ e.stopPropagation(); focusWindow(appId); closeStartMenu(); });
+        // Make windows focus on mousedown except when clicking on a control button (min/max/close).
+        // On touch devices the first tap should trigger the action without requiring a second tap.
+        el.addEventListener('mousedown', (e)=>{
+          // If the target element has a data-action (control buttons), defer focusing until the click handler.
+          if(e.target && e.target.dataset && e.target.dataset.action) return;
+          e.stopPropagation();
+          focusWindow(appId);
+          closeStartMenu();
+        });
         el.addEventListener('contextmenu', (e)=>{
           e.preventDefault();
           e.stopPropagation();
         });
-
         el.addEventListener('click', (e)=>{
           const act = e.target?.dataset?.action;
           if(!act) return;
           e.stopPropagation();
+          // Always bring the window to the front when clicking a control.
+          focusWindow(appId);
+          closeStartMenu();
           if(act==='close') closeApp(appId);
           if(act==='min') minimizeApp(appId);
           if(act==='max') toggleFitWindow(appId);
         });
-
-        // Many mobile browsers delay the dispatch of a click event until a
-        // synthetic click is generated after the pointer sequence has
-        // completed. This can result in users needing to tap twice on
-        // window control buttons (close/min/max) because the first tap only
-        // focuses the window. To make controls respond on the first tap on
-        // touch devices, listen for pointerup events and trigger the
-        // appropriate action immediately when the pointer type is touch.
         el.addEventListener('pointerup', (e)=>{
-          if(e.pointerType === 'touch'){
-            const act = e.target?.dataset?.action;
-            if(!act) return;
-            e.preventDefault();
-            e.stopPropagation();
-            if(act==='close') closeApp(appId);
-            if(act==='min') minimizeApp(appId);
-            if(act==='max') toggleFitWindow(appId);
-          }
+          if(e.pointerType !== 'touch') return;
+          const act = e.target?.dataset?.action;
+          if(!act) return;
+          e.preventDefault();
+          e.stopPropagation();
+          focusWindow(appId);
+          closeStartMenu();
+          if(act==='close') closeApp(appId);
+          if(act==='min') minimizeApp(appId);
+          if(act==='max') toggleFitWindow(appId);
         });
 
         makeDraggable(el, appId);
@@ -15118,6 +15120,155 @@ function renderBlissOSAppMenu(){
             ev.stopPropagation();
           });
         }
+
+        // ===== MOBILE TAP FIX: Handle window controls and settings on pointerup/touchend =====
+        if(IS_COARSE){
+          // Suppress click events that come after touch actions
+          document.addEventListener('click', (e)=>{
+            if(Date.now() < suppressClickUntil){
+              e.preventDefault();
+              e.stopImmediatePropagation();
+            }
+          }, true);
+
+          // Main handler: execute actions on pointerup for mobile
+          document.addEventListener('pointerup', (e)=>{
+            const target = e.target;
+            if(!target || !target.closest) return;
+
+            // 1) WINDOW CONTROLS (.wctl[data-action])
+            const wctl = target.closest('.wctl[data-action]');
+            if(wctl){
+              const winEl = wctl.closest('.window');
+              if(!winEl || !winEl.id) return;
+              const appId = winEl.id.replace('win_','');
+
+              // Ensure window is focused
+              try{ focusWindow(appId); } catch {}
+
+              const act = wctl.dataset.action;
+              if(act === 'close') closeApp(appId);
+              if(act === 'min') minimizeApp(appId);
+              if(act === 'max') toggleFitWindow(appId);
+
+              suppressClickUntil = Date.now() + 450;
+              e.preventDefault();
+              e.stopImmediatePropagation();
+              return;
+            }
+
+            // 2) SETTINGS BUTTONS [data-set-*]
+            const settingsBtn = target.closest('[data-set-lang], [data-set-wallpaper], [data-set-animations], [data-set-scanlines], [data-set-darkmode], [data-set-blissos-darkmode], [data-set-retro], [data-set-clock], [data-set-oldcrt], [data-set-os-theme], [data-set-titlebar], [data-set-theme]');
+            if(settingsBtn){
+              const winEl = settingsBtn.closest('.window');
+              if(winEl && winEl.id){
+                const appId = winEl.id.replace('win_','');
+                try{ focusWindow(appId); } catch {}
+              }
+
+              // Execute the same setters as in the click handler
+              if(settingsBtn.dataset.setLang) setLang(settingsBtn.dataset.setLang);
+              if(settingsBtn.dataset.setWallpaper) applyWallpaper(settingsBtn.dataset.setWallpaper);
+              if(settingsBtn.dataset.setAnimations) setAnimations(settingsBtn.dataset.setAnimations === 'on');
+              if(settingsBtn.dataset.setScanlines) setScanlines(settingsBtn.dataset.setScanlines === 'on');
+              if(settingsBtn.dataset.setDarkmode) setDarkMode(settingsBtn.dataset.setDarkmode === 'on');
+              if(settingsBtn.dataset.setBlissosDarkmode) setBlissOSDarkMode(settingsBtn.dataset.setBlissosDarkmode === 'on');
+              if(settingsBtn.dataset.setRetro) setRetroGlow(settingsBtn.dataset.setRetro === 'on');
+              if(settingsBtn.dataset.setClock) setClockFormat(settingsBtn.dataset.setClock === '24');
+              if(settingsBtn.dataset.setOldcrt) setOldCrt(settingsBtn.dataset.setOldcrt === 'on');
+              if(settingsBtn.dataset.setOsTheme) setOsTheme(settingsBtn.dataset.setOsTheme);
+              if(settingsBtn.dataset.setTitlebar) setTitlebarTheme(settingsBtn.dataset.setTitlebar);
+              if(settingsBtn.dataset.setTheme) setThemePreset(settingsBtn.dataset.setTheme);
+
+              suppressClickUntil = Date.now() + 450;
+              e.preventDefault();
+              e.stopImmediatePropagation();
+              return;
+            }
+          }, true);
+
+          // Fallback: touchend for older iOS
+          document.addEventListener('touchend', (e)=>{
+            const target = e.target;
+            if(!target || !target.closest) return;
+
+            const wctl = target.closest('.wctl[data-action]');
+            if(wctl){
+              const winEl = wctl.closest('.window');
+              if(!winEl || !winEl.id) return;
+              const appId = winEl.id.replace('win_','');
+              try{ focusWindow(appId); } catch {}
+              const act = wctl.dataset.action;
+              if(act === 'close') closeApp(appId);
+              if(act === 'min') minimizeApp(appId);
+              if(act === 'max') toggleFitWindow(appId);
+              suppressClickUntil = Date.now() + 450;
+              return;
+            }
+
+            const settingsBtn = target.closest('[data-set-lang], [data-set-wallpaper], [data-set-animations], [data-set-scanlines], [data-set-darkmode], [data-set-blissos-darkmode], [data-set-retro], [data-set-clock], [data-set-oldcrt], [data-set-os-theme], [data-set-titlebar], [data-set-theme]');
+            if(settingsBtn){
+              const winEl = settingsBtn.closest('.window');
+              if(winEl && winEl.id){
+                const appId = winEl.id.replace('win_','');
+                try{ focusWindow(appId); } catch {}
+              }
+              if(settingsBtn.dataset.setLang) setLang(settingsBtn.dataset.setLang);
+              if(settingsBtn.dataset.setWallpaper) applyWallpaper(settingsBtn.dataset.setWallpaper);
+              if(settingsBtn.dataset.setAnimations) setAnimations(settingsBtn.dataset.setAnimations === 'on');
+              if(settingsBtn.dataset.setScanlines) setScanlines(settingsBtn.dataset.setScanlines === 'on');
+              if(settingsBtn.dataset.setDarkmode) setDarkMode(settingsBtn.dataset.setDarkmode === 'on');
+              if(settingsBtn.dataset.setBlissosDarkmode) setBlissOSDarkMode(settingsBtn.dataset.setBlissosDarkmode === 'on');
+              if(settingsBtn.dataset.setRetro) setRetroGlow(settingsBtn.dataset.setRetro === 'on');
+              if(settingsBtn.dataset.setClock) setClockFormat(settingsBtn.dataset.setClock === '24');
+              if(settingsBtn.dataset.setOldcrt) setOldCrt(settingsBtn.dataset.setOldcrt === 'on');
+              if(settingsBtn.dataset.setOsTheme) setOsTheme(settingsBtn.dataset.setOsTheme);
+              if(settingsBtn.dataset.setTitlebar) setTitlebarTheme(settingsBtn.dataset.setTitlebar);
+              if(settingsBtn.dataset.setTheme) setThemePreset(settingsBtn.dataset.setTheme);
+              suppressClickUntil = Date.now() + 450;
+              return;
+            }
+          }, { capture: true, passive: false });
+        }
+
+        // Touch to click dispatch for Settings controls
+        if(IS_COARSE){
+          document.addEventListener('pointerup', (evt)=>{
+            const target = evt.target;
+            if(!target || !target.closest) return;
+            const settingsBtn = target.closest('[data-set-lang], [data-set-theme], [data-set-wallpaper], [data-set-animations], [data-set-scanlines], [data-set-darkmode], [data-set-blissos-darkmode], [data-set-retro], [data-set-clock], [data-set-oldcrt], [data-set-os-theme], [data-set-titlebar]');
+            if(settingsBtn && evt.pointerType === 'touch'){
+              evt.preventDefault();
+              evt.stopPropagation();
+              const clickEvent = new MouseEvent('click', {
+                bubbles: true,
+                cancelable: true,
+                view: window
+              });
+              settingsBtn.dispatchEvent(clickEvent);
+            }
+          }, { capture: true, passive: false });
+
+          // Block context menu on window controls and settings buttons on touch
+          document.addEventListener('contextmenu', (e)=>{
+            const target = e.target;
+            if(!target || !target.closest) return;
+            // Block contextmenu on window controls
+            const wctl = target.closest('.wctl[data-action]');
+            if(wctl){
+              e.preventDefault();
+              e.stopImmediatePropagation();
+              return;
+            }
+            // Block contextmenu on settings buttons
+            const settingsBtn = target.closest('[data-set-lang], [data-set-theme], [data-set-wallpaper], [data-set-animations], [data-set-scanlines], [data-set-darkmode], [data-set-blissos-darkmode], [data-set-retro], [data-set-clock], [data-set-oldcrt], [data-set-os-theme], [data-set-titlebar]');
+            if(settingsBtn){
+              e.preventDefault();
+              e.stopImmediatePropagation();
+              return;
+            }
+          }, { capture: true });
+        }
       })();
     </script>
 <script>
@@ -15141,7 +15292,8 @@ function renderBlissOSAppMenu(){
       const result = originalOpenApp.apply(this, [appId, ...args]);
       const winEl = document.getElementById(`win_${appId}`);
       // Only animate brand‑new windows when animations are enabled and the user allows motion
-      if (winEl && !existing && window.state && window.state.animations !== 0 && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      // Note: state.animations is a boolean (true for on, false for off). Check truthiness instead of comparing with 0.
+      if (winEl && !existing && window.state && window.state.animations && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
         // Remove the built‑in open animation class so our custom animation isn’t doubled up
         winEl.classList.remove('anim-open');
         animateAppLaunch(iconEl, winEl);
@@ -15186,34 +15338,6 @@ function renderBlissOSAppMenu(){
       winEl.style.visibility = prevVisibility || '';
     });
   }
-
-  // Touch helper: ensure interactive controls inside settings respond to a
-  // single tap on mobile. Certain browsers defer the click event until
-  // after the pointer sequence finishes, which can make the UI feel
-  // unresponsive. This global handler listens for pointerup events from
-  // touch pointers, intercepts them for various data‑set controls and
-  // immediately dispatches the corresponding click event, then prevents
-  // the default behaviour. Without this the user often needs to double
-  // tap on mobile to toggle options in the settings dialog.
-  (function(){
-    const selectors = [
-      '[data-set-lang]', '[data-set-theme]', '[data-set-wallpaper]', '[data-set-animations]',
-      '[data-set-scanlines]', '[data-set-darkmode]', '[data-set-blissos-darkmode]',
-      '[data-set-retro]', '[data-set-clock]', '[data-set-oldcrt]',
-      '[data-set-os-theme]', '[data-set-titlebar]'
-    ].join(',');
-    document.addEventListener('pointerup', (evt) => {
-      if(evt.pointerType !== 'touch') return;
-      const el = evt.target.closest(selectors);
-      if(!el) return;
-      // prevent the long press from triggering a context menu and stop
-      // propagation so the subsequent synthetic click is suppressed
-      evt.preventDefault();
-      evt.stopPropagation();
-      // Dispatch a synthetic click so any bound click handlers run
-      el.dispatchEvent(new MouseEvent('click', { bubbles:true, cancelable:true }));
-    }, true);
-  })();
 })();
 </script>
   </body>
