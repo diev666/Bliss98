@@ -280,17 +280,22 @@
   body.mobile-game-active #win_games .content{
     height:calc(100% - 32px - 32px)!important; /* Account for titlebar + statusbar */
     overflow:hidden!important;
+    box-sizing: border-box;
+    padding-bottom: calc(var(--ps1-dock-h, 260px) + 12px) !important;
   }
   /* Snake layout improvements for mobile */
   body.mobile-game-active #win_games .snake-layout{
-    justify-content:center;
-    align-items:center;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    justify-content: center;
+    align-items: center;
   }
   body.mobile-game-active #win_games .snake-board{
-    width:min(94vw, 420px);
-    height:auto;
-    max-height:min(52vh, 420px);
-    aspect-ratio:1 / 1;
+    width: min(86vw, 320px);
+    aspect-ratio: 1 / 1;
+    max-height: calc(100% - 16px);
+    margin: 8px auto 0;
     flex: 0 0 auto;
   }
   /* Dope Skate canvas responsive sizing */
@@ -12285,7 +12290,7 @@ Eu sou o buffalo branco extinto`
               <div class="settings-panel" role="tabpanel" data-tab="system" id="settingsPanel_system">
                 <div class="settings-panel-header">
                   <div class="settings-panel-icon">
-                    <img class="pixel" src="./assets/icons/settings.png" data-settings-icon="settings.png" width="48" height="48" alt="" />
+                    <img class="pixel" src="./assets/icons/Settings.png" data-settings-icon="Settings.png" width="48" height="48" alt="" />
                   </div>
                   <div>
                     <strong data-i18n="settings.systemTab">System</strong>
@@ -13786,12 +13791,21 @@ function autoFitWindow(winEl, appId){
 
       // MOBILE GAME MODE: Manage dock/UI visibility during gameplay
       // Usage: Call enterMobileGameMode('snake') on game start, exitMobileGameMode() on end
-      function updateMobileGameLayoutVars(){
-        const dock = document.querySelector('.ps1-dock');
+      function syncPs1DockHeightVar(){
+        // Try to find the PS1 dock element (multiple selectors for robustness)
+        const dock = document.querySelector('.ps1-dock') || 
+                     document.getElementById('ps1Dock') || 
+                     document.getElementById('ps1Controller');
         if(dock){
           const height = dock.getBoundingClientRect().height;
           document.documentElement.style.setProperty('--ps1-dock-h', height + 'px');
+        } else {
+          // Fallback to default
+          document.documentElement.style.setProperty('--ps1-dock-h', '260px');
         }
+      }
+      function updateMobileGameLayoutVars(){
+        syncPs1DockHeightVar();
       }
       function enterMobileGameMode(gameId){
         state.mobileGameMode = gameId;
@@ -13803,19 +13817,19 @@ function autoFitWindow(winEl, appId){
         if(menuDrop) menuDrop.classList.add('hidden');
         const appMenuDrop = document.getElementById('blissosAppMenuDrop');
         if(appMenuDrop) appMenuDrop.classList.add('hidden');
-        // Update mobile game layout vars after entering mode
-        updateMobileGameLayoutVars();
-        setTimeout(updateMobileGameLayoutVars, 0);
+        // Sync PS1 dock height to CSS var immediately and after repaint
+        syncPs1DockHeightVar();
+        setTimeout(syncPs1DockHeightVar, 0);
         // Listen for resize while in mobile game mode
         window.addEventListener('resize', handleMobileGameResize);
+        window.addEventListener('orientationchange', handleMobileGameResize);
         if(window.visualViewport){
-          window.visualViewport.addEventListener('orientationchange', handleMobileGameResize);
           window.visualViewport.addEventListener('resize', handleMobileGameResize);
         }
       }
       function handleMobileGameResize(){
         if(document.body.classList.contains('mobile-game-active')){
-          updateMobileGameLayoutVars();
+          syncPs1DockHeightVar();
         }
       }
       function exitMobileGameMode(){
@@ -13826,8 +13840,8 @@ function autoFitWindow(winEl, appId){
         if(dock) dock.style.display = '';
         // Remove resize listeners
         window.removeEventListener('resize', handleMobileGameResize);
+        window.removeEventListener('orientationchange', handleMobileGameResize);
         if(window.visualViewport){
-          window.visualViewport.removeEventListener('orientationchange', handleMobileGameResize);
           window.visualViewport.removeEventListener('resize', handleMobileGameResize);
         }
       }
