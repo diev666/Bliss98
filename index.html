@@ -200,19 +200,21 @@
   body.mobile-game-active #win_games .snake-layout{
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     height: 100%;
+    width: 100%;
+    padding-top: 10px;
+    padding-bottom: 10px;
   }
   body.mobile-game-active #win_games .snake-board{
-    width: min(92vw, 360px);
+    width: min(88vw, 340px);
+    aspect-ratio: 1 / 1;
+    max-height: calc(100dvh - 64px - var(--ps1-dock-h, 260px) - 24px);
     height: auto;
-    min-width: 0;
-    min-height: 0;
-    padding: 6px;
+    margin-top: 8px;
+    margin-left: auto;
+    margin-right: auto;
     flex: 0 0 auto;
-    max-height: min(44vh, 360px);
-    align-self: center;
-    aspect-ratio: 1/1;
-    margin-top: 10px;
   }
   body.mobile-game-active #win_games .snake-board canvas{
     width: 100%;
@@ -2436,7 +2438,7 @@
         min-height:0;
         display:flex;
         flex-direction:column;
-        padding-bottom:260px;
+        padding-bottom: calc(var(--ps1-dock-h, 260px) + env(safe-area-inset-bottom, 0px));
         position:relative;
       }
       #win_games.mobile-game{
@@ -2567,15 +2569,14 @@
         box-shadow:inset 0 2px 6px rgba(0,0,0,0.2);
       }
       #win_games.mobile-game .snake-board{
-        width:min(84vw, 300px);
-        height:auto;
-        min-width:0;
-        min-height:0;
-        padding:6px;
-        flex:0 0 auto;
-        max-height:min(34vh, 300px);
-        align-self:center;
-        aspect-ratio:1/1;
+        width: min(88vw, 340px);
+        aspect-ratio: 1 / 1;
+        max-height: calc(100dvh - 64px - var(--ps1-dock-h, 260px) - 24px);
+        height: auto;
+        margin-top: 8px;
+        margin-left: auto;
+        margin-right: auto;
+        flex: 0 0 auto;
       }
       #win_games.mobile-game .snake-board canvas{
         width:100%;
@@ -13785,6 +13786,13 @@ function autoFitWindow(winEl, appId){
 
       // MOBILE GAME MODE: Manage dock/UI visibility during gameplay
       // Usage: Call enterMobileGameMode('snake') on game start, exitMobileGameMode() on end
+      function updateMobileGameLayoutVars(){
+        const dock = document.querySelector('.ps1-dock');
+        if(dock){
+          const height = dock.getBoundingClientRect().height;
+          document.documentElement.style.setProperty('--ps1-dock-h', height + 'px');
+        }
+      }
       function enterMobileGameMode(gameId){
         state.mobileGameMode = gameId;
         document.documentElement.style.setProperty('--mobile-game-active', '1');
@@ -13795,6 +13803,20 @@ function autoFitWindow(winEl, appId){
         if(menuDrop) menuDrop.classList.add('hidden');
         const appMenuDrop = document.getElementById('blissosAppMenuDrop');
         if(appMenuDrop) appMenuDrop.classList.add('hidden');
+        // Update mobile game layout vars after entering mode
+        updateMobileGameLayoutVars();
+        setTimeout(updateMobileGameLayoutVars, 0);
+        // Listen for resize while in mobile game mode
+        window.addEventListener('resize', handleMobileGameResize);
+        if(window.visualViewport){
+          window.visualViewport.addEventListener('orientationchange', handleMobileGameResize);
+          window.visualViewport.addEventListener('resize', handleMobileGameResize);
+        }
+      }
+      function handleMobileGameResize(){
+        if(document.body.classList.contains('mobile-game-active')){
+          updateMobileGameLayoutVars();
+        }
       }
       function exitMobileGameMode(){
         state.mobileGameMode = null;
@@ -13802,6 +13824,12 @@ function autoFitWindow(winEl, appId){
         document.body.classList.remove('mobile-game-active');
         const dock = document.getElementById('blissosDock');
         if(dock) dock.style.display = '';
+        // Remove resize listeners
+        window.removeEventListener('resize', handleMobileGameResize);
+        if(window.visualViewport){
+          window.visualViewport.removeEventListener('orientationchange', handleMobileGameResize);
+          window.visualViewport.removeEventListener('resize', handleMobileGameResize);
+        }
       }
       function snakeEnterView(){
         if(!window.matchMedia('(pointer:coarse)').matches) return;
