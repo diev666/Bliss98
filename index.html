@@ -3490,6 +3490,10 @@
       const $ = (sel, root=document) => root.querySelector(sel);
       const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
 
+      // Mobile tap fix: detect coarse pointer (touch) and suppress phantom clicks
+      const IS_COARSE = window.matchMedia && window.matchMedia('(hover:none) and (pointer:coarse)').matches;
+      let suppressClickUntil = 0;
+
       const state = {
         user: null,
         windows: new Map(),
@@ -15096,6 +15100,116 @@ function renderBlissOSAppMenu(){
             // Prevent clicks inside the menu from bubbling to the document closer
             ev.stopPropagation();
           });
+        }
+
+        // ===== MOBILE TAP FIX: Handle window controls and settings on pointerup/touchend =====
+        if(IS_COARSE){
+          // Suppress click events that come after touch actions
+          document.addEventListener('click', (e)=>{
+            if(Date.now() < suppressClickUntil){
+              e.preventDefault();
+              e.stopImmediatePropagation();
+            }
+          }, true);
+
+          // Main handler: execute actions on pointerup for mobile
+          document.addEventListener('pointerup', (e)=>{
+            const target = e.target;
+            if(!target || !target.closest) return;
+
+            // 1) WINDOW CONTROLS (.wctl[data-action])
+            const wctl = target.closest('.wctl[data-action]');
+            if(wctl){
+              const winEl = wctl.closest('.window');
+              if(!winEl || !winEl.id) return;
+              const appId = winEl.id.replace('win_','');
+
+              // Ensure window is focused
+              try{ focusWindow(appId); } catch {}
+
+              const act = wctl.dataset.action;
+              if(act === 'close') closeApp(appId);
+              if(act === 'min') minimizeApp(appId);
+              if(act === 'max') toggleFitWindow(appId);
+
+              suppressClickUntil = Date.now() + 450;
+              e.preventDefault();
+              e.stopImmediatePropagation();
+              return;
+            }
+
+            // 2) SETTINGS BUTTONS [data-set-*]
+            const settingsBtn = target.closest('[data-set-lang], [data-set-wallpaper], [data-set-animations], [data-set-scanlines], [data-set-darkmode], [data-set-blissos-darkmode], [data-set-retro], [data-set-clock], [data-set-oldcrt], [data-set-os-theme], [data-set-titlebar], [data-set-theme]');
+            if(settingsBtn){
+              const winEl = settingsBtn.closest('.window');
+              if(winEl && winEl.id){
+                const appId = winEl.id.replace('win_','');
+                try{ focusWindow(appId); } catch {}
+              }
+
+              // Execute the same setters as in the click handler
+              if(settingsBtn.dataset.setLang) setLang(settingsBtn.dataset.setLang);
+              if(settingsBtn.dataset.setWallpaper) applyWallpaper(settingsBtn.dataset.setWallpaper);
+              if(settingsBtn.dataset.setAnimations) setAnimations(settingsBtn.dataset.setAnimations === 'on');
+              if(settingsBtn.dataset.setScanlines) setScanlines(settingsBtn.dataset.setScanlines === 'on');
+              if(settingsBtn.dataset.setDarkmode) setDarkMode(settingsBtn.dataset.setDarkmode === 'on');
+              if(settingsBtn.dataset.setBlissosDarkmode) setBlissOSDarkMode(settingsBtn.dataset.setBlissosDarkmode === 'on');
+              if(settingsBtn.dataset.setRetro) setRetroGlow(settingsBtn.dataset.setRetro === 'on');
+              if(settingsBtn.dataset.setClock) setClockFormat(settingsBtn.dataset.setClock === '24');
+              if(settingsBtn.dataset.setOldcrt) setOldCrt(settingsBtn.dataset.setOldcrt === 'on');
+              if(settingsBtn.dataset.setOsTheme) setOsTheme(settingsBtn.dataset.setOsTheme);
+              if(settingsBtn.dataset.setTitlebar) setTitlebarTheme(settingsBtn.dataset.setTitlebar);
+              if(settingsBtn.dataset.setTheme) setThemePreset(settingsBtn.dataset.setTheme);
+
+              suppressClickUntil = Date.now() + 450;
+              e.preventDefault();
+              e.stopImmediatePropagation();
+              return;
+            }
+          }, true);
+
+          // Fallback: touchend for older iOS
+          document.addEventListener('touchend', (e)=>{
+            const target = e.target;
+            if(!target || !target.closest) return;
+
+            const wctl = target.closest('.wctl[data-action]');
+            if(wctl){
+              const winEl = wctl.closest('.window');
+              if(!winEl || !winEl.id) return;
+              const appId = winEl.id.replace('win_','');
+              try{ focusWindow(appId); } catch {}
+              const act = wctl.dataset.action;
+              if(act === 'close') closeApp(appId);
+              if(act === 'min') minimizeApp(appId);
+              if(act === 'max') toggleFitWindow(appId);
+              suppressClickUntil = Date.now() + 450;
+              return;
+            }
+
+            const settingsBtn = target.closest('[data-set-lang], [data-set-wallpaper], [data-set-animations], [data-set-scanlines], [data-set-darkmode], [data-set-blissos-darkmode], [data-set-retro], [data-set-clock], [data-set-oldcrt], [data-set-os-theme], [data-set-titlebar], [data-set-theme]');
+            if(settingsBtn){
+              const winEl = settingsBtn.closest('.window');
+              if(winEl && winEl.id){
+                const appId = winEl.id.replace('win_','');
+                try{ focusWindow(appId); } catch {}
+              }
+              if(settingsBtn.dataset.setLang) setLang(settingsBtn.dataset.setLang);
+              if(settingsBtn.dataset.setWallpaper) applyWallpaper(settingsBtn.dataset.setWallpaper);
+              if(settingsBtn.dataset.setAnimations) setAnimations(settingsBtn.dataset.setAnimations === 'on');
+              if(settingsBtn.dataset.setScanlines) setScanlines(settingsBtn.dataset.setScanlines === 'on');
+              if(settingsBtn.dataset.setDarkmode) setDarkMode(settingsBtn.dataset.setDarkmode === 'on');
+              if(settingsBtn.dataset.setBlissosDarkmode) setBlissOSDarkMode(settingsBtn.dataset.setBlissosDarkmode === 'on');
+              if(settingsBtn.dataset.setRetro) setRetroGlow(settingsBtn.dataset.setRetro === 'on');
+              if(settingsBtn.dataset.setClock) setClockFormat(settingsBtn.dataset.setClock === '24');
+              if(settingsBtn.dataset.setOldcrt) setOldCrt(settingsBtn.dataset.setOldcrt === 'on');
+              if(settingsBtn.dataset.setOsTheme) setOsTheme(settingsBtn.dataset.setOsTheme);
+              if(settingsBtn.dataset.setTitlebar) setTitlebarTheme(settingsBtn.dataset.setTitlebar);
+              if(settingsBtn.dataset.setTheme) setThemePreset(settingsBtn.dataset.setTheme);
+              suppressClickUntil = Date.now() + 450;
+              return;
+            }
+          }, { capture: true, passive: false });
         }
       })();
     </script>
