@@ -3490,25 +3490,24 @@
       const $ = (sel, root=document) => root.querySelector(sel);
       const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
 
-      
-
-      // Normalize event target for touch (Text node -> parentElement, prefer composedPath)
+      // Normalize event target: text nodes -> parent element
       function getEventTargetEl(e){
         if(!e) return null;
         const path = (typeof e.composedPath === 'function') ? e.composedPath() : null;
         const first = (path && path.length) ? path[0] : e.target;
         if(!first) return null;
-
-        // Text node => use parent element
+        // Text node -> use parent element
         if(first.nodeType === 3) return first.parentElement;
-
-        // Element => OK
+        // Element node
         if(first.nodeType === 1) return first;
-
-        // Other node types => try parentElement
         return first.parentElement || null;
       }
-// Mobile tap fix: detect coarse pointer (touch) and suppress phantom clicks
+
+      // Short alias used throughout event handlers
+      function ET(e){ return getEventTargetEl(e) || e.target; }
+
+
+      // Mobile tap fix: detect coarse pointer (touch) and suppress phantom clicks
       const IS_COARSE = window.matchMedia && window.matchMedia('(hover:none) and (pointer:coarse)').matches;
       let suppressClickUntil = 0;
 
@@ -7266,7 +7265,7 @@ function dopeSkateRenderShop(){
 
   dopeSkate.els.shopList.querySelectorAll('[data-skate-shop-action]').forEach(btn => {
     btn.addEventListener('click', (e)=>{
-      const card = (getEventTargetEl(e) || e.target).closest('[data-skate-item]');
+      const card = ET(e).closest('[data-skate-item]');
       if(!card) return;
       dopeSkateHandleShopAction(card.dataset.skateCat, card.dataset.skateItem, card);
       e.stopPropagation();
@@ -8956,20 +8955,42 @@ function handleCtxAction(action){
 function installLongPress(el, getTarget){
   let timer = null;
   let start = null;
+  let pointerId = null;
   const threshold = 8;
   const delay = 520;
 
   const clear = ()=>{
     if(timer){ clearTimeout(timer); timer = null; }
     start = null;
+    if(pointerId !== null){
+      try { el.releasePointerCapture(pointerId); } catch {}
+      pointerId = null;
+    }
   };
 
   el.addEventListener('pointerdown', (e)=>{
     if(e.pointerType !== 'touch') return;
+    
+    // Filter: if this is #desktopArea, don't start long-press if touch begins on interactive elements
+    if(el.id === 'desktopArea'){
+      const target = e.target;
+      if(!target) return;
+      // List of selectors to filter out (don't start long-press on these)
+      const blockedSelectors = '.window, .icon, #startMenu, #ctxMenu, .menu-drop, .menu-sub, .modal, .blissos-menubar, .blissos-menu-drop, .blissos-appmenu-drop, .blissos-apple-menu';
+      if(target.closest && target.closest(blockedSelectors)){
+        return;
+      }
+    }
+    
     start = { x:e.clientX, y:e.clientY };
+    pointerId = e.pointerId;
+    
+    // Capture pointer to ensure pointerup/pointercancel arrives even if DOM changes
+    try { el.setPointerCapture(pointerId); } catch {}
+    
     timer = setTimeout(()=>{
       const tgt = getTarget ? getTarget() : { target:'desktop', appId:null };
-      openCtxMenu(e.clientX, e.clientY, tgt.target, tgt.appId);
+      openCtxMenu(start.x, start.y, tgt.target, tgt.appId);
       clear();
     }, delay);
   });
@@ -12743,7 +12764,7 @@ function getDisplayTime(){
 
       // Delegate Media Player button clicks
       document.addEventListener('click', (e)=>{
-        const actBtn = (getEventTargetEl(e) || e.target).closest && (getEventTargetEl(e) || e.target).closest('[data-mp-action]');
+        const actBtn = ET(e).closest && ET(e).closest('[data-mp-action]');
         if(actBtn){
           const action = actBtn.dataset.mpAction;
           if(action === 'toggle'){
@@ -12766,7 +12787,7 @@ function getDisplayTime(){
           }
         }
 
-        const pickBtn = (getEventTargetEl(e) || e.target).closest && (getEventTargetEl(e) || e.target).closest('[data-mp-pick]');
+        const pickBtn = ET(e).closest && ET(e).closest('[data-mp-pick]');
         if(pickBtn){
           const idx = Number(pickBtn.dataset.mpPick);
           state.mediaplayer.selected = new Set([idx]);
@@ -12776,12 +12797,14 @@ function getDisplayTime(){
       });
 
       document.addEventListener('dblclick', (e)=>{
-        const card = (getEventTargetEl(e) || e.target).closest && (getEventTargetEl(e) || e.target).closest('[data-music-id]');
+        const target = getEventTargetEl(e);
+        if(!target || !target.closest) return;
+        const card = target.closest('[data-music-id]');
         if(card && card.dataset && card.dataset.musicLink){
           e.preventDefault();
           openLink(card.dataset.musicLink, 'music');
         }
-        const poemItem = (getEventTargetEl(e) || e.target).closest && (getEventTargetEl(e) || e.target).closest('[data-poem-id]');
+        const poemItem = target.closest('[data-poem-id]');
         if(poemItem && poemItem.dataset && poemItem.dataset.poemId){
           e.preventDefault();
           state.poetry.view = 'read';
@@ -12789,7 +12812,7 @@ function getDisplayTime(){
           state.poetry.readLang = state.lang;
           renderPoetryWindow();
         }
-        const trashItem = (getEventTargetEl(e) || e.target).closest && (getEventTargetEl(e) || e.target).closest('[data-trash-id]');
+        const trashItem = target.closest('[data-trash-id]');
         if(trashItem && trashItem.dataset && trashItem.dataset.trashId){
           e.preventDefault();
           restoreFromTrash([trashItem.dataset.trashId]);
@@ -12799,7 +12822,9 @@ function getDisplayTime(){
       let lastPoetryTap = { id: null, time: 0 };
       document.addEventListener('pointerdown', (e)=>{
         if(e.pointerType !== 'touch') return;
-        const musicCard = (getEventTargetEl(e) || e.target).closest && (getEventTargetEl(e) || e.target).closest('[data-music-id]');
+        const target = getEventTargetEl(e);
+        if(!target || !target.closest) return;
+        const musicCard = target.closest('[data-music-id]');
         if(musicCard && musicCard.dataset && musicCard.dataset.musicLink){
           const id = musicCard.dataset.musicId;
           state.music.selected = new Set([id]);
@@ -12808,7 +12833,7 @@ function getDisplayTime(){
           openLink(musicCard.dataset.musicLink, 'music');
           return;
         }
-        const poemItem = (getEventTargetEl(e) || e.target).closest && (getEventTargetEl(e) || e.target).closest('[data-poem-id]');
+        const poemItem = target.closest('[data-poem-id]');
         if(!poemItem || !poemItem.dataset) return;
         const id = poemItem.dataset.poemId;
         const now = Date.now();
@@ -12825,7 +12850,7 @@ function getDisplayTime(){
 
       document.addEventListener('mouseover', (e)=>{
         if(!state.menuOpen) return;
-        const menuToggle = (getEventTargetEl(e) || e.target).closest && (getEventTargetEl(e) || e.target).closest('.menubar span[data-menu]');
+        const menuToggle = ET(e).closest && ET(e).closest('.menubar span[data-menu]');
         if(menuToggle){
           const winEl = menuToggle.closest('.window');
           const menuKey = menuToggle.dataset.menu;
@@ -12837,7 +12862,7 @@ function getDisplayTime(){
       document.addEventListener('selectstart', (e)=>{
         const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
         if(tag === 'input' || tag === 'textarea') return;
-        if(e.target && (getEventTargetEl(e) || e.target).closest && (getEventTargetEl(e) || e.target).closest('.content')) return;
+        if(e.target && ET(e).closest && ET(e).closest('.content')) return;
         e.preventDefault();
       });
 
@@ -13179,7 +13204,8 @@ function renderIcons(){
           $('#desktopArea').dataset.selDragged = '0';
           return;
         }
-        if(e.target && (getEventTargetEl(e) || e.target).closest && (getEventTargetEl(e) || e.target).closest('.window')) return;
+        const target = getEventTargetEl(e);
+        if(target && target.closest && target.closest('.window')) return;
         state.selectedIconId = null;
         $$('.icon').forEach(i=>i.classList.remove('selected'));
         closeStartMenu();
@@ -13197,8 +13223,9 @@ function renderIcons(){
       // Right-click / two-finger click on desktop
       $('#desktopArea').addEventListener('contextmenu', (e)=>{
         if($('#desktop').classList.contains('hidden')) return;
-        if(e.target && (getEventTargetEl(e) || e.target).closest && (getEventTargetEl(e) || e.target).closest('.icon')) return;
-        if(e.target && (getEventTargetEl(e) || e.target).closest && (getEventTargetEl(e) || e.target).closest('.window')) return;
+        const target = getEventTargetEl(e);
+        if(target && target.closest && target.closest('.icon')) return;
+        if(target && target.closest && target.closest('.window')) return;
         e.preventDefault();
         openCtxMenu(e.clientX, e.clientY, 'desktop', null);
       });
@@ -13266,7 +13293,7 @@ function renderIcons(){
           if($('#desktop').classList.contains('hidden')) return;
           if(e.pointerType === 'mouse' && e.button !== 0) return;
           // Don't start a box if user is interacting with icons/windows/menus
-          if(e.target && (getEventTargetEl(e) || e.target).closest && ((getEventTargetEl(e) || e.target).closest('.icon') || (getEventTargetEl(e) || e.target).closest('.window') || (getEventTargetEl(e) || e.target).closest('#startMenu') || (getEventTargetEl(e) || e.target).closest('#ctxMenu'))){
+          if(e.target && ET(e).closest && (ET(e).closest('.icon') || ET(e).closest('.window') || ET(e).closest('#startMenu') || ET(e).closest('#ctxMenu'))){
             return;
           }
 
@@ -13798,7 +13825,7 @@ function autoFitWindow(winEl, appId){
         // On touch devices the first tap should trigger the action without requiring a second tap.
         el.addEventListener('mousedown', (e)=>{
           // If the target element has a data-action (control buttons), defer focusing until the click handler.
-          if(e.target && e.target.dataset && e.target.dataset.action) return;
+          if(e.target && ET(e).dataset && ET(e).dataset.action) return;
           e.stopPropagation();
           focusWindow(appId);
           closeStartMenu();
@@ -13808,7 +13835,7 @@ function autoFitWindow(winEl, appId){
           e.stopPropagation();
         });
         el.addEventListener('click', (e)=>{
-          const act = e.target?.dataset?.action;
+          const act = ET(e)?.dataset?.action;
           if(!act) return;
           e.stopPropagation();
           // Always bring the window to the front when clicking a control.
@@ -13820,7 +13847,7 @@ function autoFitWindow(winEl, appId){
         });
         el.addEventListener('pointerup', (e)=>{
           if(e.pointerType !== 'touch') return;
-          const act = e.target?.dataset?.action;
+          const act = ET(e)?.dataset?.action;
           if(!act) return;
           e.preventDefault();
           e.stopPropagation();
@@ -13871,7 +13898,7 @@ function autoFitWindow(winEl, appId){
           // Ignore non-primary mouse buttons
           if(e.pointerType === 'mouse' && e.button !== 0) return;
           // Ignore clicks on window control buttons
-          if(e.target && e.target.dataset && e.target.dataset.action) return;
+          if(e.target && ET(e).dataset && ET(e).dataset.action) return;
 
           e.preventDefault();
           dragging = true;
@@ -14063,7 +14090,7 @@ function autoFitWindow(winEl, appId){
         winEl.addEventListener('mousemove', (e)=>{
           if(resizing) return;
           // don't override cursor on controls/titlebar
-          if(e.target && (getEventTargetEl(e) || e.target).closest && ((getEventTargetEl(e) || e.target).closest('.titlebar') || (getEventTargetEl(e) || e.target).closest('.wctl'))) return;
+          if(e.target && ET(e).closest && (ET(e).closest('.titlebar') || ET(e).closest('.wctl'))) return;
           const d = getDir(e.clientX, e.clientY);
           const c = cursorFor(d);
           winEl.style.cursor = c || '';
@@ -14076,7 +14103,7 @@ function autoFitWindow(winEl, appId){
         winEl.addEventListener('pointerdown', (e)=>{
           if(resizing) return;
           // ignore titlebar drag and window control clicks
-          if(e.target && (getEventTargetEl(e) || e.target).closest && ((getEventTargetEl(e) || e.target).closest('.titlebar') || (getEventTargetEl(e) || e.target).closest('.wctl'))) return;
+          if(e.target && ET(e).closest && (ET(e).closest('.titlebar') || ET(e).closest('.wctl'))) return;
           const d = getDir(e.clientX, e.clientY);
           if(!d) return;
           beginResize(e, d);
@@ -14725,7 +14752,7 @@ function renderBlissOSAppMenu(){
         if(dopeSkateHandleKeyUp(e)) return;
       });
       document.addEventListener('input', (e)=>{
-        const soundSlider = e.target && (getEventTargetEl(e) || e.target).closest && (getEventTargetEl(e) || e.target).closest('[data-sound-slider]');
+        const soundSlider = e.target && ET(e).closest && ET(e).closest('[data-sound-slider]');
         if(soundSlider && soundSlider.dataset && soundSlider.dataset.soundSlider){
           const val = clamp(parseFloat(soundSlider.value) / 100, 0, 1);
           if(soundSlider.dataset.soundSlider === 'master') setMasterVolume(val);
@@ -14733,14 +14760,16 @@ function renderBlissOSAppMenu(){
         }
       });
       document.addEventListener('click', (e)=>{
-        const poemItem = (getEventTargetEl(e) || e.target).closest && (getEventTargetEl(e) || e.target).closest('[data-poem-id]');
+        const target = getEventTargetEl(e);
+        if(!target || !target.closest) return;
+        const poemItem = target.closest('[data-poem-id]');
         if(poemItem){
           const id = poemItem.dataset.poemId;
           if(e.detail > 1) return;
           selectPoetryItem(id);
           return;
         }
-        const poemAction = (getEventTargetEl(e) || e.target).closest && (getEventTargetEl(e) || e.target).closest('[data-poetry-action]');
+        const poemAction = target.closest('[data-poetry-action]');
         if(poemAction && poemAction.dataset && poemAction.dataset.poetryAction){
           if(poemAction.dataset.poetryAction === 'back'){
             state.poetry.view = 'list';
@@ -14754,7 +14783,7 @@ function renderBlissOSAppMenu(){
           return;
         }
 
-        const trashItem = (getEventTargetEl(e) || e.target).closest && (getEventTargetEl(e) || e.target).closest('[data-trash-id]');
+        const trashItem = target.closest('[data-trash-id]');
         if(trashItem){
           const id = trashItem.dataset.trashId;
           if(e.ctrlKey || e.metaKey){
@@ -14767,7 +14796,7 @@ function renderBlissOSAppMenu(){
           return;
         }
 
-        const trashBtn = (getEventTargetEl(e) || e.target).closest && (getEventTargetEl(e) || e.target).closest('[data-trash-action]');
+        const trashBtn = target.closest('[data-trash-action]');
         if(trashBtn && trashBtn.dataset){
           const action = trashBtn.dataset.trashAction;
           if(action === 'help'){
@@ -14792,7 +14821,7 @@ function renderBlissOSAppMenu(){
           return;
         }
 
-        const modalAction = (getEventTargetEl(e) || e.target).closest && (getEventTargetEl(e) || e.target).closest('[data-modal-action]');
+        const modalAction = target.closest('[data-modal-action]');
         if(modalAction && modalAction.dataset && modalAction.dataset.modalAction){
           const act = modalAction.dataset.modalAction;
           if(act === 'confirm' && typeof modalState.onConfirm === 'function'){
@@ -14813,7 +14842,7 @@ function renderBlissOSAppMenu(){
           return;
         }
 
-        const menuItem = (getEventTargetEl(e) || e.target).closest && (getEventTargetEl(e) || e.target).closest('[data-menu-action]');
+        const menuItem = target.closest('[data-menu-action]');
         if(menuItem && menuItem.dataset && menuItem.dataset.menuAction){
           e.preventDefault();
           e.stopPropagation();
@@ -14821,7 +14850,7 @@ function renderBlissOSAppMenu(){
           closeWindowMenu();
           return;
         }
-        const blissItem = (getEventTargetEl(e) || e.target).closest && (getEventTargetEl(e) || e.target).closest('[data-blissos-action]');
+        const blissItem = target.closest('[data-blissos-action]');
         if(blissItem && blissItem.dataset && blissItem.dataset.blissosAction){
           e.preventDefault();
           e.stopPropagation();
@@ -14830,7 +14859,7 @@ function renderBlissOSAppMenu(){
           closeBlissOSMenu();
           return;
         }
-        const blissOpenApp = (getEventTargetEl(e) || e.target).closest && (getEventTargetEl(e) || e.target).closest('[data-blissos-open-app]');
+        const blissOpenApp = target.closest('[data-blissos-open-app]');
         if(blissOpenApp && blissOpenApp.dataset && blissOpenApp.dataset.blissosOpenApp){
           e.preventDefault();
           e.stopPropagation();
@@ -14838,7 +14867,7 @@ function renderBlissOSAppMenu(){
           closeBlissOSMenu();
           return;
         }
-        const blissSettingsTab = (getEventTargetEl(e) || e.target).closest && (getEventTargetEl(e) || e.target).closest('[data-blissos-settings-tab]');
+        const blissSettingsTab = target.closest('[data-blissos-settings-tab]');
         if(blissSettingsTab && blissSettingsTab.dataset && blissSettingsTab.dataset.blissosSettingsTab){
           e.preventDefault();
           e.stopPropagation();
@@ -14846,14 +14875,14 @@ function renderBlissOSAppMenu(){
           closeBlissOSMenu();
           return;
         }
-        const blissAppMenuBtn = (getEventTargetEl(e) || e.target).closest && (getEventTargetEl(e) || e.target).closest('#blissosAppMenu');
+        const blissAppMenuBtn = target.closest('#blissosAppMenu');
         if(blissAppMenuBtn){
           e.preventDefault();
           e.stopPropagation();
           toggleBlissOSAppMenu();
           return;
         }
-        const blissAppMenuAction = (getEventTargetEl(e) || e.target).closest && (getEventTargetEl(e) || e.target).closest('[data-blissos-appmenu-action]');
+        const blissAppMenuAction = target.closest('[data-blissos-appmenu-action]');
         if(blissAppMenuAction && blissAppMenuAction.dataset && blissAppMenuAction.dataset.blissosAppmenuAction){
           e.preventDefault();
           e.stopPropagation();
@@ -14865,7 +14894,7 @@ function renderBlissOSAppMenu(){
           closeBlissOSAppMenu();
           return;
         }
-        const blissAppMenuApp = (getEventTargetEl(e) || e.target).closest && (getEventTargetEl(e) || e.target).closest('[data-blissos-appmenu-app]');
+        const blissAppMenuApp = ET(e).closest && ET(e).closest('[data-blissos-appmenu-app]');
         if(blissAppMenuApp && blissAppMenuApp.dataset && blissAppMenuApp.dataset.blissosAppmenuApp){
           e.preventDefault();
           e.stopPropagation();
@@ -14888,14 +14917,14 @@ function renderBlissOSAppMenu(){
           closeBlissOSAppMenu();
           return;
         }
-        const blissBrand = (getEventTargetEl(e) || e.target).closest && (getEventTargetEl(e) || e.target).closest('[data-blissos-menu="apple"]');
+        const blissBrand = target.closest('[data-blissos-menu="apple"]');
         if(blissBrand){
           e.preventDefault();
           e.stopPropagation();
           toggleBlissOSMenu();
           return;
         }
-        const blissMenuItem = (getEventTargetEl(e) || e.target).closest && (getEventTargetEl(e) || e.target).closest('.blissos-menu-item[data-blissos-menu]');
+        const blissMenuItem = target.closest('.blissos-menu-item[data-blissos-menu]');
         if(blissMenuItem && state.settings.theme === 'blissos'){
           e.preventDefault();
           e.stopPropagation();
@@ -14909,7 +14938,7 @@ function renderBlissOSAppMenu(){
           }
           return;
         }
-        const menuToggle = (getEventTargetEl(e) || e.target).closest && (getEventTargetEl(e) || e.target).closest('.menubar span[data-menu]');
+        const menuToggle = target.closest('.menubar span[data-menu]');
         if(menuToggle){
           e.preventDefault();
           e.stopPropagation();
@@ -14923,61 +14952,61 @@ function renderBlissOSAppMenu(){
           return;
         }
 
-        const btn = (getEventTargetEl(e) || e.target).closest && (getEventTargetEl(e) || e.target).closest('[data-set-lang]');
+        const btn = target.closest('[data-set-lang]');
         if(btn && btn.dataset && btn.dataset.setLang){
           setLang(btn.dataset.setLang);
         }
-        const wpBtn = (getEventTargetEl(e) || e.target).closest && (getEventTargetEl(e) || e.target).closest('[data-set-wallpaper]');
+        const wpBtn = target.closest('[data-set-wallpaper]');
         if(wpBtn && wpBtn.dataset && wpBtn.dataset.setWallpaper){
           applyWallpaper(wpBtn.dataset.setWallpaper);
         }
-        const animBtn = (getEventTargetEl(e) || e.target).closest && (getEventTargetEl(e) || e.target).closest('[data-set-animations]');
+        const animBtn = target.closest('[data-set-animations]');
         if(animBtn && animBtn.dataset && animBtn.dataset.setAnimations){
           setAnimations(animBtn.dataset.setAnimations === 'on');
         }
-        const scanBtn = (getEventTargetEl(e) || e.target).closest && (getEventTargetEl(e) || e.target).closest('[data-set-scanlines]');
+        const scanBtn = target.closest('[data-set-scanlines]');
         if(scanBtn && scanBtn.dataset && scanBtn.dataset.setScanlines){
           setScanlines(scanBtn.dataset.setScanlines === 'on');
         }
-        const darkBtn = (getEventTargetEl(e) || e.target).closest && (getEventTargetEl(e) || e.target).closest('[data-set-darkmode]');
+        const darkBtn = target.closest('[data-set-darkmode]');
         if(darkBtn && darkBtn.dataset && darkBtn.dataset.setDarkmode){
           setDarkMode(darkBtn.dataset.setDarkmode === 'on');
         }
-        const blissosDarkBtn = (getEventTargetEl(e) || e.target).closest && (getEventTargetEl(e) || e.target).closest('[data-set-blissos-darkmode]');
+        const blissosDarkBtn = target.closest('[data-set-blissos-darkmode]');
         if(blissosDarkBtn && blissosDarkBtn.dataset && blissosDarkBtn.dataset.setBlissosDarkmode){
           setBlissOSDarkMode(blissosDarkBtn.dataset.setBlissosDarkmode === 'on');
         }
-        const retroBtn = (getEventTargetEl(e) || e.target).closest && (getEventTargetEl(e) || e.target).closest('[data-set-retro]');
+        const retroBtn = target.closest('[data-set-retro]');
         if(retroBtn && retroBtn.dataset && retroBtn.dataset.setRetro){
           setRetroGlow(retroBtn.dataset.setRetro === 'on');
         }
-        const soundSlider = (getEventTargetEl(e) || e.target).closest && (getEventTargetEl(e) || e.target).closest('[data-sound-slider]');
+        const soundSlider = target.closest('[data-sound-slider]');
         if(soundSlider && soundSlider.dataset && soundSlider.dataset.soundSlider){
           const val = clamp(parseFloat(soundSlider.value) / 100, 0, 1);
           if(soundSlider.dataset.soundSlider === 'master') setMasterVolume(val);
           if(soundSlider.dataset.soundSlider === 'system') setSystemVolume(val);
         }
-        const clockBtn = (getEventTargetEl(e) || e.target).closest && (getEventTargetEl(e) || e.target).closest('[data-set-clock]');
+        const clockBtn = target.closest('[data-set-clock]');
         if(clockBtn && clockBtn.dataset && clockBtn.dataset.setClock){
           setClockFormat(clockBtn.dataset.setClock === '24');
         }
-        const crtBtn = (getEventTargetEl(e) || e.target).closest && (getEventTargetEl(e) || e.target).closest('[data-set-oldcrt]');
+        const crtBtn = target.closest('[data-set-oldcrt]');
         if(crtBtn && crtBtn.dataset && crtBtn.dataset.setOldcrt){
           setOldCrt(crtBtn.dataset.setOldcrt === 'on');
         }
-        const osThemeBtn = (getEventTargetEl(e) || e.target).closest && (getEventTargetEl(e) || e.target).closest('[data-set-os-theme]');
+        const osThemeBtn = target.closest('[data-set-os-theme]');
         if(osThemeBtn && osThemeBtn.dataset && osThemeBtn.dataset.setOsTheme){
           setOsTheme(osThemeBtn.dataset.setOsTheme);
         }
-        const titleBtn = (getEventTargetEl(e) || e.target).closest && (getEventTargetEl(e) || e.target).closest('[data-set-titlebar]');
+        const titleBtn = target.closest('[data-set-titlebar]');
         if(titleBtn && titleBtn.dataset && titleBtn.dataset.setTitlebar){
           setTitlebarTheme(titleBtn.dataset.setTitlebar);
         }
-        const themeBtn = (getEventTargetEl(e) || e.target).closest && (getEventTargetEl(e) || e.target).closest('[data-set-theme]');
+        const themeBtn = target.closest('[data-set-theme]');
         if(themeBtn && themeBtn.dataset && themeBtn.dataset.setTheme){
           setThemePreset(themeBtn.dataset.setTheme);
         }
-        const themeCustomBtn = (getEventTargetEl(e) || e.target).closest && (getEventTargetEl(e) || e.target).closest('[data-theme-custom]');
+        const themeCustomBtn = target.closest('[data-theme-custom]');
         if(themeCustomBtn && themeCustomBtn.dataset && themeCustomBtn.dataset.themeCustom){
           const act = themeCustomBtn.dataset.themeCustom;
           if(act === 'save'){
@@ -14987,13 +15016,13 @@ function renderBlissOSAppMenu(){
             if(!themeCustomBtn.classList.contains('disabled')) applyCustomTheme();
           }
         }
-        const gamesTabBtn = (getEventTargetEl(e) || e.target).closest && (getEventTargetEl(e) || e.target).closest('[data-games-tab]');
+        const gamesTabBtn = target.closest('[data-games-tab]');
         if(gamesTabBtn && gamesTabBtn.dataset && gamesTabBtn.dataset.gamesTab){
           const tab = gamesTabBtn.dataset.gamesTab;
           state.games.view = (tab === 'leaderboard') ? 'leaderboard' : 'list';
           renderGamesWindow();
         }
-        const videosAction = (getEventTargetEl(e) || e.target).closest && (getEventTargetEl(e) || e.target).closest('[data-videos-action]');
+        const videosAction = target.closest('[data-videos-action]');
         if(videosAction && videosAction.dataset && videosAction.dataset.videosAction){
           const act = videosAction.dataset.videosAction;
           if(act === 'openChannel'){
@@ -15013,14 +15042,14 @@ function renderBlissOSAppMenu(){
             });
           }
         }
-        const videoItem = (getEventTargetEl(e) || e.target).closest && (getEventTargetEl(e) || e.target).closest('[data-video-id]');
+        const videoItem = target.closest('[data-video-id]');
         if(videoItem && videoItem.dataset && videoItem.dataset.videoId){
           state.videos.selectedId = videoItem.dataset.videoId;
           renderVideoPlayer(null, state.videos.selectedId, { force:true });
           renderVideosList(null, state.videos.items);
           return;
         }
-        const musicCard = (getEventTargetEl(e) || e.target).closest && (getEventTargetEl(e) || e.target).closest('[data-music-id]');
+        const musicCard = target.closest('[data-music-id]');
         if(musicCard){
           if(musicCard.dataset && musicCard.dataset.touchOpened === '1'){
             delete musicCard.dataset.touchOpened;
@@ -15037,14 +15066,14 @@ function renderBlissOSAppMenu(){
           return;
         }
 
-        const ctxBtn = (getEventTargetEl(e) || e.target).closest && (getEventTargetEl(e) || e.target).closest('[data-ctx-action]');
+        const ctxBtn = ET(e).closest && ET(e).closest('[data-ctx-action]');
         if(ctxBtn && ctxBtn.dataset && ctxBtn.dataset.ctxAction){
           e.preventDefault();
           e.stopPropagation();
           handleCtxAction(ctxBtn.dataset.ctxAction);
           closeCtxMenu();
         }
-        if(!(getEventTargetEl(e) || e.target).closest || (!(getEventTargetEl(e) || e.target).closest('.menu-drop') && !(getEventTargetEl(e) || e.target).closest('.menubar') && !(getEventTargetEl(e) || e.target).closest('#blissosMenuDrop') && !(getEventTargetEl(e) || e.target).closest('#blissosMenubar'))){
+        if(!ET(e).closest || (!ET(e).closest('.menu-drop') && !ET(e).closest('.menubar') && !ET(e).closest('#blissosMenuDrop') && !ET(e).closest('#blissosMenubar'))){
           closeWindowMenu();
         }
       });
@@ -15112,13 +15141,16 @@ function renderBlissOSAppMenu(){
       document.addEventListener('click', (e)=>{
         closeStartMenu();
         closeCtxMenu();
-        const inAppleMenu = e.target && (getEventTargetEl(e) || e.target).closest && ((getEventTargetEl(e) || e.target).closest('#blissosAppleMenu') || (getEventTargetEl(e) || e.target).closest('[data-blissos-menu="apple"]'));
+        const target = getEventTargetEl(e);
+        if(!target || !target.closest) return;
+        const inAppleMenu = target.closest('#blissosAppleMenu') || target.closest('[data-blissos-menu="apple"]');
         if(!inAppleMenu) closeBlissOSMenu();
-        const inAppMenu = e.target && (getEventTargetEl(e) || e.target).closest && ((getEventTargetEl(e) || e.target).closest('#blissosAppMenuDrop') || (getEventTargetEl(e) || e.target).closest('#blissosAppMenu'));
+        const inAppMenu = target.closest('#blissosAppMenuDrop') || target.closest('#blissosAppMenu');
         if(!inAppMenu) closeBlissOSAppMenu();
       });
       document.addEventListener('pointerdown', (e)=>{
-        const winEl = e.target && (getEventTargetEl(e) || e.target).closest ? (getEventTargetEl(e) || e.target).closest('.window') : null;
+        const target = getEventTargetEl(e);
+        const winEl = target && target.closest ? target.closest('.window') : null;
         if(!winEl) return;
         const appId = winEl.id ? winEl.id.replace('win_','') : null;
         if(appId && state.windows.has(appId)) focusWindow(appId);
@@ -15126,7 +15158,8 @@ function renderBlissOSAppMenu(){
         const cm = $('#ctxMenu');
         if(cm){
           cm.addEventListener('click', (ev)=>{
-            const btn = (getEventTargetEl(ev) || ev.target).closest && (getEventTargetEl(ev) || ev.target).closest('[data-ctx-action]');
+            const target = getEventTargetEl(ev);
+            const btn = target && target.closest ? target.closest('[data-ctx-action]') : null;
             if(btn && btn.dataset && btn.dataset.ctxAction){
               ev.preventDefault();
               ev.stopPropagation();
@@ -15151,7 +15184,7 @@ function renderBlissOSAppMenu(){
 
           // Main handler: execute actions on pointerup for mobile
           document.addEventListener('pointerup', (e)=>{
-            const target = getEventTargetEl(e) || e.target;
+            const target = getEventTargetEl(e);
             if(!target || !target.closest) return;
 
             // 1) WINDOW CONTROLS (.wctl[data-action])
@@ -15207,7 +15240,7 @@ function renderBlissOSAppMenu(){
 
           // Fallback: touchend for older iOS
           document.addEventListener('touchend', (e)=>{
-            const target = getEventTargetEl(e) || e.target;
+            const target = getEventTargetEl(e);
             if(!target || !target.closest) return;
 
             const wctl = target.closest('.wctl[data-action]');
@@ -15252,7 +15285,7 @@ function renderBlissOSAppMenu(){
         // Touch to click dispatch for Settings controls
         if(IS_COARSE){
           document.addEventListener('pointerup', (evt)=>{
-            const target = evt.target;
+            const target = getEventTargetEl(evt);
             if(!target || !target.closest) return;
             const settingsBtn = target.closest('[data-set-lang], [data-set-theme], [data-set-wallpaper], [data-set-animations], [data-set-scanlines], [data-set-darkmode], [data-set-blissos-darkmode], [data-set-retro], [data-set-clock], [data-set-oldcrt], [data-set-os-theme], [data-set-titlebar]');
             if(settingsBtn && evt.pointerType === 'touch'){
@@ -15269,7 +15302,7 @@ function renderBlissOSAppMenu(){
 
           // Block context menu on window controls and settings buttons on touch
           document.addEventListener('contextmenu', (e)=>{
-            const target = getEventTargetEl(e) || e.target;
+            const target = getEventTargetEl(e);
             if(!target || !target.closest) return;
             // Block contextmenu on window controls
             const wctl = target.closest('.wctl[data-action]');
