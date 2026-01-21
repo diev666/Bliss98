@@ -8938,20 +8938,42 @@ function handleCtxAction(action){
 function installLongPress(el, getTarget){
   let timer = null;
   let start = null;
+  let pointerId = null;
   const threshold = 8;
   const delay = 520;
 
   const clear = ()=>{
     if(timer){ clearTimeout(timer); timer = null; }
     start = null;
+    if(pointerId !== null){
+      try { el.releasePointerCapture(pointerId); } catch {}
+      pointerId = null;
+    }
   };
 
   el.addEventListener('pointerdown', (e)=>{
     if(e.pointerType !== 'touch') return;
+    
+    // Filter: if this is #desktopArea, don't start long-press if touch begins on interactive elements
+    if(el.id === 'desktopArea'){
+      const target = e.target;
+      if(!target) return;
+      // List of selectors to filter out (don't start long-press on these)
+      const blockedSelectors = '.window, .icon, #startMenu, #ctxMenu, .menu-drop, .menu-sub, .modal, .blissos-menubar, .blissos-menu-drop, .blissos-appmenu-drop, .blissos-apple-menu';
+      if(target.closest && target.closest(blockedSelectors)){
+        return;
+      }
+    }
+    
     start = { x:e.clientX, y:e.clientY };
+    pointerId = e.pointerId;
+    
+    // Capture pointer to ensure pointerup/pointercancel arrives even if DOM changes
+    try { el.setPointerCapture(pointerId); } catch {}
+    
     timer = setTimeout(()=>{
       const tgt = getTarget ? getTarget() : { target:'desktop', appId:null };
-      openCtxMenu(e.clientX, e.clientY, tgt.target, tgt.appId);
+      openCtxMenu(start.x, start.y, tgt.target, tgt.appId);
       clear();
     }, delay);
   });
