@@ -41,7 +41,6 @@
         --kbd-border:#999999;
         --btn-text:#000000;
         --muted-text:#4b4b4b;
-        --ps1-dock-gap: 28px;
       }
       body.theme-xp98{
         --shadow-dark:#2b3a52;
@@ -185,51 +184,6 @@
   }
   /* Make clickable rows feel clickable */
   .menu-item, .ctx-item, .games-tab, .games-item, .music-item{ cursor:pointer; }
-
-  /* NOVO: Forçar layering quando em mobile game mode */
-  body.mobile-game-active #win_games{
-    z-index: 2000 !important;
-  }
-  body.mobile-game-active .ps1-dock{
-    z-index: 2300 !important;
-  }
-  body.mobile-game-active .snake-overlay{
-    z-index: 2400 !important;
-  }
-
-  /* NOVO: Snake board maior e centralizado no mobile */
-  body.mobile-game-active #win_games .snake-layout{
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    width: 100%;
-    padding-top: 10px;
-    padding-bottom: 10px;
-  }
-  body.mobile-game-active #win_games .snake-board{
-    width: min(88vw, 340px);
-    aspect-ratio: 1 / 1;
-    max-height: calc(100dvh - 64px - var(--ps1-dock-h, 260px) - 24px);
-    height: auto;
-    margin-top: 8px;
-    margin-left: auto;
-    margin-right: auto;
-    flex: 0 0 auto;
-  }
-  body.mobile-game-active #win_games .snake-board canvas{
-    width: 100%;
-    height: 100%;
-  }
-  body.mobile-game-active #win_games .snake-side{
-    width: 100%;
-    min-width: 0;
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 8px;
-    justify-content: center;
-    padding: 6px 8px;
-  }
 }
 
 /* Only apply :hover styles on devices that actually support hover */
@@ -262,98 +216,7 @@
   input[type="range"]{
     touch-action: manipulation;
   }
-
-  /* MOBILE GAME MODE: Hide dock and adjust layout during gameplay */
-  body.mobile-game-active #blissosDock{
-    display:none!important;
-  }
-  body.mobile-game-active #blissosMenuDrop,
-  body.mobile-game-active #blissosAppMenuDrop{
-    display:none!important;
-  }
-  /* Ensure game windows use full available space on mobile */
-  body.mobile-game-active #win_games{
-    width:100vw!important;
-    height:100vh!important;
-    left:0!important;
-    top:0!important;
-  }
-  body.mobile-game-active #win_games .content{
-    height:calc(100% - 32px - 32px)!important; /* Account for titlebar + statusbar */
-    overflow:hidden!important;
-    box-sizing: border-box;
-    padding-bottom: calc(var(--ps1-dock-h, 260px) + 12px) !important;
-  }
-  /* Snake layout improvements for mobile */
-  body.mobile-game-active #win_games .snake-layout{
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    justify-content: center;
-    align-items: center;
-  }
-  body.mobile-game-active #win_games .snake-board{
-    width: min(86vw, 320px);
-    aspect-ratio: 1 / 1;
-    max-height: calc(100% - 16px);
-    margin: 8px auto 0;
-    flex: 0 0 auto;
-  }
-  /* Dope Skate canvas responsive sizing */
-  body.mobile-game-active #win_games .skate-canvas-wrap{
-    width:100%!important;
-    height:auto!important;
-    aspect-ratio: 16/9;
-    max-height:70vh;
-  }
-  body.mobile-game-active #win_games #skateCanvas{
-    display:block;
-    width:100%!important;
-    height:auto!important;
-  }
-  /* Snake overlay buttons should work immediately on tap */
-  body.mobile-game-active .snake-overlay .btn{
-    touch-action:manipulation;
-  }
-
-  /* Ensure #win_games.mobile-game ignores window-system transform and stays fullscreen */
-  body.mobile-game-active #win_games,
-  #win_games.mobile-game{
-    position: fixed !important;
-    inset: 0 !important;
-    left: 0 !important;
-    top: 0 !important;
-    margin: 0 !important;
-    transform: none !important;
-    width: 100dvw !important;
-    height: 100dvh !important;
-    min-height: 100svh !important;
-  }
-
-  /* Fix Snake layout on mobile: center and justify properly */
-  #win_games.mobile-game .snake-layout{
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    width: 100%;
-  }
-
-  #win_games.mobile-game .snake-board{
-    width: min(94vw, 420px);
-    max-height: min(52vh, 420px);
-    aspect-ratio: 1 / 1;
-    height: auto;
-    margin: 10px auto 0 auto;
-    align-self: center;
-  }
-
-  #win_games.mobile-game .snake-board canvas{
-    width: 100%;
-    height: 100%;
-  }
 }
-
 
       .bevel{
         background:var(--task);
@@ -964,6 +827,19 @@
       }
       .blissos-dock-item.open .dock-indicator{
         opacity:1;
+      }
+
+      /* When a BlissOS dock item represents a minimized window, show the dock indicator */
+      .blissos-dock-item.minimized .dock-indicator{
+        opacity:1;
+      }
+
+      /* A ghost element used for the genie animation */
+      .dock-genie-ghost{
+        position:fixed;
+        pointer-events:none;
+        z-index:9999;
+        will-change:transform,clip-path,opacity;
       }
 
       .blissos-apple-menu{
@@ -2444,7 +2320,7 @@
         min-height:0;
         display:flex;
         flex-direction:column;
-        padding-bottom: calc(var(--ps1-dock-h, 260px) + env(safe-area-inset-bottom, 0px) + var(--ps1-dock-gap, 28px));
+        padding-bottom:260px;
         position:relative;
       }
       #win_games.mobile-game{
@@ -2575,14 +2451,15 @@
         box-shadow:inset 0 2px 6px rgba(0,0,0,0.2);
       }
       #win_games.mobile-game .snake-board{
-        width: min(88vw, 340px);
-        aspect-ratio: 1 / 1;
-        max-height: calc(100dvh - 64px - var(--ps1-dock-h, 260px) - 24px);
-        height: auto;
-        margin-top: 8px;
-        margin-left: auto;
-        margin-right: auto;
-        flex: 0 0 auto;
+        width:min(84vw, 300px);
+        height:auto;
+        min-width:0;
+        min-height:0;
+        padding:6px;
+        flex:0 0 auto;
+        max-height:min(34vh, 300px);
+        align-self:center;
+        aspect-ratio:1/1;
       }
       #win_games.mobile-game .snake-board canvas{
         width:100%;
@@ -3484,6 +3361,14 @@
         .icons{grid-template-rows: repeat(5, 88px);}
         .window{min-width:280px;}
       }
+  /* Ensure BlissOS menu icons display correctly */
+  .blissos-apple-menu .menu-icon img,
+  .blissos-appmenu-drop .menu-icon img {
+    display: block;
+    width: 16px;
+    height: 16px;
+    image-rendering: pixelated;
+  }
     </style>
   </head>
   <body>
@@ -4335,7 +4220,6 @@ function renderGamesWindow(){
   }
   if(state.games.view === 'snake'){
     initSnakeInWindow(win);
-    snakeEnterView();
     mountMobileGameDock('snake', win);
   }
   if(!mobileGameView) autoFitWindow(win, 'games');
@@ -4652,7 +4536,6 @@ function openGameFromHub(id){
   if(id === 'snake'){
     state.games.view = 'snake';
     state.games.selectedId = 'snake';
-    snakeEnterView();
     renderGamesWindow();
     return;
   }
@@ -4671,7 +4554,6 @@ function backToGamesHub(){
   state.games.view = 'list';
   state.games.selectedId = getFirstGameId();
   snakeStop();
-  exitMobileGameMode();
   DopeSkateGame.unmount();
   renderGamesWindow();
 }
@@ -5172,29 +5054,12 @@ function snakeHandleKey(e){
   return handled;
 }
 
-// Helper to check if touch target is an interactive element (button, overlay, etc)
-function snakeTouchIsInteractiveTarget(target){
-  if(!target) return false;
-  // Check if target or parent is a button or has snake action
-  let el = target;
-  for(let i = 0; i < 4 && el; i++){
-    if(el.tagName === 'BUTTON' || el.dataset.snakeAction || el.classList.contains('snake-overlay')){
-      return true;
-    }
-    el = el.parentElement;
-  }
-  return false;
-}
-
 function snakeHandleTouchStart(e){
   if(state.windows.has('games') && state.activeWindowId !== 'games'){
     focusWindow('games');
   }
   if(!isSnakeActive()) return;
-  // Only prevent default for canvas swipe, not for interactive buttons in overlay
-  if(!snakeTouchIsInteractiveTarget(e.target)){
-    e.preventDefault();
-  }
+  e.preventDefault();
   const touch = e.changedTouches[0];
   snake.swipeStart = { x: touch.clientX, y: touch.clientY, t: Date.now() };
 }
@@ -5989,7 +5854,6 @@ function initDopeSkateInWindow(winEl){
   dopeSkateSetShopCategory(dopeSkate.shopCategory);
   dopeSkateRenderShop();
   dopeSkateStartLoop();
-  enterMobileGameMode('dopeSkate');
 }
 
 function dopeSkateResetWorld(){
@@ -6273,7 +6137,6 @@ function dopeSkateStopLoop(){
 
 function dopeSkateStop(){
   dopeSkateStopLoop();
-  exitMobileGameMode();
   dopeSkate.running = false;
   dopeSkate.paused = false;
   dopeSkate.gameOver = false;
@@ -12291,7 +12154,7 @@ Eu sou o buffalo branco extinto`
               <div class="settings-panel" role="tabpanel" data-tab="system" id="settingsPanel_system">
                 <div class="settings-panel-header">
                   <div class="settings-panel-icon">
-                    <img class="pixel" src="./assets/icons/Settings.png" data-settings-icon="Settings.png" width="48" height="48" alt="" />
+                    <img class="pixel" src="./assets/icons/settings.png" data-settings-icon="settings.png" width="48" height="48" alt="" />
                   </div>
                   <div>
                     <strong data-i18n="settings.systemTab">System</strong>
@@ -12850,8 +12713,39 @@ function getDisplayTime(){
       }
 
       // Delegate Media Player button clicks
-      // Music player actions handled in main click handler below
-      
+      document.addEventListener('click', (e)=>{
+        const actBtn = e.target.closest && e.target.closest('[data-mp-action]');
+        if(actBtn){
+          const action = actBtn.dataset.mpAction;
+          if(action === 'toggle'){
+            if(mp.playing) mpPause(); else mpPlay();
+          }
+          if(action === 'next') mpNext(true);
+          if(action === 'prev') mpPrev(true);
+          if(action === 'shuffle'){
+            state.mediaplayer.shuffle = !state.mediaplayer.shuffle;
+            mpRender();
+          }
+          if(action === 'repeat'){
+            const order = ['off', 'one', 'all'];
+            const idx = order.indexOf(state.mediaplayer.repeat);
+            state.mediaplayer.repeat = order[(idx + 1) % order.length];
+            mpRender();
+          }
+          if(action === 'add' || action === 'reimport'){
+            mpOpenFilePicker();
+          }
+        }
+
+        const pickBtn = e.target.closest && e.target.closest('[data-mp-pick]');
+        if(pickBtn){
+          const idx = Number(pickBtn.dataset.mpPick);
+          state.mediaplayer.selected = new Set([idx]);
+          mpSetTrack(idx);
+          mpPlay();
+        }
+      });
+
       document.addEventListener('dblclick', (e)=>{
         const card = e.target.closest && e.target.closest('[data-music-id]');
         if(card && card.dataset && card.dataset.musicLink){
@@ -12881,6 +12775,7 @@ function getDisplayTime(){
           const id = musicCard.dataset.musicId;
           state.music.selected = new Set([id]);
           applyMusicState();
+          musicCard.dataset.touchOpened = '1';
           openLink(musicCard.dataset.musicLink, 'music');
           return;
         }
@@ -13693,6 +13588,14 @@ function autoFitWindow(winEl, appId){
       function minimizeApp(appId){
         const w = state.windows.get(appId);
         if(!w) return;
+        // BlissOS specific minimise: use genie animation to dock
+        // Use state.settings.theme rather than checking the DOM attribute, as
+        // the body may not yet have the data-theme attribute applied when
+        // this function runs. The BlissOS theme is stored in state.settings.theme.
+        if(state && state.settings && state.settings.theme === 'blissos'){
+          minimizeToDock(appId);
+          return;
+        }
         w.minimized = true;
         const el = document.getElementById(`win_${appId}`);
         if(el){
@@ -13788,69 +13691,6 @@ function autoFitWindow(winEl, appId){
         winEl.style.top = newT + 'px';
         winEl.style.width = newW + 'px';
         winEl.style.height = newH + 'px';
-      }
-
-      // MOBILE GAME MODE: Manage dock/UI visibility during gameplay
-      // Usage: Call enterMobileGameMode('snake') on game start, exitMobileGameMode() on end
-      function syncPs1DockHeightVar(){
-        // Try to find the PS1 dock element (multiple selectors for robustness)
-        const dock = document.querySelector('.ps1-dock') || 
-                     document.getElementById('ps1Dock') || 
-                     document.getElementById('ps1Controller');
-        if(dock){
-          const height = dock.getBoundingClientRect().height;
-          document.documentElement.style.setProperty('--ps1-dock-h', height + 'px');
-        } else {
-          // Fallback to default
-          document.documentElement.style.setProperty('--ps1-dock-h', '260px');
-        }
-        // Ensure gap is set for consistency
-        document.documentElement.style.setProperty('--ps1-dock-gap', '28px');
-      }
-      function updateMobileGameLayoutVars(){
-        syncPs1DockHeightVar();
-      }
-      function enterMobileGameMode(gameId){
-        state.mobileGameMode = gameId;
-        document.documentElement.style.setProperty('--mobile-game-active', '1');
-        document.body.classList.add('mobile-game-active');
-        const dock = document.getElementById('blissosDock');
-        if(dock) dock.style.display = 'none';
-        const menuDrop = document.getElementById('blissosMenuDrop');
-        if(menuDrop) menuDrop.classList.add('hidden');
-        const appMenuDrop = document.getElementById('blissosAppMenuDrop');
-        if(appMenuDrop) appMenuDrop.classList.add('hidden');
-        // Sync PS1 dock height to CSS var immediately and after repaint
-        syncPs1DockHeightVar();
-        setTimeout(syncPs1DockHeightVar, 0);
-        // Listen for resize while in mobile game mode
-        window.addEventListener('resize', handleMobileGameResize);
-        window.addEventListener('orientationchange', handleMobileGameResize);
-        if(window.visualViewport){
-          window.visualViewport.addEventListener('resize', handleMobileGameResize);
-        }
-      }
-      function handleMobileGameResize(){
-        if(document.body.classList.contains('mobile-game-active')){
-          syncPs1DockHeightVar();
-        }
-      }
-      function exitMobileGameMode(){
-        state.mobileGameMode = null;
-        document.documentElement.style.setProperty('--mobile-game-active', '0');
-        document.body.classList.remove('mobile-game-active');
-        const dock = document.getElementById('blissosDock');
-        if(dock) dock.style.display = '';
-        // Remove resize listeners
-        window.removeEventListener('resize', handleMobileGameResize);
-        window.removeEventListener('orientationchange', handleMobileGameResize);
-        if(window.visualViewport){
-          window.visualViewport.removeEventListener('resize', handleMobileGameResize);
-        }
-      }
-      function snakeEnterView(){
-        if(!window.matchMedia('(pointer:coarse)').matches) return;
-        enterMobileGameMode('snake');
       }
 
       function focusWindow(appId){
@@ -14287,16 +14127,34 @@ function renderBlissOSDock(){
             <span class="pixel" style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;">${getThemedIconHtml(app, label, 28)}</span>
             <span class="dock-indicator"></span>
           `;
+          // BlissOS dock click handler: toggle minimise/restore or open
           btn.addEventListener('click', (e)=>{
             e.stopPropagation();
+            // If the window is already open
             if(state.windows.has(app.id)){
               const win = state.windows.get(app.id);
-              if(win.minimized){
-                win.minimized = false;
-                const el = document.getElementById(`win_${app.id}`);
-                if(el) el.classList.remove('hidden');
+              // If BlissOS theme, implement toggle
+              if(document.body && document.body.getAttribute('data-theme') === 'blissos'){
+                if(win.minimized){
+                  // Restore from dock
+                  restoreFromDock(app.id);
+                } else {
+                  // If this window is the active window, minimise it; otherwise focus it
+                  if(state.activeWindowId === app.id){
+                    minimizeToDock(app.id);
+                  } else {
+                    focusWindow(app.id);
+                  }
+                }
+              } else {
+                // Non-BlissOS fallback: simple minimise/restore
+                if(win.minimized){
+                  win.minimized = false;
+                  const el = document.getElementById(`win_${app.id}`);
+                  if(el) el.classList.remove('hidden');
+                }
+                focusWindow(app.id);
               }
-              focusWindow(app.id);
             } else {
               openApp(app.id);
             }
@@ -14334,11 +14192,11 @@ function renderBlissOSAppleMenu(){
     { id:'language', icon:'./assets/icons/language.png', labelKey:'settings.tab.language' },
     { id:'appearance', icon:'./assets/icons/appearance.png', labelKey:'settings.tab.appearance' },
     { id:'sound', icon:'./assets/icons/Sound.png', labelKey:'settings.tab.sound' },
-    { id:'system', icon:'./assets/icons/settings.png', labelKey:'settings.tab.system' },
+    { id:'system', icon:'./assets/icons/system/system.png', labelKey:'settings.tab.system' },
     { id:'performance', icon:'./assets/icons/performance.png', labelKey:'settings.tab.performance' },
   ];
   const settingsLabel = t('blissos.menu.settings');
-  const settingsIcon = getThemedIconHtml({ icon:'settings', id:'settings', iconFile:'./assets/icons/settings.png' }, settingsLabel, 16);
+  const settingsIcon = getThemedIconHtml({ icon:'settings', id:'settings', iconFile:'./assets/icons/system/control-panels.png' }, settingsLabel, 16);
   const settingsItems = settingsTabs.map(tab => `
     <button class="menu-item" type="button" data-blissos-settings-tab="${tab.id}">
       <span class="menu-icon">${getThemedIconHtml({ icon:'settings', id:`settings-${tab.id}`, iconFile:tab.icon }, t(tab.labelKey), 16)}</span>
@@ -14359,7 +14217,7 @@ function renderBlissOSAppleMenu(){
 
   menu.innerHTML = `
     <button class="menu-item" type="button" data-blissos-action="about">
-      <span class="menu-icon">${getThemedIconHtml({ icon:'info', id:'about', iconFile:'./assets/icons/about.png' }, t('blissos.menu.about'), 16)}</span>
+      <span class="menu-icon">${getThemedIconHtml({ icon:'info', id:'about', iconFile:'./assets/icons/system/info.png' }, t('blissos.menu.about'), 16)}</span>
       <span class="menu-label" data-i18n="blissos.menu.about">${t('blissos.menu.about')}</span>
     </button>
     <div class="menu-sep" role="separator"></div>
@@ -14443,6 +14301,12 @@ function toggleBlissOSAppMenu(forceOpen){
 function restoreWindow(appId){
   const w = state.windows.get(appId);
   if(!w) return;
+  // BlissOS specific restore: use genie animation from dock
+  // Check state.settings.theme instead of DOM attribute for reliability
+  if(state && state.settings && state.settings.theme === 'blissos'){
+    restoreFromDock(appId);
+    return;
+  }
   if(!w.minimized) return;
   w.minimized = false;
   const el = document.getElementById(`win_${appId}`);
@@ -14467,6 +14331,160 @@ function restoreWindow(appId){
     }
   }
   state.hiddenApps.delete(appId);
+}
+
+// ---------------------------------------------------------------------
+// Genie animation helpers for BlissOS minimise/restore
+// These functions implement Mac-like "genie" animations to send windows
+// into the BlissOS dock and back. They are only invoked when the
+// current theme is BlissOS.
+
+function getDockItemEl(appId){
+  return document.querySelector(`#blissosDock [data-app-id="${appId}"]`);
+}
+
+function animateGenie(ghost, fromRect, toRect, opts = {}){
+  const dx = (toRect.left + toRect.width / 2) - (fromRect.left + fromRect.width / 2);
+  const dy = (toRect.top + toRect.height / 2) - (fromRect.top + fromRect.height / 2);
+  const duration = opts.duration || 450;
+  const easing = opts.easing || 'cubic-bezier(0.45, 0.03, 0.52, 0.96)';
+  const keyframes = [
+    {
+      transform: 'translate(0px,0px) scale(1)',
+      clipPath: 'inset(0% 0% 0% 0% round 6px)',
+      opacity: 1
+    },
+    {
+      transform: `translate(${dx * 0.5}px, ${dy * 0.5}px) scale(0.5)`,
+      clipPath: 'polygon(0% 0%, 100% 0%, 90% 60%, 10% 60%)',
+      opacity: 0.7
+    },
+    {
+      transform: `translate(${dx}px, ${dy}px) scale(0.1)`,
+      clipPath: 'inset(45% 45% 45% 45% round 12px)',
+      opacity: 0.2
+    }
+  ];
+  return ghost.animate(keyframes, { duration, easing, fill: 'forwards' });
+}
+
+function minimizeToDock(appId){
+  const w = state.windows.get(appId);
+  if (!w) return;
+  const el = document.getElementById(`win_${appId}`);
+  if (!el) return;
+  // Record last rect for restore
+  w.lastRect = { left: w.left, top: w.top, width: w.width, height: w.height };
+  // Determine if motion should be reduced
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches || !state.animations;
+  // Mark minimized
+  w.minimized = true;
+  // Update active states
+  if (state.activeWindowId === appId) state.activeWindowId = null;
+  if (state.activeAppId === appId) state.activeAppId = 'bliss';
+  renderTaskButtons();
+  updateBlissOSActiveApp();
+  const dockItem = getDockItemEl(appId);
+  if (dockItem) dockItem.classList.add('minimized');
+  if (reduceMotion) {
+    el.classList.add('hidden');
+    return;
+  }
+  const fromRect = el.getBoundingClientRect();
+  let toRect;
+  if (dockItem) {
+    const iconRect = dockItem.getBoundingClientRect();
+    toRect = {
+      left: iconRect.left + (iconRect.width / 2) - (fromRect.width / 2),
+      top: iconRect.top + (iconRect.height / 2) - (fromRect.height / 2),
+      width: fromRect.width,
+      height: fromRect.height
+    };
+  } else {
+    const vh = window.innerHeight || document.documentElement.clientHeight;
+    toRect = {
+      left: 10,
+      top: vh - fromRect.height - 10,
+      width: fromRect.width,
+      height: fromRect.height
+    };
+  }
+  const ghost = el.cloneNode(true);
+  ghost.classList.add('dock-genie-ghost');
+  ghost.style.left = fromRect.left + 'px';
+  ghost.style.top = fromRect.top + 'px';
+  ghost.style.width = fromRect.width + 'px';
+  ghost.style.height = fromRect.height + 'px';
+  ghost.style.opacity = '1';
+  document.body.appendChild(ghost);
+  el.classList.add('hidden');
+  animateGenie(ghost, fromRect, toRect).onfinish = () => {
+    ghost.remove();
+  };
+}
+
+function restoreFromDock(appId){
+  const w = state.windows.get(appId);
+  if (!w) return;
+  if (!w.minimized) {
+    focusWindow(appId);
+    return;
+  }
+  const el = document.getElementById(`win_${appId}`);
+  if (!el) return;
+  const dockItem = getDockItemEl(appId);
+  if (dockItem) dockItem.classList.remove('minimized');
+  const last = w.lastRect || { left: w.left, top: w.top, width: w.width, height: w.height };
+  w.minimized = false;
+  w.left = last.left;
+  w.top = last.top;
+  w.width = last.width;
+  w.height = last.height;
+  el.style.left = w.left + 'px';
+  el.style.top = w.top + 'px';
+  el.style.width = w.width + 'px';
+  el.style.height = w.height + 'px';
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches || !state.animations;
+  el.classList.remove('hidden');
+  if (reduceMotion) {
+    if (state && state.hiddenApps) state.hiddenApps.delete(appId);
+    focusWindow(appId);
+    return;
+  }
+  let fromRect;
+  const toRect = { left: w.left, top: w.top, width: w.width, height: w.height };
+  if (dockItem) {
+    const iconRect = dockItem.getBoundingClientRect();
+    fromRect = {
+      left: iconRect.left + (iconRect.width / 2) - (toRect.width / 2),
+      top: iconRect.top + (iconRect.height / 2) - (toRect.height / 2),
+      width: toRect.width,
+      height: toRect.height
+    };
+  } else {
+    const vh = window.innerHeight || document.documentElement.clientHeight;
+    fromRect = {
+      left: 10,
+      top: vh - toRect.height - 10,
+      width: toRect.width,
+      height: toRect.height
+    };
+  }
+  const ghost2 = el.cloneNode(true);
+  ghost2.classList.add('dock-genie-ghost');
+  ghost2.style.left = fromRect.left + 'px';
+  ghost2.style.top = fromRect.top + 'px';
+  ghost2.style.width = fromRect.width + 'px';
+  ghost2.style.height = fromRect.height + 'px';
+  ghost2.style.clipPath = 'inset(45% 45% 45% 45% round 12px)';
+  document.body.appendChild(ghost2);
+  el.style.opacity = '0';
+  animateGenie(ghost2, fromRect, toRect).onfinish = () => {
+    ghost2.remove();
+    el.style.opacity = '';
+    if (state && state.hiddenApps) state.hiddenApps.delete(appId);
+    focusWindow(appId);
+  };
 }
 
 function hideAppWindows(appId){
@@ -14663,40 +14681,6 @@ function renderBlissOSAppMenu(){
         }
       });
       document.addEventListener('click', (e)=>{
-        // Media player actions
-        const actBtn = e.target.closest && e.target.closest('[data-mp-action]');
-        if(actBtn){
-          const action = actBtn.dataset.mpAction;
-          if(action === 'toggle'){
-            if(mp.playing) mpPause(); else mpPlay();
-          }
-          if(action === 'next') mpNext(true);
-          if(action === 'prev') mpPrev(true);
-          if(action === 'shuffle'){
-            state.mediaplayer.shuffle = !state.mediaplayer.shuffle;
-            mpRender();
-          }
-          if(action === 'repeat'){
-            const order = ['off', 'one', 'all'];
-            const idx = order.indexOf(state.mediaplayer.repeat);
-            state.mediaplayer.repeat = order[(idx + 1) % order.length];
-            mpRender();
-          }
-          if(action === 'add' || action === 'reimport'){
-            mpOpenFilePicker();
-          }
-          return;
-        }
-
-        const pickBtn = e.target.closest && e.target.closest('[data-mp-pick]');
-        if(pickBtn){
-          const idx = Number(pickBtn.dataset.mpPick);
-          state.mediaplayer.selected = new Set([idx]);
-          mpSetTrack(idx);
-          mpPlay();
-          return;
-        }
-
         const poemItem = e.target.closest && e.target.closest('[data-poem-id]');
         if(poemItem){
           const id = poemItem.dataset.poemId;
@@ -14986,6 +14970,10 @@ function renderBlissOSAppMenu(){
         }
         const musicCard = e.target.closest && e.target.closest('[data-music-id]');
         if(musicCard){
+          if(musicCard.dataset && musicCard.dataset.touchOpened === '1'){
+            delete musicCard.dataset.touchOpened;
+            return;
+          }
           const id = musicCard.dataset.musicId;
           if(e.ctrlKey || e.metaKey){
             if(state.music.selected.has(id)) state.music.selected.delete(id);
@@ -15007,14 +14995,6 @@ function renderBlissOSAppMenu(){
         if(!e.target.closest || (!e.target.closest('.menu-drop') && !e.target.closest('.menubar') && !e.target.closest('#blissosMenuDrop') && !e.target.closest('#blissosMenubar'))){
           closeWindowMenu();
         }
-
-        // Close menus on any click outside them
-        closeStartMenu();
-        closeCtxMenu();
-        const inAppleMenu = e.target && e.target.closest && (e.target.closest('#blissosAppleMenu') || e.target.closest('[data-blissos-menu="apple"]'));
-        if(!inAppleMenu) closeBlissOSMenu();
-        const inAppMenu = e.target && e.target.closest && (e.target.closest('#blissosAppMenuDrop') || e.target.closest('#blissosAppMenu'));
-        if(!inAppMenu) closeBlissOSAppMenu();
       });
 
       document.addEventListener('error', (e)=>{
@@ -15028,21 +15008,6 @@ function renderBlissOSAppMenu(){
       }, true);
 
       (function init(){
-        // MOBILE FIX: Focus window on pointerdown (touch) before click handlers run
-        // This ensures single-tap in window controls/settings executes immediately on iOS/Android
-        // Using capture:true makes this run before any descendant click handlers
-        document.addEventListener('pointerdown', (e)=>{
-          if(e.pointerType !== 'touch') return; // Only for touch, avoid desktop interference
-          const winEl = e.target && e.target.closest ? e.target.closest('.window') : null;
-          if(!winEl) return; // Not inside a window
-          const appId = winEl.id ? winEl.id.replace('win_','') : null;
-          if(appId && state.windows.has(appId)){
-            if(state.activeWindowId !== appId){
-              focusWindow(appId);
-            }
-          }
-        }, { capture: true, passive: true });
-
         const savedLang = localStorage.getItem('bliss98_lang') || 'en';
         state.lang = (savedLang === 'pt') ? 'pt' : 'en';
 
@@ -15092,6 +15057,20 @@ function renderBlissOSAppMenu(){
 
         initSfx();
         showLogin(true);
+      document.addEventListener('click', (e)=>{
+        closeStartMenu();
+        closeCtxMenu();
+        const inAppleMenu = e.target && e.target.closest && (e.target.closest('#blissosAppleMenu') || e.target.closest('[data-blissos-menu="apple"]'));
+        if(!inAppleMenu) closeBlissOSMenu();
+        const inAppMenu = e.target && e.target.closest && (e.target.closest('#blissosAppMenuDrop') || e.target.closest('#blissosAppMenu'));
+        if(!inAppMenu) closeBlissOSAppMenu();
+      });
+      document.addEventListener('pointerdown', (e)=>{
+        const winEl = e.target && e.target.closest ? e.target.closest('.window') : null;
+        if(!winEl) return;
+        const appId = winEl.id ? winEl.id.replace('win_','') : null;
+        if(appId && state.windows.has(appId)) focusWindow(appId);
+      }, true);
         const cm = $('#ctxMenu');
         if(cm){
           cm.addEventListener('click', (ev)=>{
@@ -15108,118 +15087,74 @@ function renderBlissOSAppMenu(){
           });
         }
       })();
-
-      // ============================================================================
-      // AUDIT & BUG FIXES (2026-01-20)
-      // ============================================================================
-      // BUGS FOUND & FIXED:
-      //
-      // 1. CRITICAL: Double-tap required on mobile (lines 12757, 14766-14768)
-      //    - ROOT CAUSE: "touchOpened" flag was set during pointerdown on music cards
-      //    - The subsequent click event checked for this flag and returned early
-      //    - Result: Click event was completely blocked, forcing double-tap
-      //    - FIX: Removed the touchOpened flag and associated logic
-      //      * Removed: musicCard.dataset.touchOpened = '1' (line 12757)
-      //      * Removed: if(musicCard.dataset.touchOpened === '1') { delete ... return; } (lines 14766-14768)
-      //
-      // 2. RACE CONDITION: Multiple document.addEventListener('click') handlers
-      //    - ROOT CAUSE: 3 separate global click listeners
-      //      * Listener 1 (line 12695): Media player actions only
-      //      * Listener 2 (line 14476): Main UI actions (poems, trash, settings, menus)
-      //      * Listener 3 (line 14851): Menu closing logic only
-      //    - PROBLEM: Separate listeners could preventDefault/stopPropagation before others ran,
-      //               causing unpredictable behavior on mobile
-      //    - FIX: Consolidated all three into a single document.addEventListener('click')
-      //      * Media player logic now at top of main handler (mp-action, mp-pick)
-      //      * Menu closing logic integrated at end of main handler
-      //      * Single flow prevents race conditions and ensures consistent event handling
-      //
-      // 3. ACCEPTED: DopeSkate preventDefault() on touchstart/touchmove
-      //    - ANALYSIS: touchstart/touchmove preventDefault is CORRECT behavior
-      //      * Only triggered when target is NOT interactive (dopeSkateIsInteractiveTarget check passes)
-      //      * Prevents browser zoom/scroll on game canvas
-      //      * pointerdown has additional check: only prevent if game is running
-      //      * Interactive targets (buttons, tabs) are always allowed to bubble
-      //    - NO FIX NEEDED
-      //
-      // 4. CRITICAL: Double-tap required for window controls and Settings on mobile (lines 13707-13716)
-      //    - ROOT CAUSE: Window only received focus on mousedown event
-      //    - Mobile doesn't have mousedown (uses pointerdown/touchstart instead)
-      //    - Result: First touch didn't focus window, second touch did → apparent double-tap requirement
-      //    - FIX: Added el.addEventListener('pointerdown', ...) specifically for touch events
-      //      * Listener fires on touch (e.pointerType !== 'mouse') but skips desktop (where mousedown already fires)
-      //      * Calls focusWindow(appId) to bring window to front before click event
-      //      * Does NOT call preventDefault() to allow click event to propagate normally
-      //      * Window controls (close/min/max) now execute on first tap
-      //      * Settings options now execute on first tap
-      //
-      // 5. CRITICAL: Double-tap still required on mobile for window controls/Settings (FINAL FIX)
-      //    - ROOT CAUSE: First pointerdown listener inside window was not running early enough
-      //    - Desktop clicked (mousedown → focus → click) works in sequence
-      //    - Mobile touch didn't focus before click handler evaluated (race condition)
-      //    - SOLUTION: Implemented global pointerdown listener with capture:true at init start
-      //      * Listener fires in capture phase (before any descendant handlers)
-      //      * Only applies to touch (e.pointerType !== 'touch' → return)
-      //      * Checks if click is inside .window and focuses immediately if needed
-      //      * passive:true to avoid blocking scroll/drag
-      //      * This ensures focusWindow() completes before click handlers run
-      //      * Removed duplicate pointerdown listener from individual window creation
-      //      * Now:
-      //        - First tap in window → focusWindow(appId) completes → click handler can execute
-      //        - No more "focus only on first tap, action on second tap"
-      //
-      // 6. MOBILE GAMES: Dock overlaps game UI, Snake "Play Again" blocked, Dope Skate cut off
-      //    - ROOT CAUSES:
-      //      a) Snake preventDefault blocking button clicks (snakeHandleTouchStart line 5036)
-      //         - Called e.preventDefault() unconditionally, blocking Play Again overlay buttons
-      //      b) BlissOS dock always visible, overlapping game content on mobile
-      //         - No CSS class to hide dock during active games
-      //      c) Dope Skate canvas fixed 640x360, not responsive to mobile viewport
-      //    - FIXES IMPLEMENTED:
-      //      a) Added snakeTouchIsInteractiveTarget() helper function
-      //         - Checks if target is button, .snake-overlay, or [data-snake-action]
-      //         - snakeHandleTouchStart now only preventDefault() for non-interactive areas
-      //         - Play Again button works on first tap (line 5068-5078)
-      //      b) Created enterMobileGameMode(gameId) / exitMobileGameMode() functions (line 13635-13653)
-      //         - Sets .mobile-game-active CSS class and --mobile-game-active variable on body
-      //         - Hides #blissosDock, #blissosMenuDrop, #blissosAppMenuDrop via JS
-      //         - Called from: snakeStartGame(), snakeGameOver(), initDopeSkateInWindow(), dopeSkateStop()
-      //      c) Added @media (pointer:coarse) CSS rules for mobile game mode (lines 217-245)
-      //         - body.mobile-game-active #blissosDock { display:none!important; }
-      //         - #win_games uses full viewport (100vw, 100vh) when game active
-      //         - Dope Skate canvas uses aspect-ratio:16/9 with responsive sizing
-      //      d) Integrated game mode calls into game lifecycle:
-      //         - snakeStartGame() calls enterMobileGameMode('snake') (line 4843)
-      //         - snakeGameOver() calls exitMobileGameMode() (line 4938)
-      //         - initDopeSkateInWindow() calls enterMobileGameMode('dopeSkate') (line 5877)
-      //         - dopeSkateStop() calls exitMobileGameMode() (line 6177)
-      //         - backToGamesHub() calls exitMobileGameMode() (line 4573)
-      //
-      // TESTING CHECKLIST (Mobile: iOS Safari + Android Chrome):
-      // ✓ Tap icon → opens immediately (single tap, no double-tap needed)
-      // ✓ Tap menu item → selects/activates immediately
-      // ✓ Tap settings button → applies setting immediately
-      // ✓ Tap music card → opens link on first tap
-      // ✓ Tap window close/min/max buttons → executes on first tap (FIXED)
-      // ✓ Tap Settings language/theme options → executes on first tap (FIXED)
-      // ✓ Long-press → shows context menu (still works)
-      // ✓ Swipe in dope-skate → jumps (not broken by preventDefault changes)
-      // ✓ Scroll inside windows → works smoothly
-      // ✓ Snake: "Play Again" button works on first tap (FIXED)
-      // ✓ Snake: Dock hidden during game (FIXED)
-      // ✓ Dope Skate: Canvas responsive to viewport (FIXED)
-      // ✓ Dope Skate: Dock hidden during game (FIXED)
-      // ✓ Back button: Returns to games hub, restores dock (FIXED)
-      //
-      // TESTING CHECKLIST (Desktop: Chrome/Safari/Firefox):
-      // ✓ Click → selects/activates (no change from before)
-      // ✓ Double-click icons → opens (unchanged)
-      // ✓ Hover styles → still visual only
-      // ✓ Drag/resize windows → works (titlebar drag still uses touch-action:none)
-      // ✓ Context menu → right-click still works
-      // ✓ Keyboard shortcuts → unchanged
-      // ============================================================================
-
     </script>
+<script>
+// Launch animation injection: animate windows opening from desktop icons.
+// This block overrides the global openApp function to insert a smooth "grow from icon"
+// animation when launching any application. The ghost animation mimics the window
+// expanding out from the clicked icon to its final size. It honours the global
+// state.animations flag and the user’s prefers‑reduced‑motion setting to avoid
+// running when animations are turned off.
+(function(){
+  // Ensure we only inject this behaviour once
+  if (window.__launchAnimationInjected) return;
+  window.__launchAnimationInjected = true;
+  const originalOpenApp = window.openApp;
+  if (typeof originalOpenApp === 'function') {
+    window.openApp = function(appId, ...args){
+      // Locate the icon element either by app id or BlissOS specific attribute
+      const iconEl = document.querySelector(`[data-app-id="${appId}"]`) || document.querySelector(`[data-blissos-open-app="${appId}"]`);
+      // Determine if this app already has an existing window (don’t animate existing ones)
+      const existing = window.state && window.state.windows && typeof window.state.windows.has === 'function' ? window.state.windows.has(appId) : false;
+      const result = originalOpenApp.apply(this, [appId, ...args]);
+      const winEl = document.getElementById(`win_${appId}`);
+      // Only animate brand‑new windows when animations are enabled and the user allows motion
+      if (winEl && !existing && window.state && window.state.animations !== 0 && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        // Remove the built‑in open animation class so our custom animation isn’t doubled up
+        winEl.classList.remove('anim-open');
+        animateAppLaunch(iconEl, winEl);
+      }
+      return result;
+    };
+  }
+  function animateAppLaunch(iconEl, winEl){
+    if (!iconEl || !winEl) return;
+    // Capture the final geometry before hiding the window
+    const finalRect = winEl.getBoundingClientRect();
+    // Hide the real window until the animation finishes
+    const prevVisibility = winEl.style.visibility;
+    winEl.style.visibility = 'hidden';
+    // Starting geometry from the icon
+    const startRect = iconEl.getBoundingClientRect();
+    const ghost = document.createElement('div');
+    ghost.className = 'dock-genie-ghost';
+    const winStyle = window.getComputedStyle(winEl);
+    // Use the window’s background colour for the ghost or fall back to the panel background
+    ghost.style.background = winStyle.backgroundColor || getComputedStyle(document.documentElement).getPropertyValue('--panel-bg') || '#fff';
+    ghost.style.borderRadius = winStyle.borderRadius || '4px';
+    ghost.style.left = `${startRect.left}px`;
+    ghost.style.top = `${startRect.top}px`;
+    ghost.style.width = `${startRect.width}px`;
+    ghost.style.height = `${startRect.height}px`;
+    ghost.style.transformOrigin = 'top left';
+    document.body.appendChild(ghost);
+    const dx = finalRect.left - startRect.left;
+    const dy = finalRect.top - startRect.top;
+    const scaleX = finalRect.width / startRect.width;
+    const scaleY = finalRect.height / startRect.height;
+    const duration = 280; // Snappy duration for a quick feel
+    const keyframes = [
+      { transform:'translate(0px,0px) scale(1,1)', clipPath:'inset(0% 0% 0% 0%)' },
+      { transform:`translate(${dx*0.5}px,${dy*0.5}px) scale(${(1+scaleX)/2},${(1+scaleY)/2})`, clipPath:'inset(10% 10% 10% 10%)' },
+      { transform:`translate(${dx}px,${dy}px) scale(${scaleX},${scaleY})`, clipPath:'inset(0% 0% 0% 0%)' }
+    ];
+    const anim = ghost.animate(keyframes,{ duration: duration, easing:'ease-in-out', fill:'forwards' });
+    anim.addEventListener('finish', () => {
+      ghost.remove();
+      winEl.style.visibility = prevVisibility || '';
+    });
+  }
+})();
+</script>
   </body>
 </html>
