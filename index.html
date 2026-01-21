@@ -13693,12 +13693,6 @@ function autoFitWindow(winEl, appId){
         winEl.style.height = newH + 'px';
       }
 
-      function getAppIdFromWindowEl(winEl){
-        if(!winEl || !winEl.id) return null;
-        if(winEl.id.startsWith('win_')) return winEl.id.slice(4);
-        return winEl.dataset.appId || null;
-      }
-
       function focusWindow(appId){
         const w = state.windows.get(appId);
         if(!w) return;
@@ -13717,47 +13711,6 @@ function autoFitWindow(winEl, appId){
         }
         renderTaskButtons();
         updateBlissOSActiveApp();
-      }
-
-      function installTouchFocusFix(){
-        if(installTouchFocusFix._done) return;
-        installTouchFocusFix._done = true;
-
-        const isCoarse = window.matchMedia && window.matchMedia('(hover:none) and (pointer:coarse)').matches;
-
-        // CAPTURE: roda antes de qualquer handler que possa parar propagation
-        document.addEventListener('pointerdown', (e)=>{
-          // Nunca mexer no desktop mouse
-          if(e.pointerType === 'mouse') return;
-
-          // Se pointerType vier vazio/undefined (alguns Safari), trate como touch quando coarse
-          if(e.pointerType == null && !isCoarse) return;
-
-          const winEl = e.target && e.target.closest ? e.target.closest('.window') : null;
-          if(!winEl) return;
-
-          const appId = getAppIdFromWindowEl(winEl);
-          if(!appId) return;
-
-          // Evitar trabalho extra
-          if(state.activeWindowId !== appId){
-            focusWindow(appId);
-          }
-          // IMPORTANTÍSSIMO: NÃO chamar preventDefault e NÃO parar propagação
-        }, true);
-
-        // Fallback para browsers/estados onde pointer events falham
-        document.addEventListener('touchstart', (e)=>{
-          if(!isCoarse) return;
-          const t = e.target;
-          const winEl = t && t.closest ? t.closest('.window') : null;
-          if(!winEl) return;
-          const appId = getAppIdFromWindowEl(winEl);
-          if(!appId) return;
-          if(state.activeWindowId !== appId){
-            focusWindow(appId);
-          }
-        }, { capture:true, passive:true });
       }
 
       function createWindowElement(wstate){
@@ -13812,7 +13765,15 @@ function autoFitWindow(winEl, appId){
           <div class="resize" title="${t('win.resize')}"></div>
         `;
 
-        el.addEventListener('mousedown', (e)=>{ e.stopPropagation(); focusWindow(appId); closeStartMenu(); });
+        // Make windows focus on mousedown except when clicking on a control button (min/max/close).
+        // On touch devices the first tap should trigger the action without requiring a second tap.
+        el.addEventListener('mousedown', (e)=>{
+          // If the target element has a data-action (control buttons), defer focusing until the click handler.
+          if(e.target && e.target.dataset && e.target.dataset.action) return;
+          e.stopPropagation();
+          focusWindow(appId);
+          closeStartMenu();
+        });
         el.addEventListener('contextmenu', (e)=>{
           e.preventDefault();
           e.stopPropagation();
@@ -13821,6 +13782,9 @@ function autoFitWindow(winEl, appId){
           const act = e.target?.dataset?.action;
           if(!act) return;
           e.stopPropagation();
+          // Always bring the window to the front when clicking a control.
+          focusWindow(appId);
+          closeStartMenu();
           if(act==='close') closeApp(appId);
           if(act==='min') minimizeApp(appId);
           if(act==='max') toggleFitWindow(appId);
@@ -15104,7 +15068,6 @@ function renderBlissOSAppMenu(){
 
         initSfx();
         showLogin(true);
-        installTouchFocusFix();
       document.addEventListener('click', (e)=>{
         closeStartMenu();
         closeCtxMenu();
@@ -15157,7 +15120,8 @@ function renderBlissOSAppMenu(){
       const result = originalOpenApp.apply(this, [appId, ...args]);
       const winEl = document.getElementById(`win_${appId}`);
       // Only animate brand‑new windows when animations are enabled and the user allows motion
-      if (winEl && !existing && window.state && window.state.animations !== 0 && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      // Note: state.animations is a boolean (true for on, false for off). Check truthiness instead of comparing with 0.
+      if (winEl && !existing && window.state && window.state.animations && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
         // Remove the built‑in open animation class so our custom animation isn’t doubled up
         winEl.classList.remove('anim-open');
         animateAppLaunch(iconEl, winEl);
