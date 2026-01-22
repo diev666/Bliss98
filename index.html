@@ -2094,7 +2094,7 @@
         background:linear-gradient(180deg, #d7d2c8 0%, #bfb8ab 100%);
         border-top:1px solid rgba(0,0,0,0.12);
         box-shadow:0 -8px 24px rgba(0,0,0,0.2);
-        z-index:1001;
+        z-index:1002;
         pointer-events:auto;
         touch-action:none;
       }
@@ -9672,11 +9672,11 @@ function installLongPress(el, getTarget){
           'ctx.rename': 'Renomear',
           'ctx.crop': 'Recortar',
           'ctx.copy': 'Copiar',
-          'ctx.moveTrash': 'Mover para a Lixeira',
+          'ctx.moveTrash': 'Mover para Lixeira',
           'ctx.emptyTrash': 'Esvaziar Lixeira',
-          'ctx.arrange': 'Organizar ícones',
+          'ctx.arrange': 'Organizar Ícones',
           'ctx.grid': 'Grade (snap)',
-          'ctx.wallpaper': 'Plano de Fundo',
+          'ctx.wallpaper': 'Papel de Parede',
           'ctx.settings': 'Configurações',
           'ctx.language': 'Idioma',
           'ctx.about': 'Sobre',
@@ -10201,6 +10201,12 @@ function installLongPress(el, getTarget){
         }
 
         if(menuKey === 'view'){
+          if(appId === 'bliss'){
+            const gridMark = state.gridSnap ? '✓' : '';
+            items.push({ action:'global:arrange' , label:t('ctx.arrange') });
+            items.push({ action:'global:grid', label:t('ctx.grid'), check:gridMark });
+            items.push({ action:'global:language', label:t('ctx.language'), right: state.lang.toUpperCase() });
+          }
           if(appId === 'music'){
             items.push({
               type:'submenu',
@@ -10573,6 +10579,20 @@ function installLongPress(el, getTarget){
         }
         if(action === 'global:about'){
           openApp('about');
+          return;
+        }
+        if(action === 'global:arrange'){
+          arrangeIcons();
+          return;
+        }
+        if(action === 'global:grid'){
+          state.gridSnap = !state.gridSnap;
+          saveGridSnap();
+          renderCtxMenu();
+          return;
+        }
+        if(action === 'global:language'){
+          toggleLang();
           return;
         }
 
@@ -14515,7 +14535,8 @@ function animateGenie(ghost, fromRect, toRect, opts = {}){
   const dy = (toRect.top + toRect.height / 2) - (fromRect.top + fromRect.height / 2);
   const duration = opts.duration || 450;
   const easing = opts.easing || 'cubic-bezier(0.45, 0.03, 0.52, 0.96)';
-  const keyframes = [
+
+  const forwardKeyframes = [
     {
       transform: 'translate(0px,0px) scale(1)',
       clipPath: 'inset(0% 0% 0% 0% round 6px)',
@@ -14532,7 +14553,27 @@ function animateGenie(ghost, fromRect, toRect, opts = {}){
       opacity: 0.2
     }
   ];
-  return ghost.animate(keyframes, { duration, easing, fill: 'forwards' });
+
+  const reverseKeyframes = [
+    {
+      transform: 'translate(0px,0px) scale(0.1)',
+      clipPath: 'inset(45% 45% 45% 45% round 12px)',
+      opacity: 0.2
+    },
+    {
+      transform: `translate(${dx * 0.5}px, ${dy * 0.5}px) scale(0.5)`,
+      clipPath: 'polygon(0% 0%, 100% 0%, 90% 60%, 10% 60%)',
+      opacity: 0.7
+    },
+    {
+      transform: `translate(${dx}px, ${dy}px) scale(1)`,
+      clipPath: 'inset(0% 0% 0% 0% round 6px)',
+      opacity: 1
+    }
+  ];
+
+  const finalKeyframes = opts.direction === 'reverse' ? reverseKeyframes : forwardKeyframes;
+  return ghost.animate(finalKeyframes, { duration, easing, fill: 'forwards' });
 }
 
 function minimizeToDock(appId){
@@ -14622,12 +14663,7 @@ function restoreFromDock(appId){
   const toRect = { left: w.left, top: w.top, width: w.width, height: w.height };
   if (dockItem) {
     const iconRect = dockItem.getBoundingClientRect();
-    fromRect = {
-      left: iconRect.left + (iconRect.width / 2) - (toRect.width / 2),
-      top: iconRect.top + (iconRect.height / 2) - (toRect.height / 2),
-      width: toRect.width,
-      height: toRect.height
-    };
+    fromRect = iconRect;
   } else {
     const vh = window.innerHeight || document.documentElement.clientHeight;
     fromRect = {
@@ -14643,10 +14679,16 @@ function restoreFromDock(appId){
   ghost2.style.top = fromRect.top + 'px';
   ghost2.style.width = fromRect.width + 'px';
   ghost2.style.height = fromRect.height + 'px';
-  ghost2.style.clipPath = 'inset(45% 45% 45% 45% round 12px)';
+  ghost2.style.clipPath = `inset(
+    ${(fromRect.height - 12) / 2}px
+    ${(fromRect.width - 12) / 2}px
+    ${(fromRect.height - 12) / 2}px
+    ${(fromRect.width - 12) / 2}px
+    round 6px
+  )`;
   document.body.appendChild(ghost2);
   el.style.opacity = '0';
-  animateGenie(ghost2, fromRect, toRect).onfinish = () => {
+  animateGenie(ghost2, fromRect, toRect, { direction: 'reverse' }).onfinish = () => {
     ghost2.remove();
     el.style.opacity = '';
     if (state && state.hiddenApps) state.hiddenApps.delete(appId);
