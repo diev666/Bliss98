@@ -1339,9 +1339,9 @@
         cursor:move;
         touch-action:none;
       }
-      .title-left{display:flex; align-items:center; gap:6px;}
-      .title-left strong{font-weight:700; font-size:12px;}
-      .title-controls{display:flex; gap:4px;}
+      .title-left{display:flex; align-items:center; gap:6px; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0;}
+      .title-left strong{font-weight:700; font-size:12px; overflow:hidden; text-overflow:ellipsis;}
+      .title-controls{display:flex; gap:4px; flex-shrink:0;}
       .wctl{
         width:18px; height:18px;
         display:flex; align-items:center; justify-content:center;
@@ -2870,7 +2870,9 @@
         gap:4px;
         padding:4px 6px 0;
         overflow-x:auto;
+        overflow-y:hidden;
         -webkit-overflow-scrolling:touch;
+        flex-shrink:0;
       }
       .settings-tab{
         padding:4px 10px;
@@ -14356,7 +14358,7 @@ function renderBlissOSAppleMenu(){
     { id:'language', icon:'./assets/icons/language.png', labelKey:'settings.tab.language' },
     { id:'appearance', icon:'./assets/icons/appearance.png', labelKey:'settings.tab.appearance' },
     { id:'sound', icon:'./assets/icons/Sound.png', labelKey:'settings.tab.sound' },
-    { id:'system', icon:'./assets/icons/system/system.png', labelKey:'settings.tab.system' },
+    { id:'system', icon:'./assets/icons/computer.png', labelKey:'settings.tab.system' },
     { id:'performance', icon:'./assets/icons/performance.png', labelKey:'settings.tab.performance' },
   ];
   const settingsLabel = t('blissos.menu.settings');
