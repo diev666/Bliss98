@@ -3369,6 +3369,10 @@
     height: 16px;
     image-rendering: pixelated;
   }
+  /* Pointer Events & Touch optimization: reduce click delay and improve responsiveness */
+  button, .btn, [role="button"], .icon, .window {
+    touch-action: manipulation;
+  }
     </style>
   </head>
   <body>
@@ -3506,10 +3510,29 @@
       // Short alias used throughout event handlers
       function ET(e){ return getEventTargetEl(e) || e.target; }
 
+      // XSS Prevention: Escape HTML strings before rendering
+      function escapeHTML(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+      }
 
       // Mobile tap fix: detect coarse pointer (touch) and suppress phantom clicks
       const IS_COARSE = window.matchMedia && window.matchMedia('(hover:none) and (pointer:coarse)').matches;
       let suppressClickUntil = 0;
+
+      // Debounce helper: prevents frequent storage writes
+      function createDebounce(delay = 500){
+        let timeoutId = null;
+        return function debounced(fn){
+          clearTimeout(timeoutId);
+          timeoutId = setTimeout(fn, delay);
+        };
+      }
+      
+      // Debounce instances for localStorage operations
+      const debounceIconSave = createDebounce(600);
+      const debounceVolumeSave = createDebounce(500);
 
       const state = {
         user: null,
@@ -7246,6 +7269,8 @@ function dopeSkateRenderShop(){
     board: t('skate.shop.board'),
     wheels: t('skate.shop.wheels'),
   };
+  
+  // Build HTML string first
   const html = (DOPE_SKATE_SHOP[currentCat] || []).map(item => {
     const cat = currentCat;
     const label = labelMap[cat] || cat;
@@ -7261,17 +7286,20 @@ function dopeSkateRenderShop(){
       </div>
     `;
   }).join('');
+  
   dopeSkate.els.shopList.innerHTML = html;
 
-  dopeSkate.els.shopList.querySelectorAll('[data-skate-shop-action]').forEach(btn => {
-    btn.addEventListener('click', (e)=>{
-      const card = ET(e).closest('[data-skate-item]');
-      if(!card) return;
-      dopeSkateHandleShopAction(card.dataset.skateCat, card.dataset.skateItem, card);
-      e.stopPropagation();
-    });
-  });
-  dopeSkate.els.shopList.querySelectorAll('[data-skate-item]').forEach(card => {
+  // Batch event listeners after DOM is set
+  const shopItems = dopeSkate.els.shopList.querySelectorAll('[data-skate-item]');
+  
+  shopItems.forEach(card => {
+    const btn = card.querySelector('[data-skate-shop-action]');
+    if(btn){
+      btn.addEventListener('click', (e)=>{
+        dopeSkateHandleShopAction(card.dataset.skateCat, card.dataset.skateItem, card);
+        e.stopPropagation();
+      });
+    }
     card.addEventListener('click', ()=>{
       dopeSkateSetPreview(card.dataset.skateCat, card.dataset.skateItem);
       dopeSkateRenderShop();
@@ -8710,8 +8738,8 @@ function renderVideosList(winEl, items){
       <button class="videos-item bevel-in${selected ? ' selected' : ''}" type="button" data-video-id="${it.id}">
         <img class="videos-thumb pixel" src="${it.thumb}" alt="" />
         <div class="videos-meta">
-          <div class="videos-title">${it.title}</div>
-          <div class="videos-sub">${meta}</div>
+          <div class="videos-title">${escapeHTML(it.title)}</div>
+          <div class="videos-sub">${escapeHTML(meta)}</div>
         </div>
       </button>
     `;
@@ -11946,7 +11974,7 @@ Eu sou o buffalo branco extinto`
             return `
                   <button class="trash-item" type="button" data-trash-id="${id}">
                 <div class="pixel" style="width:34px;height:34px;display:flex;align-items:center;justify-content:center;">${iconHtml}</div>
-                <span>${label}</span>
+                <span>${escapeHTML(label)}</span>
               </button>
             `;
           }).join('');
@@ -12494,7 +12522,7 @@ function getDisplayTime(){
           els.vol.addEventListener('input', ()=>{
             mp.vol = Number(els.vol.value);
             if(els.audio) els.audio.volume = mp.vol;
-            mpSaveState();
+            debounceVolumeSave(()=> mpSaveState());
           });
         }
 
@@ -12916,7 +12944,9 @@ function getDisplayTime(){
 
 function renderIcons(){
   const grid = $('#iconGrid');
-  grid.innerHTML = '';
+  
+  // Clear grid more efficiently without destroying the element itself
+  while(grid.firstChild) grid.removeChild(grid.firstChild);
 
   const saved = loadIconPositions();
   const metrics = getGridMetrics();
@@ -12928,6 +12958,9 @@ function renderIcons(){
     ...APPS.filter(app => app.showOnDesktop !== false).map(app => ({ type:'app', item: app })),
     ...VIRTUAL_ICONS.map(v => ({ type:'virtual', item: v }))
   ];
+
+  // Use DocumentFragment to batch DOM insertions
+  const fragment = document.createDocumentFragment();
 
   desktopItems.forEach(({ type, item }, idx) => {
     const id = item.id;
@@ -12982,10 +13015,13 @@ function renderIcons(){
       openCtxMenu(ev.clientX, ev.clientY, 'icon', id);
     });
     installLongPress(el, ()=>({ target:'icon', appId: id }));
-    grid.appendChild(el);
+    fragment.appendChild(el);
   });
-        if(needsSave) saveIconPositions(saved);
-      }
+  
+  // Insert all elements at once
+  grid.appendChild(fragment);
+  if(needsSave) saveIconPositions(saved);
+}
       function selectIcon(id){
         state.selectedIconId = id;
         $$('.icon').forEach(i=>i.classList.toggle('selected', i.dataset.appId === id));
@@ -13034,13 +13070,13 @@ function renderIcons(){
               addToFolder('games', ids);
               const saved = loadIconPositions();
               ids.forEach(id => { delete saved[id]; });
-              saveIconPositions(saved);
+              debounceIconSave(()=> saveIconPositions(saved));
               restoreGroupLayer();
               renderIcons();
               renderGamesWindow();
             } else {
               restoreGroupLayer();
-              // Save all moved positions in one write
+              // Save all moved positions in one write (debounced)
               const saved = loadIconPositions();
               const metrics = getGridMetrics();
               const movedIds = new Set(ids);
@@ -13068,10 +13104,11 @@ function renderIcons(){
                 const placed = placeOnFreeCell(x, y, occupied, metrics);
                 p.el.style.left = placed.x + 'px';
                 p.el.style.top = placed.y + 'px';
+                p.el.style.transform = ''; // Reset transform after drag
                 saved[p.id] = { x: placed.x, y: placed.y };
                 p.el.dataset.dragged = '1';
               });
-              saveIconPositions(saved);
+              debounceIconSave(()=> saveIconPositions(saved));
             }
           } else if(dragging){
             restoreGroupLayer();
@@ -13181,10 +13218,9 @@ function renderIcons(){
           const dx = clamp(dxRaw, dxMin, dxMax);
           const dy = clamp(dyRaw, dyMin, dyMax);
 
-          // Move all icons in the group
+          // Use transform for smooth GPU-accelerated movement during drag
           startPositions.forEach(p => {
-            p.el.style.left = (p.x + dx) + 'px';
-            p.el.style.top = (p.y + dy) + 'px';
+            p.el.style.transform = `translate(${dx}px, ${dy}px)`;
           });
 
           e.preventDefault();
@@ -13558,6 +13594,44 @@ function autoFitWindow(winEl, appId){
         }
       }
 
+      function animateAppLaunch(iconEl, winEl){
+        if (!iconEl || !winEl) return;
+        // Capture the final geometry before hiding the window
+        const finalRect = winEl.getBoundingClientRect();
+        // Hide the real window until the animation finishes
+        const prevVisibility = winEl.style.visibility;
+        winEl.style.visibility = 'hidden';
+        // Starting geometry from the icon
+        const startRect = iconEl.getBoundingClientRect();
+        const ghost = document.createElement('div');
+        ghost.className = 'dock-genie-ghost';
+        const winStyle = window.getComputedStyle(winEl);
+        // Use the window's background colour for the ghost or fall back to the panel background
+        ghost.style.background = winStyle.backgroundColor || getComputedStyle(document.documentElement).getPropertyValue('--panel-bg') || '#fff';
+        ghost.style.borderRadius = winStyle.borderRadius || '4px';
+        ghost.style.left = `${startRect.left}px`;
+        ghost.style.top = `${startRect.top}px`;
+        ghost.style.width = `${startRect.width}px`;
+        ghost.style.height = `${startRect.height}px`;
+        ghost.style.transformOrigin = 'top left';
+        document.body.appendChild(ghost);
+        const dx = finalRect.left - startRect.left;
+        const dy = finalRect.top - startRect.top;
+        const scaleX = finalRect.width / startRect.width;
+        const scaleY = finalRect.height / startRect.height;
+        const duration = 280; // Snappy duration for a quick feel
+        const keyframes = [
+          { transform:'translate(0px,0px) scale(1,1)', clipPath:'inset(0% 0% 0% 0%)' },
+          { transform:`translate(${dx*0.5}px,${dy*0.5}px) scale(${(1+scaleX)/2},${(1+scaleY)/2})`, clipPath:'inset(10% 10% 10% 10%)' },
+          { transform:`translate(${dx}px,${dy}px) scale(${scaleX},${scaleY})`, clipPath:'inset(0% 0% 0% 0%)' }
+        ];
+        const anim = ghost.animate(keyframes,{ duration: duration, easing:'ease-in-out', fill:'forwards' });
+        anim.addEventListener('finish', () => {
+          ghost.remove();
+          winEl.style.visibility = prevVisibility || '';
+        });
+      }
+
       function openApp(appId){
         const app = APPS.find(a=>a.id===appId);
         if(!app) return;
@@ -13614,23 +13688,44 @@ function autoFitWindow(winEl, appId){
         createWindowElement(wstate);
         focusWindow(appId);
         renderTaskButtons();
+        
+        // Apply launch animation if enabled
+        const winEl = document.getElementById(`win_${appId}`);
+        if(winEl && state.animations && !window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+          const iconEl = document.querySelector(`[data-app-id="${appId}"]`) || document.querySelector(`[data-blissos-open-app="${appId}"]`);
+          animateAppLaunch(iconEl, winEl);
+        }
       }
 
       function closeApp(appId){
         const w = state.windows.get(appId);
         if(!w) return;
-        if(appId === 'games'){
-          snakeStop();
-          DopeSkateGame.unmount();
-          state.games.view = 'list';
-          state.games.selectedId = null;
+        
+        // Cleanup: wrap in try...catch to ensure window closes even if cleanup fails
+        try {
+          if(appId === 'games'){
+            snakeStop();
+            DopeSkateGame.unmount();
+            state.games.view = 'list';
+            state.games.selectedId = null;
+          }
+        } catch(err){
+          console.error('Error during game cleanup:', err);
         }
+        
         state.windows.delete(appId);
         const el = document.getElementById(`win_${appId}`);
-        if(w.autoFitObserver) w.autoFitObserver.disconnect();
+        
+        try {
+          if(w.autoFitObserver) w.autoFitObserver.disconnect();
+        } catch(err){
+          console.error('Error disconnecting autoFitObserver:', err);
+        }
+        
         if(state.activeWindowId === appId) state.activeWindowId = null;
         if(state.activeAppId === appId) state.activeAppId = 'bliss';
         renderTaskButtons();
+        
         if(el){
           if(state.animations){
             el.classList.add('anim-close');
@@ -15322,74 +15417,5 @@ function renderBlissOSAppMenu(){
         }
       })();
     </script>
-<script>
-// Launch animation injection: animate windows opening from desktop icons.
-// This block overrides the global openApp function to insert a smooth "grow from icon"
-// animation when launching any application. The ghost animation mimics the window
-// expanding out from the clicked icon to its final size. It honours the global
-// state.animations flag and the user’s prefers‑reduced‑motion setting to avoid
-// running when animations are turned off.
-(function(){
-  // Ensure we only inject this behaviour once
-  if (window.__launchAnimationInjected) return;
-  window.__launchAnimationInjected = true;
-  const originalOpenApp = window.openApp;
-  if (typeof originalOpenApp === 'function') {
-    window.openApp = function(appId, ...args){
-      // Locate the icon element either by app id or BlissOS specific attribute
-      const iconEl = document.querySelector(`[data-app-id="${appId}"]`) || document.querySelector(`[data-blissos-open-app="${appId}"]`);
-      // Determine if this app already has an existing window (don’t animate existing ones)
-      const existing = window.state && window.state.windows && typeof window.state.windows.has === 'function' ? window.state.windows.has(appId) : false;
-      const result = originalOpenApp.apply(this, [appId, ...args]);
-      const winEl = document.getElementById(`win_${appId}`);
-      // Only animate brand‑new windows when animations are enabled and the user allows motion
-      // Note: state.animations is a boolean (true for on, false for off). Check truthiness instead of comparing with 0.
-      if (winEl && !existing && window.state && window.state.animations && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        // Remove the built‑in open animation class so our custom animation isn’t doubled up
-        winEl.classList.remove('anim-open');
-        animateAppLaunch(iconEl, winEl);
-      }
-      return result;
-    };
-  }
-  function animateAppLaunch(iconEl, winEl){
-    if (!iconEl || !winEl) return;
-    // Capture the final geometry before hiding the window
-    const finalRect = winEl.getBoundingClientRect();
-    // Hide the real window until the animation finishes
-    const prevVisibility = winEl.style.visibility;
-    winEl.style.visibility = 'hidden';
-    // Starting geometry from the icon
-    const startRect = iconEl.getBoundingClientRect();
-    const ghost = document.createElement('div');
-    ghost.className = 'dock-genie-ghost';
-    const winStyle = window.getComputedStyle(winEl);
-    // Use the window’s background colour for the ghost or fall back to the panel background
-    ghost.style.background = winStyle.backgroundColor || getComputedStyle(document.documentElement).getPropertyValue('--panel-bg') || '#fff';
-    ghost.style.borderRadius = winStyle.borderRadius || '4px';
-    ghost.style.left = `${startRect.left}px`;
-    ghost.style.top = `${startRect.top}px`;
-    ghost.style.width = `${startRect.width}px`;
-    ghost.style.height = `${startRect.height}px`;
-    ghost.style.transformOrigin = 'top left';
-    document.body.appendChild(ghost);
-    const dx = finalRect.left - startRect.left;
-    const dy = finalRect.top - startRect.top;
-    const scaleX = finalRect.width / startRect.width;
-    const scaleY = finalRect.height / startRect.height;
-    const duration = 280; // Snappy duration for a quick feel
-    const keyframes = [
-      { transform:'translate(0px,0px) scale(1,1)', clipPath:'inset(0% 0% 0% 0%)' },
-      { transform:`translate(${dx*0.5}px,${dy*0.5}px) scale(${(1+scaleX)/2},${(1+scaleY)/2})`, clipPath:'inset(10% 10% 10% 10%)' },
-      { transform:`translate(${dx}px,${dy}px) scale(${scaleX},${scaleY})`, clipPath:'inset(0% 0% 0% 0%)' }
-    ];
-    const anim = ghost.animate(keyframes,{ duration: duration, easing:'ease-in-out', fill:'forwards' });
-    anim.addEventListener('finish', () => {
-      ghost.remove();
-      winEl.style.visibility = prevVisibility || '';
-    });
-  }
-})();
-</script>
   </body>
 </html>
