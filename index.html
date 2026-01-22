@@ -2094,7 +2094,7 @@
         background:linear-gradient(180deg, #d7d2c8 0%, #bfb8ab 100%);
         border-top:1px solid rgba(0,0,0,0.12);
         box-shadow:0 -8px 24px rgba(0,0,0,0.2);
-        z-index:6;
+        z-index:1001;
         pointer-events:auto;
         touch-action:none;
       }
@@ -4786,13 +4786,12 @@ function initSnakeInWindow(winEl){
       snakeTogglePause();
     });
   }
-  if(snake.els.playAgainBtn){
-    snake.els.playAgainBtn.addEventListener('click', (e)=>{
-      e.preventDefault();
-      snakeStartGame();
-    });
-  }
-  if(snake.els.speedSelect){
+      if(snake.els.playAgainBtn){
+          snake.els.playAgainBtn.addEventListener('pointerdown', (e)=>{
+            e.preventDefault();
+            snakeStartGame();
+          });
+        }  if(snake.els.speedSelect){
     snake.els.speedSelect.addEventListener('change', (e)=>{
       const val = e.target.value;
       state.snake.speed = val;
