@@ -3906,6 +3906,17 @@ const MOBILE_CONTROLS_KEY = 'bliss98_mobile_controls_mode';
         };
       }
 
+      function defaultIconPos(index){
+        // Layout similar to the old grid: 6 rows then new column
+        const rows = 6;
+        const col = Math.floor(index / rows);
+        const row = index % rows;
+        return {
+          x: col * (ICON_SIZE.w + ICON_GAP.x),
+          y: row * (ICON_SIZE.h + ICON_GAP.y)
+        };
+      }
+
       function clampIconPos(x, y){
         const area = $('#desktopArea').getBoundingClientRect();
         const maxX = Math.max(0, Math.floor(area.width - ICON_SIZE.w - 6));
@@ -9459,7 +9470,6 @@ function installLongPress(el, getTarget){
 
           'wallpaper.classic': 'Classic Teal',
           'wallpaper.blissos': 'BlissOS Platinum',
-          'wallpaper.blissos': 'BlissOS Platinum',
           'wallpaper.bliss': 'Sunrise',
           'wallpaper.clouds': 'Clouds',
           'wallpaper.diev': 'Grid',
@@ -9492,7 +9502,7 @@ function installLongPress(el, getTarget){
           'contact.label.emailBusiness': 'Email (Business):',
           'contact.label.instagramBLISS': 'Instagram (BLISS):',
           'diev.title': 'DIEV',
-          'diev.p1': 'Official page for DIEV.',
+          'diev.p1': 'Página oficial do DIEV.',
 
           'player.title': 'BLISS Media Player',
           'player.now': 'Now playing:',
@@ -12659,7 +12669,7 @@ function getDisplayTime(){
             }
           }
           if(ok) state.didAutoPlayThisSession = true;
-        }, 6000);
+        }, 1000);
       }
 
       function mpSetTrack(i){
@@ -13045,10 +13055,6 @@ function renderIcons(){
         const onWindowBlur = ()=>{
           endDrag(lastEvent, true);
         };
-        const onDocPointerUp = (e)=>{
-          if(pointerId !== null && e.pointerId !== pointerId) return;
-          endDrag(e, false);
-        };
         const endDrag = (e, cancel)=>{
           if(!down) return;
           if(pointerId !== null && e && e.pointerId !== pointerId) return;
@@ -13092,8 +13098,10 @@ function renderIcons(){
               });
 
               startPositions.forEach(p => {
-                let x = parseInt(p.el.style.left || '0', 10);
-                let y = parseInt(p.el.style.top || '0', 10);
+                const dx = e.clientX - startX;
+                const dy = e.clientY - startY;
+                let x = p.x + dx;
+                let y = p.y + dy;
 
                 if(state.gridSnap){
                   const snapped = snapToGrid(x, y);
@@ -13172,7 +13180,6 @@ function renderIcons(){
 
           document.body.classList.add('dragging');
           document.addEventListener('pointermove', onPointerMove);
-          document.addEventListener('pointerup', onPointerUp);
           document.addEventListener('pointercancel', onPointerUp);
           window.addEventListener('blur', onWindowBlur);
 
@@ -13782,7 +13789,7 @@ function autoFitWindow(winEl, appId){
         if (!w) return;
         
         const winEl = document.getElementById('win_' + appId);
-        const btn = winEl.querySelector('.wctl[onclick*="toggleFitWindow"]');
+        const btn = winEl.querySelector('.wctl[data-action="max"]');
 
         if (w.isFit) {
             w.isFit = false;
@@ -13807,23 +13814,11 @@ function autoFitWindow(winEl, appId){
             winEl.classList.add('maximized');
             if (btn) btn.textContent = '❐';
 
-            const isMobile = window.innerWidth < 768;
-            
-            if (isMobile) {
-                winEl.style.top = '0px';
-                winEl.style.left = '0px';
-                winEl.style.width = '100%';
-                winEl.style.height = 'calc(100% - 40px)';
-            } else {
-                const content = winEl.querySelector('.content');
-                if (content) {
-                   winEl.style.width = 'auto';
-                   winEl.style.height = 'auto';
-                   const rect = content.getBoundingClientRect();
-                   winEl.style.width = (rect.width + 12) + 'px';
-                   winEl.style.height = (rect.height + 38) + 'px';
-                }
-            }
+            const area = $('#desktopArea').getBoundingClientRect();
+            winEl.style.top = '0px';
+            winEl.style.left = '0px';
+            winEl.style.width = (area.width - 4) + 'px';
+            winEl.style.height = (area.height - 4) + 'px';
         }
       }
 
@@ -13841,10 +13836,12 @@ function autoFitWindow(winEl, appId){
             winEl.parentNode.appendChild(winEl);
         }
 
+        w.z = ++state.zTop;
+        winEl.style.zIndex = w.z;
+
         // Atualiza classes visuais
         document.querySelectorAll('.window').forEach(el => {
             el.classList.remove('active');
-            el.style.zIndex = ''; 
         });
         
         winEl.classList.add('active');
@@ -13854,7 +13851,7 @@ function autoFitWindow(winEl, appId){
         const taskItem = document.getElementById('task_' + appId);
         if (taskItem) taskItem.classList.add('active');
 
-        state.activeWindow = appId;
+        state.activeWindowId = appId;
       }
 
       function createWindowElement(wstate){
@@ -13911,7 +13908,7 @@ function autoFitWindow(winEl, appId){
 
         // Make windows focus on mousedown except when clicking on a control button (min/max/close).
         // On touch devices the first tap should trigger the action without requiring a second tap.
-        el.addEventListener('mousedown', (e)=>{
+        el.addEventListener('pointerdown', (e)=>{
           // If the target element has a data-action (control buttons), defer focusing until the click handler.
           if(e.target && ET(e).dataset && ET(e).dataset.action) return;
           e.stopPropagation();
@@ -15210,8 +15207,8 @@ function renderBlissOSAppMenu(){
         if(!state.folders.games.includes('dope-skate')) state.folders.games.push('dope-skate');
         state.snake.highScore = loadSnakeHighScore();
         state.dopeSkate.highScore = loadDopeSkateHighScore();
-        recordGameScore('snake', state.snake.highScore || 0);
-        recordGameScore('dopeSkate', state.dopeSkate.highScore || 0);
+        recordGameScore('snake', state.snake.highScore);
+        recordGameScore('dopeSkate', state.dopeSkate.highScore);
         state.trash = new Set(loadTrash());
         state.iconLabels = loadIconLabels();
         state.trashSelection = new Set();
@@ -15219,8 +15216,6 @@ function renderBlissOSAppMenu(){
         // Apply translations immediately (default is English)
         applyI18n();
         applyOsProfile(state.settings.theme);
-        applyScanlines();
-        applyOsTheme();
         updateTrashIconUI();
 
         initSfx();
