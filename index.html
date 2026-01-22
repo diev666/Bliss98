@@ -755,6 +755,10 @@
         justify-content:flex-start;
         align-items:center;
       }
+      .blissos-dock.hidden{
+        display:none !important;
+      }
+
       .blissos-dock-inner{
         display:flex;
         align-items:center;
@@ -13179,8 +13183,9 @@ function renderIcons(){
           group.forEach(el => (el.dataset.dragged = '0'));
 
           document.body.classList.add('dragging');
-          document.addEventListener('pointermove', onPointerMove);
-          document.addEventListener('pointercancel', onPointerUp);
+          iconEl.addEventListener('pointermove', onPointerMove);
+          document.addEventListener('pointerup', onPointerUp);
+          iconEl.addEventListener('pointercancel', onPointerUp);
           window.addEventListener('blur', onWindowBlur);
 
           e.preventDefault();
@@ -15179,26 +15184,14 @@ function renderBlissOSAppMenu(){
         const saved = localStorage.getItem('bliss98_user');
         if(saved){ setUser(saved); $('#username').value = saved; }
 
-        state.gridSnap = loadGridSnap();
-        state.wallpaper = loadWallpaper();
-        state.animations = loadAnimations();
-        state.settings.scanlines = loadScanlines();
-        state.settings.darkMode = loadDarkMode();
-        state.settings.retroGlow = loadRetroGlow();
-        state.settings.clock24 = loadClockFormat();
-        state.settings.oldCrt = loadOldCrt();
-        state.settings.masterVolume = loadMasterVolume();
-        state.settings.systemVolume = loadSystemVolume();
         state.settings.theme = loadOsTheme();
         state.settings.osProfiles = loadOsProfiles();
-        state.theme.preset = loadThemePreset();
-        state.theme.titlebar = loadTitlebarTheme();
-        if(state.theme.titlebar === 'transparent') state.theme.titlebar = 'blank';
-        const customTheme = loadCustomTheme();
-        state.theme.palette = (state.theme.preset === 'xp98') ? 'xp98' : 'default';
-        if(state.theme.preset === 'custom' && customTheme && customTheme.palette){
-          state.theme.palette = customTheme.palette;
-        }
+        
+        applyOsProfile(state.settings.theme);
+
+        state.gridSnap = loadGridSnap();
+        state.animations = loadAnimations();
+        
         state.games.layout = loadGamesLayout();
         state.games.bigIcons = loadGamesBigIcons();
         state.folders = loadFolders();
@@ -15215,7 +15208,7 @@ function renderBlissOSAppMenu(){
 
         // Apply translations immediately (default is English)
         applyI18n();
-        applyOsProfile(state.settings.theme);
+        applyOsTheme();
         updateTrashIconUI();
 
         initSfx();
