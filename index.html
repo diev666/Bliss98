@@ -3517,9 +3517,7 @@
         return div.innerHTML;
       }
 
-      // Mobile tap fix: detect coarse pointer (touch) and suppress phantom clicks
-      const IS_COARSE = window.matchMedia && window.matchMedia('(hover:none) and (pointer:coarse)').matches;
-      let suppressClickUntil = 0;
+      // Mobile optimization: Pointer Events are handled natively without suppression
 
       // Debounce helper: prevents frequent storage writes
       function createDebounce(delay = 500){
@@ -13783,11 +13781,14 @@ function autoFitWindow(winEl, appId){
         const winEl = document.getElementById(`win_${appId}`);
         if(!winEl) return;
 
+        const isMobile = window.innerWidth < 768;
+
+        // If already maximized, restore to previous size
         if(w.fit && w.prevRect){
           const area = $('#desktopArea').getBoundingClientRect();
           const normalized = normalizeWindowRect({
-            left: w.left,
-            top: w.top,
+            left: w.prevRect.left,
+            top: w.prevRect.top,
             width: w.prevRect.width,
             height: w.prevRect.height
           }, area, 16);
@@ -13804,11 +13805,28 @@ function autoFitWindow(winEl, appId){
           return;
         }
 
+        // Save current state for restoration
+        w.prevRect = { left: w.left, top: w.top, width: w.width, height: w.height };
+        w.fit = true;
+
+        // MOBILE: Fullscreen window to desktop area
+        if(isMobile){
+          const area = $('#desktopArea').getBoundingClientRect();
+          w.left = 0;
+          w.top = 0;
+          w.width = Math.floor(area.width);
+          w.height = Math.floor(area.height);
+          winEl.style.left = '0px';
+          winEl.style.top = '0px';
+          winEl.style.width = w.width + 'px';
+          winEl.style.height = w.height + 'px';
+          return;
+        }
+
+        // DESKTOP: Fit to content size
         const frame = winEl.querySelector('.frame');
         const content = winEl.querySelector('.content');
         if(!frame || !content) return;
-
-        w.prevRect = { left: w.left, top: w.top, width: w.width, height: w.height };
 
         const frameRect = frame.getBoundingClientRect();
         const contentRect = content.getBoundingClientRect();
@@ -13944,8 +13962,7 @@ function autoFitWindow(winEl, appId){
           if(e.pointerType !== 'touch') return;
           const act = ET(e)?.dataset?.action;
           if(!act) return;
-          e.preventDefault();
-          e.stopPropagation();
+          // Don't prevent default - let native click handler take care of it
           focusWindow(appId);
           closeStartMenu();
           if(act==='close') closeApp(appId);
@@ -15267,154 +15284,8 @@ function renderBlissOSAppMenu(){
           });
         }
 
-        // ===== MOBILE TAP FIX: Handle window controls and settings on pointerup/touchend =====
-        if(IS_COARSE){
-          // Suppress click events that come after touch actions
-          document.addEventListener('click', (e)=>{
-            if(Date.now() < suppressClickUntil){
-              e.preventDefault();
-              e.stopImmediatePropagation();
-            }
-          }, true);
-
-          // Main handler: execute actions on pointerup for mobile
-          document.addEventListener('pointerup', (e)=>{
-            const target = getEventTargetEl(e);
-            if(!target || !target.closest) return;
-
-            // 1) WINDOW CONTROLS (.wctl[data-action])
-            const wctl = target.closest('.wctl[data-action]');
-            if(wctl){
-              const winEl = wctl.closest('.window');
-              if(!winEl || !winEl.id) return;
-              const appId = winEl.id.replace('win_','');
-
-              // Ensure window is focused
-              try{ focusWindow(appId); } catch {}
-
-              const act = wctl.dataset.action;
-              if(act === 'close') closeApp(appId);
-              if(act === 'min') minimizeApp(appId);
-              if(act === 'max') toggleFitWindow(appId);
-
-              suppressClickUntil = Date.now() + 450;
-              e.preventDefault();
-              e.stopImmediatePropagation();
-              return;
-            }
-
-            // 2) SETTINGS BUTTONS [data-set-*]
-            const settingsBtn = target.closest('[data-set-lang], [data-set-wallpaper], [data-set-animations], [data-set-scanlines], [data-set-darkmode], [data-set-blissos-darkmode], [data-set-retro], [data-set-clock], [data-set-oldcrt], [data-set-os-theme], [data-set-titlebar], [data-set-theme]');
-            if(settingsBtn){
-              const winEl = settingsBtn.closest('.window');
-              if(winEl && winEl.id){
-                const appId = winEl.id.replace('win_','');
-                try{ focusWindow(appId); } catch {}
-              }
-
-              // Execute the same setters as in the click handler
-              if(settingsBtn.dataset.setLang) setLang(settingsBtn.dataset.setLang);
-              if(settingsBtn.dataset.setWallpaper) applyWallpaper(settingsBtn.dataset.setWallpaper);
-              if(settingsBtn.dataset.setAnimations) setAnimations(settingsBtn.dataset.setAnimations === 'on');
-              if(settingsBtn.dataset.setScanlines) setScanlines(settingsBtn.dataset.setScanlines === 'on');
-              if(settingsBtn.dataset.setDarkmode) setDarkMode(settingsBtn.dataset.setDarkmode === 'on');
-              if(settingsBtn.dataset.setBlissosDarkmode) setBlissOSDarkMode(settingsBtn.dataset.setBlissosDarkmode === 'on');
-              if(settingsBtn.dataset.setRetro) setRetroGlow(settingsBtn.dataset.setRetro === 'on');
-              if(settingsBtn.dataset.setClock) setClockFormat(settingsBtn.dataset.setClock === '24');
-              if(settingsBtn.dataset.setOldcrt) setOldCrt(settingsBtn.dataset.setOldcrt === 'on');
-              if(settingsBtn.dataset.setOsTheme) setOsTheme(settingsBtn.dataset.setOsTheme);
-              if(settingsBtn.dataset.setTitlebar) setTitlebarTheme(settingsBtn.dataset.setTitlebar);
-              if(settingsBtn.dataset.setTheme) setThemePreset(settingsBtn.dataset.setTheme);
-
-              suppressClickUntil = Date.now() + 450;
-              e.preventDefault();
-              e.stopImmediatePropagation();
-              return;
-            }
-          }, true);
-
-          // Fallback: touchend for older iOS
-          document.addEventListener('touchend', (e)=>{
-            const target = getEventTargetEl(e);
-            if(!target || !target.closest) return;
-
-            const wctl = target.closest('.wctl[data-action]');
-            if(wctl){
-              const winEl = wctl.closest('.window');
-              if(!winEl || !winEl.id) return;
-              const appId = winEl.id.replace('win_','');
-              try{ focusWindow(appId); } catch {}
-              const act = wctl.dataset.action;
-              if(act === 'close') closeApp(appId);
-              if(act === 'min') minimizeApp(appId);
-              if(act === 'max') toggleFitWindow(appId);
-              suppressClickUntil = Date.now() + 450;
-              return;
-            }
-
-            const settingsBtn = target.closest('[data-set-lang], [data-set-wallpaper], [data-set-animations], [data-set-scanlines], [data-set-darkmode], [data-set-blissos-darkmode], [data-set-retro], [data-set-clock], [data-set-oldcrt], [data-set-os-theme], [data-set-titlebar], [data-set-theme]');
-            if(settingsBtn){
-              const winEl = settingsBtn.closest('.window');
-              if(winEl && winEl.id){
-                const appId = winEl.id.replace('win_','');
-                try{ focusWindow(appId); } catch {}
-              }
-              if(settingsBtn.dataset.setLang) setLang(settingsBtn.dataset.setLang);
-              if(settingsBtn.dataset.setWallpaper) applyWallpaper(settingsBtn.dataset.setWallpaper);
-              if(settingsBtn.dataset.setAnimations) setAnimations(settingsBtn.dataset.setAnimations === 'on');
-              if(settingsBtn.dataset.setScanlines) setScanlines(settingsBtn.dataset.setScanlines === 'on');
-              if(settingsBtn.dataset.setDarkmode) setDarkMode(settingsBtn.dataset.setDarkmode === 'on');
-              if(settingsBtn.dataset.setBlissosDarkmode) setBlissOSDarkMode(settingsBtn.dataset.setBlissosDarkmode === 'on');
-              if(settingsBtn.dataset.setRetro) setRetroGlow(settingsBtn.dataset.setRetro === 'on');
-              if(settingsBtn.dataset.setClock) setClockFormat(settingsBtn.dataset.setClock === '24');
-              if(settingsBtn.dataset.setOldcrt) setOldCrt(settingsBtn.dataset.setOldcrt === 'on');
-              if(settingsBtn.dataset.setOsTheme) setOsTheme(settingsBtn.dataset.setOsTheme);
-              if(settingsBtn.dataset.setTitlebar) setTitlebarTheme(settingsBtn.dataset.setTitlebar);
-              if(settingsBtn.dataset.setTheme) setThemePreset(settingsBtn.dataset.setTheme);
-              suppressClickUntil = Date.now() + 450;
-              return;
-            }
-          }, { capture: true, passive: false });
-        }
-
-        // Touch to click dispatch for Settings controls
-        if(IS_COARSE){
-          document.addEventListener('pointerup', (evt)=>{
-            const target = getEventTargetEl(evt);
-            if(!target || !target.closest) return;
-            const settingsBtn = target.closest('[data-set-lang], [data-set-theme], [data-set-wallpaper], [data-set-animations], [data-set-scanlines], [data-set-darkmode], [data-set-blissos-darkmode], [data-set-retro], [data-set-clock], [data-set-oldcrt], [data-set-os-theme], [data-set-titlebar]');
-            if(settingsBtn && evt.pointerType === 'touch'){
-              evt.preventDefault();
-              evt.stopPropagation();
-              const clickEvent = new MouseEvent('click', {
-                bubbles: true,
-                cancelable: true,
-                view: window
-              });
-              settingsBtn.dispatchEvent(clickEvent);
-            }
-          }, { capture: true, passive: false });
-
-          // Block context menu on window controls and settings buttons on touch
-          document.addEventListener('contextmenu', (e)=>{
-            const target = getEventTargetEl(e);
-            if(!target || !target.closest) return;
-            // Block contextmenu on window controls
-            const wctl = target.closest('.wctl[data-action]');
-            if(wctl){
-              e.preventDefault();
-              e.stopImmediatePropagation();
-              return;
-            }
-            // Block contextmenu on settings buttons
-            const settingsBtn = target.closest('[data-set-lang], [data-set-theme], [data-set-wallpaper], [data-set-animations], [data-set-scanlines], [data-set-darkmode], [data-set-blissos-darkmode], [data-set-retro], [data-set-clock], [data-set-oldcrt], [data-set-os-theme], [data-set-titlebar]');
-            if(settingsBtn){
-              e.preventDefault();
-              e.stopImmediatePropagation();
-              return;
-            }
-          }, { capture: true });
-        }
+        // Mobile optimization: Native Pointer Events and Click handlers now work without suppression
+        // IS_COARSE removed - all events handled via standard Pointer Events API
       })();
     </script>
   </body>
