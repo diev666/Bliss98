@@ -13775,111 +13775,84 @@ function autoFitWindow(winEl, appId){
         updateBlissOSActiveApp();
       }
 
-      function toggleFitWindow(appId){
+      function toggleFitWindow(appId) {
         const w = state.windows.get(appId);
-        if(!w) return;
-        const winEl = document.getElementById(`win_${appId}`);
-        if(!winEl) return;
+        if (!w) return;
+        
+        const winEl = document.getElementById('win_' + appId);
+        const btn = winEl.querySelector('.wctl[onclick*="toggleFitWindow"]');
 
-        const isMobile = window.innerWidth < 768;
+        if (w.isFit) {
+            w.isFit = false;
+            winEl.classList.remove('maximized');
+            if (btn) btn.textContent = '□';
 
-        // If already maximized, restore to previous size
-        if(w.fit && w.prevRect){
-          const area = $('#desktopArea').getBoundingClientRect();
-          const normalized = normalizeWindowRect({
-            left: w.prevRect.left,
-            top: w.prevRect.top,
-            width: w.prevRect.width,
-            height: w.prevRect.height
-          }, area, 16);
-          w.left = normalized.left;
-          w.top = normalized.top;
-          w.width = normalized.width;
-          w.height = normalized.height;
-          w.fit = false;
-          w.prevRect = null;
-          winEl.style.left = w.left + 'px';
-          winEl.style.top = w.top + 'px';
-          winEl.style.width = w.width + 'px';
-          winEl.style.height = w.height + 'px';
-          return;
+            if (w.prevRect) {
+                winEl.style.top = w.prevRect.top;
+                winEl.style.left = w.prevRect.left;
+                winEl.style.width = w.prevRect.width;
+                winEl.style.height = w.prevRect.height;
+            }
+        } else {
+            w.prevRect = {
+                top: winEl.style.top,
+                left: winEl.style.left,
+                width: winEl.style.width,
+                height: winEl.style.height
+            };
+
+            w.isFit = true;
+            winEl.classList.add('maximized');
+            if (btn) btn.textContent = '❐';
+
+            const isMobile = window.innerWidth < 768;
+            
+            if (isMobile) {
+                winEl.style.top = '0px';
+                winEl.style.left = '0px';
+                winEl.style.width = '100%';
+                winEl.style.height = 'calc(100% - 40px)';
+            } else {
+                const content = winEl.querySelector('.content');
+                if (content) {
+                   winEl.style.width = 'auto';
+                   winEl.style.height = 'auto';
+                   const rect = content.getBoundingClientRect();
+                   winEl.style.width = (rect.width + 12) + 'px';
+                   winEl.style.height = (rect.height + 38) + 'px';
+                }
+            }
         }
-
-        // Save current state for restoration
-        w.prevRect = { left: w.left, top: w.top, width: w.width, height: w.height };
-        w.fit = true;
-
-        // MOBILE: Fullscreen window to desktop area
-        if(isMobile){
-          const area = $('#desktopArea').getBoundingClientRect();
-          w.left = 0;
-          w.top = 0;
-          w.width = Math.floor(area.width);
-          w.height = Math.floor(area.height);
-          winEl.style.left = '0px';
-          winEl.style.top = '0px';
-          winEl.style.width = w.width + 'px';
-          winEl.style.height = w.height + 'px';
-          return;
-        }
-
-        // DESKTOP: Fit to content size
-        const frame = winEl.querySelector('.frame');
-        const content = winEl.querySelector('.content');
-        if(!frame || !content) return;
-
-        const frameRect = frame.getBoundingClientRect();
-        const contentRect = content.getBoundingClientRect();
-        const extraW = frameRect.width - contentRect.width;
-        const extraH = frameRect.height - contentRect.height;
-        const targetContentW = Math.max(content.scrollWidth, content.clientWidth);
-        const targetContentH = Math.max(content.scrollHeight, content.clientHeight);
-
-        const area = $('#desktopArea').getBoundingClientRect();
-        const maxW = Math.max(320, Math.floor(area.width));
-        const maxH = Math.max(220, Math.floor(area.height));
-
-        let newW = Math.ceil(targetContentW + extraW);
-        let newH = Math.ceil(targetContentH + extraH);
-
-        newW = clamp(newW, 280, maxW);
-        newH = clamp(newH, 200, maxH);
-
-        let newL = w.left;
-        let newT = w.top;
-        if(newL + newW > maxW) newL = Math.max(0, maxW - newW);
-        if(newT + newH > maxH) newT = Math.max(0, maxH - newH);
-
-        w.left = newL;
-        w.top = newT;
-        w.width = newW;
-        w.height = newH;
-        w.fit = true;
-
-        winEl.style.left = newL + 'px';
-        winEl.style.top = newT + 'px';
-        winEl.style.width = newW + 'px';
-        winEl.style.height = newH + 'px';
       }
 
-      function focusWindow(appId){
+      function focusWindow(appId) {
+        if (!state.windows.has(appId)) return;
         const w = state.windows.get(appId);
-        if(!w) return;
-        w.z = ++state.zTop;
-        state.activeWindowId = appId;
-        state.activeAppId = appId;
-        state.lastFocusedWindowByApp[appId] = appId;
-        const el = document.getElementById(`win_${appId}`);
-        if(el){
-          el.style.zIndex = String(w.z);
-          $$('.window').forEach(winEl=>{
-            winEl.dataset.active = (winEl.id === `win_${appId}`) ? '1' : '0';
-            const tb = winEl.querySelector('.titlebar');
-            if(tb) tb.style.filter = (winEl.dataset.active==='1') ? 'none' : 'grayscale(0.35) brightness(0.9)';
-          });
+        const winEl = document.getElementById('win_' + appId);
+        
+        if (!winEl) return;
+
+        // CORREÇÃO DO BUG MOBILE:
+        // Só move o elemento no DOM se ele NÃO for o último.
+        // Isso impede que o navegador cancele o evento de 'click' no primeiro toque.
+        if (winEl.nextElementSibling) {
+            winEl.parentNode.appendChild(winEl);
         }
-        renderTaskButtons();
-        updateBlissOSActiveApp();
+
+        // Atualiza classes visuais
+        document.querySelectorAll('.window').forEach(el => {
+            el.classList.remove('active');
+            el.style.zIndex = ''; 
+        });
+        
+        winEl.classList.add('active');
+        
+        // Atualiza Taskbar
+        document.querySelectorAll('.task-item').forEach(t => t.classList.remove('active'));
+        const taskItem = document.getElementById('task_' + appId);
+        if (taskItem) taskItem.classList.add('active');
+
+        state.activeWindow = appId;
       }
 
       function createWindowElement(wstate){
