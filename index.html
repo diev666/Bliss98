@@ -222,10 +222,10 @@
       @media (hover:none) and (pointer:coarse) and (max-width:520px){
         /* BlissOS top menubar */
         .blissos-menubar{
-          height:18px;
-          padding:0 6px;
-          gap:8px;
-          font-size:11px;
+          height:16px;
+          padding:0 5px;
+          gap:6px;
+          font-size:10px;
         }
         .blissos-menu-left{gap:6px;}
         .blissos-menu-right{
@@ -233,25 +233,25 @@
           font-weight:600;
         }
         .blissos-appmenu{
-          padding:0 6px;
-          font-size:12px;
+          padding:0 5px;
+          font-size:11px;
         }
         .blissos-appmenu-icon,
         .blissos-appmenu-icon img{
-          width:14px; height:14px;
+          width:13px; height:13px;
         }
         .blissos-menu-item,
         .blissos-menu-brand{
           padding:0 5px;
         }
         .blissos-menu-brand img{width:12px;height:12px;}
-        .blissos-apple-menu{ top:18px; left:6px; }
+        .blissos-apple-menu{ top:16px; left:6px; }
         body[data-theme="blissos"] .desktop-area{
-          inset:18px 0 32px 0;
+          inset:16px 0 32px 0;
         }
 
         /* BlissOS dock */
-        .blissos-dock{ left:1px; }
+        .blissos-dock{ left:50%; transform:translateX(-50%); }
         .blissos-dock-inner{
           height:40px;
           padding:3px 5px;
@@ -864,12 +864,13 @@
 
       .blissos-dock{
         position:fixed;
-        left:2px;
+        left:50%;
+        transform:translateX(-50%);
         bottom:env(safe-area-inset-bottom);
         padding:0;
         z-index:1000;
         display:flex;
-        justify-content:flex-start;
+        justify-content:center;
         align-items:center;
       }
       .blissos-dock.hidden{
@@ -887,6 +888,10 @@
         border-right:1px solid var(--blissos-border);
         border-bottom:1px solid var(--blissos-border);
         height:46px;
+        max-width:calc(100vw - 12px);
+        overflow-x:auto;
+        overflow-y:hidden;
+        -webkit-overflow-scrolling:touch;
         position:relative;
       }
       .blissos-dock-cap{
@@ -3499,7 +3504,66 @@
   button, .btn, [role="button"], .icon, .window {
     touch-action: manipulation;
   }
-    </style>
+    
+
+      /* --- Mobile UI fit (late overrides so they win over base rules) --- */
+      @media (hover:none) and (pointer:coarse) and (max-width:520px){
+        .blissos-menubar{
+          height:16px !important;
+          padding:0 5px !important;
+          gap:6px !important;
+          font-size:10px !important;
+        }
+        .blissos-menu-left{ gap:6px !important; }
+        .blissos-menu-right{ gap:8px !important; }
+
+        .blissos-appmenu{
+          padding:0 5px !important;
+          font-size:11px !important;
+        }
+        .blissos-appmenu-icon,
+        .blissos-appmenu-icon img{
+          width:13px !important;
+          height:13px !important;
+        }
+        .blissos-menu-item,
+        .blissos-menu-brand{
+          padding:0 4px !important;
+        }
+
+        .blissos-apple-menu{ top:16px !important; }
+        body[data-theme="blissos"] .desktop-area{
+          inset:16px 0 32px 0 !important;
+        }
+
+        .blissos-dock{
+          left:50% !important;
+          transform:translateX(-50%) !important;
+        }
+        .blissos-dock-inner{
+          height:40px !important;
+          padding:3px 5px !important;
+          gap:5px !important;
+          max-width:calc(100vw - 6px) !important;
+          overflow-x:auto !important;
+          overflow-y:hidden !important;
+          -webkit-overflow-scrolling:touch;
+        }
+        .blissos-dock-cap{ height:36px !important; }
+        .blissos-dock-cap.left{ width:14px !important; }
+        .blissos-dock-cap.right{ width:16px !important; }
+        .blissos-dock-item{
+          width:36px !important;
+          height:36px !important;
+        }
+
+        /* Bliss98 taskbar (if switched on mobile) */
+        .taskbar{ height:28px !important; }
+        .tray{ height:22px !important; }
+        .start-menu{ bottom:30px !important; }
+      }
+
+</style>
   </head>
   <body>
     <div id="app">
