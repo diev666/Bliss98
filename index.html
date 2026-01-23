@@ -218,6 +218,79 @@
   }
 }
 
+      /* --- Mobile UI fit (menubar + dock) --- */
+      @media (hover:none) and (pointer:coarse) and (max-width:520px){
+        /* BlissOS top menubar */
+        .blissos-menubar{
+          height:16px;
+          padding:0 5px;
+          gap:6px;
+          font-size:10px;
+        }
+        .blissos-menu-left{gap:6px;}
+        .blissos-menu-right{
+          gap:8px;
+          font-weight:600;
+        }
+        .blissos-appmenu{
+          padding:0 5px;
+          font-size:11px;
+        }
+        .blissos-appmenu-icon,
+        .blissos-appmenu-icon img{
+          width:13px; height:13px;
+        }
+        .blissos-menu-item,
+        .blissos-menu-brand{
+          padding:0 5px;
+        }
+        .blissos-menu-brand img{width:12px;height:12px;}
+        .blissos-apple-menu{ top:16px; left:6px; }
+        body[data-theme="blissos"] .desktop-area{
+          inset:16px 0 32px 0;
+        }
+
+        /* BlissOS dock */
+        .blissos-dock{ left:50%; transform:translateX(-50%); }
+        .blissos-dock-inner{
+          height:40px;
+          padding:3px 5px;
+          gap:5px;
+          max-width:calc(100vw - 6px);
+          overflow-x:auto;
+          -webkit-overflow-scrolling:touch;
+        }
+        .blissos-dock-cap{
+          height:36px;
+        }
+        .blissos-dock-cap.left{ width:14px; }
+        .blissos-dock-cap.right{ width:16px; }
+        .blissos-dock-item{
+          width:36px;
+          height:36px;
+        }
+
+        /* Bliss98 taskbar (if user switches OS on mobile) */
+        .taskbar{
+          height:28px;
+          padding:2px 4px;
+          gap:4px;
+        }
+        .tray{
+          height:22px;
+          padding:0 6px;
+        }
+        .clock{ min-width:56px; }
+        .start-menu{ bottom:30px; }
+      }
+
+      @media (hover:none) and (pointer:coarse){
+        /* On mobile, hide 12h/24h toggle (always use 24h to save space) */
+        #settingsClock{ display:none !important; }
+      }
+
+
+
       .bevel{
         background:var(--task);
         border-top:2px solid var(--shadow-white);
@@ -791,12 +864,13 @@
 
       .blissos-dock{
         position:fixed;
-        left:2px;
+        left:50%;
+        transform:translateX(-50%);
         bottom:env(safe-area-inset-bottom);
         padding:0;
         z-index:1000;
         display:flex;
-        justify-content:flex-start;
+        justify-content:center;
         align-items:center;
       }
       .blissos-dock.hidden{
@@ -814,6 +888,10 @@
         border-right:1px solid var(--blissos-border);
         border-bottom:1px solid var(--blissos-border);
         height:46px;
+        max-width:calc(100vw - 12px);
+        overflow-x:auto;
+        overflow-y:hidden;
+        -webkit-overflow-scrolling:touch;
         position:relative;
       }
       .blissos-dock-cap{
@@ -3426,7 +3504,66 @@
   button, .btn, [role="button"], .icon, .window {
     touch-action: manipulation;
   }
-    </style>
+    
+
+      /* --- Mobile UI fit (late overrides so they win over base rules) --- */
+      @media (hover:none) and (pointer:coarse) and (max-width:520px){
+        .blissos-menubar{
+          height:16px !important;
+          padding:0 5px !important;
+          gap:6px !important;
+          font-size:10px !important;
+        }
+        .blissos-menu-left{ gap:6px !important; }
+        .blissos-menu-right{ gap:8px !important; }
+
+        .blissos-appmenu{
+          padding:0 5px !important;
+          font-size:11px !important;
+        }
+        .blissos-appmenu-icon,
+        .blissos-appmenu-icon img{
+          width:13px !important;
+          height:13px !important;
+        }
+        .blissos-menu-item,
+        .blissos-menu-brand{
+          padding:0 4px !important;
+        }
+
+        .blissos-apple-menu{ top:16px !important; }
+        body[data-theme="blissos"] .desktop-area{
+          inset:16px 0 32px 0 !important;
+        }
+
+        .blissos-dock{
+          left:50% !important;
+          transform:translateX(-50%) !important;
+        }
+        .blissos-dock-inner{
+          height:40px !important;
+          padding:3px 5px !important;
+          gap:5px !important;
+          max-width:calc(100vw - 6px) !important;
+          overflow-x:auto !important;
+          overflow-y:hidden !important;
+          -webkit-overflow-scrolling:touch;
+        }
+        .blissos-dock-cap{ height:36px !important; }
+        .blissos-dock-cap.left{ width:14px !important; }
+        .blissos-dock-cap.right{ width:16px !important; }
+        .blissos-dock-item{
+          width:36px !important;
+          height:36px !important;
+        }
+
+        /* Bliss98 taskbar (if switched on mobile) */
+        .taskbar{ height:28px !important; }
+        .tray{ height:22px !important; }
+        .start-menu{ bottom:30px !important; }
+      }
+
+</style>
   </head>
   <body>
     <div id="app">
@@ -3679,6 +3816,19 @@
         didAutoPlayThisSession: false,
       };
       
+
+      // --- Mobile detection (used for UI + clock formatting) ---
+      const MOBILE_MQ = window.matchMedia('(hover:none) and (pointer:coarse)');
+      state.isMobile = !!MOBILE_MQ.matches;
+      try{
+        const onChange = (e) => {
+          state.isMobile = !!(e && e.matches);
+          if(typeof tickClock === 'function') tickClock();
+        };
+        if(typeof MOBILE_MQ.addEventListener === 'function') MOBILE_MQ.addEventListener('change', onChange);
+        else if(typeof MOBILE_MQ.addListener === 'function') MOBILE_MQ.addListener(onChange);
+      } catch {}
+
       // Helper functions for OS mode detection
       function isBlissOS(){
         return state.settings.theme === 'blissos';
@@ -8486,8 +8636,6 @@ function applyOsTheme(){
   applySettingsIcons();
   renderIcons();
   renderTaskButtons();
-  // Ensure Start Menu icons match the active OS theme after switching
-  try{ renderStartMenu(); } catch {}
   updateBlissOSActiveApp();
   updateOpenWindowTitleIcons();
 
@@ -11448,7 +11596,7 @@ function installLongPress(el, getTarget){
         { id:'about', titleKey:'app.about', icon:'info', iconFile:'./assets/icons/About.png' },
         { id:'contact', titleKey:'app.contact', icon:'mail', iconFile:'./assets/icons/Contact.png' },
         { id:'diev', titleKey:'app.diev', icon:'user', iconFile:'./assets/icons/DIEV.png' },
-        { id:'settings', titleKey:'app.settings', icon:'settings', iconFile:'./assets/icons/Settings.png' },
+        { id:'settings', titleKey:'app.settings', icon:'settings', iconFile:'./assets/icons/settings.png' },
       ];
 
       const MUSIC_LINKS = [
@@ -12624,7 +12772,7 @@ Eu sou o buffalo branco extinto`
               <div class="settings-panel" role="tabpanel" data-tab="system" id="settingsPanel_system">
                 <div class="settings-panel-header">
                   <div class="settings-panel-icon">
-                    <img class="pixel" src="./assets/icons/Settings.png" data-settings-icon="Settings.png" width="48" height="48" alt="" />
+                    <img class="pixel" src="./assets/icons/settings.png" data-settings-icon="settings.png" width="48" height="48" alt="" />
                   </div>
                   <div>
                     <strong data-i18n="settings.systemTab">System</strong>
@@ -12692,10 +12840,16 @@ Eu sou o buffalo branco extinto`
         `,
       };
 
+
+function getEffectiveClock24(){
+  // On mobile we always show 24h time to keep the menubar compact (setting remains for desktop).
+  return state.isMobile ? true : state.settings.clock24;
+}
+
 function getDisplayTime(){
   const d = new Date();
   const mm = String(d.getMinutes()).padStart(2,'0');
-  if(state.settings.clock24){
+  if(getEffectiveClock24()){
     const hh = String(d.getHours()).padStart(2,'0');
     return `${hh}:${mm}`;
   }
@@ -14796,7 +14950,7 @@ function renderBlissOSAppleMenu(){
     { id:'performance', icon:'./assets/icons/performance.png', labelKey:'settings.tab.performance' },
   ];
   const settingsLabel = t('blissos.menu.settings');
-  const settingsIcon = getThemedIconHtml({ icon:'settings', id:'settings', iconFile:'./assets/icons/Settings.png' }, settingsLabel, 16);
+  const settingsIcon = getThemedIconHtml({ icon:'settings', id:'settings', iconFile:'./assets/icons/settings.png' }, settingsLabel, 16);
   const settingsItems = settingsTabs.map(tab => `
     <button class="menu-item" type="button" data-blissos-settings-tab="${tab.id}">
       <span class="menu-icon">${getThemedIconHtml({ icon:'settings', id:`settings-${tab.id}`, iconFile:tab.icon }, t(tab.labelKey), 16)}</span>
