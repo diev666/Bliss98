@@ -218,6 +218,79 @@
   }
 }
 
+      /* --- Mobile UI fit (menubar + dock) --- */
+      @media (hover:none) and (pointer:coarse) and (max-width:520px){
+        /* BlissOS top menubar */
+        .blissos-menubar{
+          height:18px;
+          padding:0 6px;
+          gap:8px;
+          font-size:11px;
+        }
+        .blissos-menu-left{gap:6px;}
+        .blissos-menu-right{
+          gap:8px;
+          font-weight:600;
+        }
+        .blissos-appmenu{
+          padding:0 6px;
+          font-size:12px;
+        }
+        .blissos-appmenu-icon,
+        .blissos-appmenu-icon img{
+          width:14px; height:14px;
+        }
+        .blissos-menu-item,
+        .blissos-menu-brand{
+          padding:0 5px;
+        }
+        .blissos-menu-brand img{width:12px;height:12px;}
+        .blissos-apple-menu{ top:18px; left:6px; }
+        body[data-theme="blissos"] .desktop-area{
+          inset:18px 0 32px 0;
+        }
+
+        /* BlissOS dock */
+        .blissos-dock{ left:1px; }
+        .blissos-dock-inner{
+          height:40px;
+          padding:3px 5px;
+          gap:5px;
+          max-width:calc(100vw - 6px);
+          overflow-x:auto;
+          -webkit-overflow-scrolling:touch;
+        }
+        .blissos-dock-cap{
+          height:36px;
+        }
+        .blissos-dock-cap.left{ width:14px; }
+        .blissos-dock-cap.right{ width:16px; }
+        .blissos-dock-item{
+          width:36px;
+          height:36px;
+        }
+
+        /* Bliss98 taskbar (if user switches OS on mobile) */
+        .taskbar{
+          height:28px;
+          padding:2px 4px;
+          gap:4px;
+        }
+        .tray{
+          height:22px;
+          padding:0 6px;
+        }
+        .clock{ min-width:56px; }
+        .start-menu{ bottom:30px; }
+      }
+
+      @media (hover:none) and (pointer:coarse){
+        /* On mobile, hide 12h/24h toggle (always use 24h to save space) */
+        #settingsClock{ display:none !important; }
+      }
+
+
+
       .bevel{
         background:var(--task);
         border-top:2px solid var(--shadow-white);
@@ -3679,6 +3752,19 @@
         didAutoPlayThisSession: false,
       };
       
+
+      // --- Mobile detection (used for UI + clock formatting) ---
+      const MOBILE_MQ = window.matchMedia('(hover:none) and (pointer:coarse)');
+      state.isMobile = !!MOBILE_MQ.matches;
+      try{
+        const onChange = (e) => {
+          state.isMobile = !!(e && e.matches);
+          if(typeof tickClock === 'function') tickClock();
+        };
+        if(typeof MOBILE_MQ.addEventListener === 'function') MOBILE_MQ.addEventListener('change', onChange);
+        else if(typeof MOBILE_MQ.addListener === 'function') MOBILE_MQ.addListener(onChange);
+      } catch {}
+
       // Helper functions for OS mode detection
       function isBlissOS(){
         return state.settings.theme === 'blissos';
@@ -12690,10 +12776,16 @@ Eu sou o buffalo branco extinto`
         `,
       };
 
+
+function getEffectiveClock24(){
+  // On mobile we always show 24h time to keep the menubar compact (setting remains for desktop).
+  return state.isMobile ? true : state.settings.clock24;
+}
+
 function getDisplayTime(){
   const d = new Date();
   const mm = String(d.getMinutes()).padStart(2,'0');
-  if(state.settings.clock24){
+  if(getEffectiveClock24()){
     const hh = String(d.getHours()).padStart(2,'0');
     return `${hh}:${mm}`;
   }
