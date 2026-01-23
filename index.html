@@ -14242,6 +14242,10 @@ function autoFitWindow(winEl, appId){
         if (taskItem) taskItem.classList.add('active');
 
         state.activeWindowId = appId;
+        
+        // BlissOS: atualizar app ativo no menu bar
+        updateBlissOSActiveApp();
+        closeBlissOSAppMenu();
       }
 
       function createWindowElement(wstate){
