@@ -11947,7 +11947,7 @@ Eu sou o buffalo branco extinto`
             </div>
 
             <div class="mp-seek-row">
-              <input class="mp-seek" id="mpSeek" type="range" min="0" max="1000" step="1" value="0" />
+              <input class="retro-slider" id="mpSeek" type="range" min="0" max="1000" step="1" value="0" />
               <div class="mp-time"><span data-mp-current>0:00</span> / <span data-mp-total>--:--</span></div>
             </div>
 
@@ -11959,7 +11959,7 @@ Eu sou o buffalo branco extinto`
               <div class="tiny mp-status" id="mpMsg"></div>
               <div class="mp-vol">
                 <span class="kbd" data-i18n="player.vol">Vol</span>
-                <input id="mpVol" class="retro-slider" type="range" min="0" max="1" step="0.01" value="0.8" />
+                <input id="mpVol" class="retro-slider" type="range" min="0" max="1" step="0.01" value="0.1" />
               </div>
             </div>
             <div class="tiny mp-drop hidden" id="mpDropHint" data-i18n="player.drop">Drop audio files here</div>
@@ -12721,7 +12721,7 @@ function getDisplayTime(){
         importedNames: [],
         idx: 0,
         playing: false,
-        vol: 0.8,
+        vol: 0.1,
         loaded: false,
         seeking: false,
         supportsFlac: true,
@@ -12754,6 +12754,8 @@ function getDisplayTime(){
           mp.importedNames = [];
           state.mediaplayer.needsReimport = false;
         }
+        // Always reset volume to 10% on page load
+        mp.vol = 0.1;
       }
 
       function mpSaveState(){
