@@ -3622,7 +3622,7 @@
           zoom: 100,
         },
         settings: {
-          blissosAccent: loadBlissosAccent(),
+          blissosAccent: 'multicolor',
           scanlines: false,
           tab: 'general',
           darkMode: false,
@@ -4276,6 +4276,17 @@ function renderSettingsWindow(){
   applyI18nTo(win);
   initSettingsTabs(win);
   applySettingsIcons(win);
+}
+
+function updateOpenWindowTitleIcons(){
+  state.windows.forEach((w) => {
+    const winEl = document.getElementById(`win_${w.id}`);
+    if(!winEl) return;
+    const iconHost = winEl.querySelector('[data-win-title-icon]');
+    if(iconHost){
+      iconHost.innerHTML = getThemedIconHtml(w, w.title, 16);
+    }
+  });
 }
 
 function renderGamesWindow(){
@@ -8476,6 +8487,7 @@ function applyOsTheme(){
   renderIcons();
   renderTaskButtons();
   updateBlissOSActiveApp();
+  updateOpenWindowTitleIcons();
 
   if(blissos){
     applyBlissosAccent(state.settings.blissosAccent);
@@ -10324,7 +10336,9 @@ function installLongPress(el, getTarget){
       
       function setBlissosAccent(accent){
         state.settings.blissosAccent = accent;
-        localStorage.setItem(BLISSOS_ACCENT_KEY, accent);
+        try {
+          localStorage.setItem(BLISSOS_ACCENT_KEY, accent);
+        } catch {}
         applyBlissosAccent(accent); // This function will apply the CSS variables
       }
       
@@ -14249,7 +14263,7 @@ function autoFitWindow(winEl, appId){
           <div class="frame bevel">
             <div class="titlebar" data-drag="1">
               <div class="title-left">
-                <span style="width:16px;height:16px;display:inline-flex;">${getThemedIconHtml(wstate, wstate.title, 16)}</span>
+                <span class="win-title-icon" data-win-title-icon="1" style="width:16px;height:16px;display:inline-flex;">${getThemedIconHtml(wstate, wstate.title, 16)}</span>
                 <strong>${wstate.title}</strong>
               </div>
               <div class="title-controls">
@@ -15579,6 +15593,7 @@ function renderBlissOSAppMenu(){
 
         state.settings.theme = loadOsTheme();
         state.settings.osProfiles = loadOsProfiles();
+        state.settings.blissosAccent = loadBlissosAccent();
         
         applyOsProfile(state.settings.theme);
 
