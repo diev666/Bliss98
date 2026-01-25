@@ -920,6 +920,12 @@
         align-items:center;
         gap:6px;
       }
+      .blissos-dock-right{
+        margin-left:auto;
+        display:flex;
+        align-items:center;
+        gap:6px;
+      }
       .blissos-dock-item{
         width:42px;
         height:42px;
@@ -952,6 +958,18 @@
       /* When a BlissOS dock item represents a minimized window, show the dock indicator */
       .blissos-dock-item.minimized .dock-indicator{
         opacity:1;
+      }
+      .blissos-dock-inner.dock-drop-active{
+        box-shadow:0 0 0 2px var(--blissos-accent-weak), 0 10px 24px rgba(0,0,0,0.18);
+      }
+      .blissos-dock-item.dock-dragging{
+        opacity:0.5;
+      }
+      .dock-insert-line{
+        position:absolute;
+        width:2px;
+        background:var(--blissos-accent);
+        border-radius:2px;
       }
 
       /* A ghost element used for the genie animation */
@@ -1539,10 +1557,20 @@
   cursor:pointer;
   text-align:left;
 }
+.ctx-item.disabled{
+  opacity:0.6;
+  cursor:default;
+}
 .ctx-item:hover,
 .ctx-item:focus{
   background:var(--select);
   color:var(--select-text);
+  outline:none;
+}
+.ctx-item.disabled:hover,
+.ctx-item.disabled:focus{
+  background:transparent;
+  color:inherit;
   outline:none;
 }
 .ctx-left{display:flex; align-items:center; gap:10px;}
@@ -4014,6 +4042,8 @@
       const DOCK_KEY = 'bliss98_dock_items';
       const GAMES_VIEW_KEY = 'bliss98_games_view';
       const GAMES_BIG_KEY = 'bliss98_games_big';
+      const DOCK_MOBILE_MAX_TOTAL = 9;
+      const DOCK_MOBILE_MAX_NORMAL = 8;
 const RETRO_KEY = 'bliss98_retro_glow';
 const YOUTUBE_KEY = 'bliss98_youtube_api_key';
 const MOBILE_CONTROLS_KEY = 'bliss98_mobile_controls_mode';
@@ -4598,6 +4628,7 @@ function updateTrashIconUI(){
 
   const taskBtn = document.querySelector('#taskButtons img[data-app-id="trash"]');
   if(taskBtn) setImageWithFallback(taskBtn, trashFile, fallback);
+  if(state.settings.theme === 'blissos') renderBlissOSDock();
 }
 
 function buildOccupied(excludeIds, metrics){
@@ -10283,34 +10314,45 @@ function makeFolderItemDraggable(iconEl, winId, containerEl){
         renderIcons();
         renderGamesWindow();
       } else {
-        const folderWindowTarget = getFolderWindowDropTargetAt(e.clientX, e.clientY, dragEls, ids);
-        const desktopFolderTarget = folderWindowTarget ? null : getFolderDropTargetAt(e.clientX, e.clientY, dragEls, ids);
-        const desktopDrop = !folderWindowTarget && !desktopFolderTarget && isOverDesktopArea(e.clientX, e.clientY) && !overWindow;
-        const targetParentId = folderWindowTarget
-          ? folderWindowTarget.folderId
-          : (desktopFolderTarget ? desktopFolderTarget.id : (desktopDrop ? null : startParentId));
-        const targetContainer = folderWindowTarget ? folderWindowTarget.containerEl : (desktopDrop ? null : containerEl);
-        const preferred = targetParentId == null
-          ? getDesktopPosFromClient(e.clientX, e.clientY)
-          : (targetContainer ? getRelativeIconPosFromClient(targetContainer, e.clientX, e.clientY) : { x: 0, y: 0 });
+        const dockTarget = getDockDropTargetAt(e.clientX, e.clientY);
+        if(dockTarget){
+          const entries = ids.map(id => {
+            if(id === 'trash') return { type:'trash', refId:'trash' };
+            const fsItem = getFsItem(id);
+            if(fsItem && (fsItem.type === 'folder' || fsItem.type === 'txt')) return { type: fsItem.type, refId: id };
+            return { type:'app', refId: id };
+          });
+          addDockItemsAt(entries, dockTarget.index);
+        } else {
+          const folderWindowTarget = getFolderWindowDropTargetAt(e.clientX, e.clientY, dragEls, ids);
+          const desktopFolderTarget = folderWindowTarget ? null : getFolderDropTargetAt(e.clientX, e.clientY, dragEls, ids);
+          const desktopDrop = !folderWindowTarget && !desktopFolderTarget && isOverDesktopArea(e.clientX, e.clientY) && !overWindow;
+          const targetParentId = folderWindowTarget
+            ? folderWindowTarget.folderId
+            : (desktopFolderTarget ? desktopFolderTarget.id : (desktopDrop ? null : startParentId));
+          const targetContainer = folderWindowTarget ? folderWindowTarget.containerEl : (desktopDrop ? null : containerEl);
+          const preferred = targetParentId == null
+            ? getDesktopPosFromClient(e.clientX, e.clientY)
+            : (targetContainer ? getRelativeIconPosFromClient(targetContainer, e.clientX, e.clientY) : { x: 0, y: 0 });
 
-        let moved = false;
-        ids.forEach(id => {
-          if(moveItemToFolder(id, targetParentId, {
-            force: true,
-            save: false,
-            iconPosCache,
-            containerEl: targetContainer,
-            preferredPos: preferred,
-          })){
-            moved = true;
+          let moved = false;
+          ids.forEach(id => {
+            if(moveItemToFolder(id, targetParentId, {
+              force: true,
+              save: false,
+              iconPosCache,
+              containerEl: targetContainer,
+              preferredPos: preferred,
+            })){
+              moved = true;
+            }
+          });
+          if(moved){
+            if(movedAppLike) saveIconPositions(iconPosCache);
+            saveDesktopFs();
+            renderIcons();
+            refreshOpenFolderWindows();
           }
-        });
-        if(moved){
-          if(movedAppLike) saveIconPositions(iconPosCache);
-          saveDesktopFs();
-          renderIcons();
-          refreshOpenFolderWindows();
         }
       }
     }
@@ -10321,6 +10363,7 @@ function makeFolderItemDraggable(iconEl, winId, containerEl){
         p.el.dataset.dragged = '1';
       });
     }
+    setDockDropHighlight(false);
 
     dragging = false;
     pointerId = null;
@@ -10408,6 +10451,10 @@ function makeFolderItemDraggable(iconEl, winId, containerEl){
     startPositions.forEach(p => {
       p.el.style.transform = `translate(${dx}px, ${dy}px)`;
     });
+    if(isBlissOS()){
+      const dockTarget = getDockDropTargetAt(e.clientX, e.clientY);
+      setDockDropHighlight(!!dockTarget);
+    }
     e.preventDefault();
   };
 
@@ -11043,13 +11090,15 @@ function renderCtxMenu(){
 
   const items = [];
   if(isDock){
-    items.push({ action:'removeDock', label:t('ctx.removeDock') });
+    const disableRemove = ctxState.itemType === 'trash' || ctxState.appId === 'trash';
+    items.push({ action:'removeDock', label:t('ctx.removeDock'), disabled: disableRemove });
     menu.innerHTML = items.map(it => {
       if(it.sep) return `<div class="ctx-sep"></div>`;
       const check = it.check ? `<span class="ctx-check" aria-hidden="true">${it.check}</span>` : `<span class="ctx-check" aria-hidden="true"></span>`;
       const right = it.right ? `<span class="ctx-shortcut">${it.right}</span>` : `<span class="ctx-shortcut"></span>`;
+      const disabled = it.disabled ? ' disabled' : '';
       return `
-        <button class="ctx-item" type="button" role="menuitem" data-ctx-action="${it.action}">
+        <button class="ctx-item${disabled}" type="button" role="menuitem" data-ctx-action="${it.action}" ${it.disabled ? 'disabled' : ''}>
           <span class="ctx-left">${check}<span>${it.label}</span></span>
           ${right}
         </button>
@@ -11062,6 +11111,8 @@ function renderCtxMenu(){
     items.push({ sep:true });
     if(ctxState.appId === 'trash'){
       items.push({ action:'emptyTrash', label:t('ctx.emptyTrash') });
+      const docked = isDockItemPresent('trash', 'trash');
+      items.push({ action:'addDock', label: docked ? t('ctx.alreadyDock') : t('ctx.addDock'), disabled: docked });
       items.push({ sep:true });
     } else {
       items.push({ action:'rename', label:t('ctx.rename') });
@@ -11102,8 +11153,9 @@ function renderCtxMenu(){
     if(it.sep) return `<div class="ctx-sep"></div>`;
     const check = it.check ? `<span class="ctx-check" aria-hidden="true">${it.check}</span>` : `<span class="ctx-check" aria-hidden="true"></span>`;
     const right = it.right ? `<span class="ctx-shortcut">${it.right}</span>` : `<span class="ctx-shortcut"></span>`;
+    const disabled = it.disabled ? ' disabled' : '';
     return `
-      <button class="ctx-item" type="button" role="menuitem" data-ctx-action="${it.action}">
+      <button class="ctx-item${disabled}" type="button" role="menuitem" data-ctx-action="${it.action}" ${it.disabled ? 'disabled' : ''}>
         <span class="ctx-left">${check}<span>${it.label}</span></span>
         ${right}
       </button>
@@ -11256,6 +11308,7 @@ function handleCtxAction(action){
   if(action === 'removeDock' && ctxState.appId){
     const type = ctxState.itemType === 'app' ? 'app' : ctxState.itemType;
     if(isDockableItem(type, ctxState.appId)){
+      if(ctxState.appId === 'trash' || type === 'trash') return;
       removeDockItem(type, ctxState.appId);
     }
   }
@@ -11492,6 +11545,7 @@ function installLongPress(el, getTarget){
           'ctx.emptyTrash': 'Empty Recycle Bin',
           'ctx.addDock': 'Add to Dock',
           'ctx.removeDock': 'Remove from Dock',
+          'ctx.alreadyDock': 'Already in Dock',
           'ctx.newTextFile': 'New Text File',
           'ctx.newFolder': 'New Folder',
           'ctx.duplicateTxt': 'Duplicate',
@@ -11773,6 +11827,8 @@ function installLongPress(el, getTarget){
           'dialog.credits.body': 'Created by DIEV.',
           'dialog.notAvailable.title': 'Coming soon',
           'dialog.notAvailable.body': 'This feature is not available yet.',
+          'dialog.dockFull.title': 'Dock full',
+          'dialog.dockFull.body': 'Dock is full on mobile (max. 9 icons). Remove an item to add another.',
           'dialog.selectItem.title': 'Select an item',
           'dialog.selectItem.body': 'Select an item first to continue.',
           'dialog.copied.title': 'Copied',
@@ -12000,6 +12056,7 @@ function installLongPress(el, getTarget){
           'ctx.emptyTrash': 'Esvaziar Lixeira',
           'ctx.addDock': 'Adicionar ao Dock',
           'ctx.removeDock': 'Remover do Dock',
+          'ctx.alreadyDock': 'Ja esta no Dock',
           'ctx.newTextFile': 'Novo arquivo TXT',
           'ctx.newFolder': 'Nova pasta',
           'ctx.duplicateTxt': 'Duplicar',
@@ -12281,6 +12338,8 @@ function installLongPress(el, getTarget){
           'dialog.credits.body': 'Criado por DIEV.',
           'dialog.notAvailable.title': 'Em breve',
           'dialog.notAvailable.body': 'Este recurso ainda não está disponível.',
+          'dialog.dockFull.title': 'Dock cheio',
+          'dialog.dockFull.body': 'O Dock esta cheio no mobile (max. 9 icones). Remova um item para adicionar outro.',
           'dialog.selectItem.title': 'Selecione um item',
           'dialog.selectItem.body': 'Selecione um item para continuar.',
           'dialog.copied.title': 'Copiado',
@@ -15690,32 +15749,29 @@ function renderIcons(){
               renderIcons();
               renderGamesWindow();
             } else {
-              const folderWindowTarget = getFolderWindowDropTargetAt(e.clientX, e.clientY, dragEls, ids);
-              if(folderWindowTarget){
+              const dockTarget = getDockDropTargetAt(e.clientX, e.clientY);
+              if(dockTarget){
                 restoreGroupLayer();
-                const preferred = getRelativeIconPosFromClient(folderWindowTarget.containerEl, e.clientX, e.clientY);
-                let moved = false;
-                ids.forEach(id => {
-                  if(moveItemToFolder(id, folderWindowTarget.folderId, {
-                    save: false,
-                    iconPosCache,
-                    containerEl: folderWindowTarget.containerEl,
-                    preferredPos: preferred,
-                  })){
-                    moved = true;
-                  }
+                const entries = ids.map(id => {
+                  if(id === 'trash') return { type:'trash', refId:'trash' };
+                  const fsItem = getFsItem(id);
+                  if(fsItem && (fsItem.type === 'folder' || fsItem.type === 'txt')) return { type: fsItem.type, refId: id };
+                  return { type:'app', refId: id };
                 });
-                saveIconPositions(iconPosCache);
-                saveDesktopFs();
-                renderIcons();
-                if(moved) refreshOpenFolderWindows();
+                addDockItemsAt(entries, dockTarget.index);
               } else {
-                const folderTarget = getFolderDropTargetAt(e.clientX, e.clientY, dragEls, ids);
-                if(folderTarget){
+                const folderWindowTarget = getFolderWindowDropTargetAt(e.clientX, e.clientY, dragEls, ids);
+                if(folderWindowTarget){
                   restoreGroupLayer();
+                  const preferred = getRelativeIconPosFromClient(folderWindowTarget.containerEl, e.clientX, e.clientY);
                   let moved = false;
                   ids.forEach(id => {
-                    if(moveItemToFolder(id, folderTarget.id, { save: false, iconPosCache, preferredPos: { x: 0, y: 0 } })){
+                    if(moveItemToFolder(id, folderWindowTarget.folderId, {
+                      save: false,
+                      iconPosCache,
+                      containerEl: folderWindowTarget.containerEl,
+                      preferredPos: preferred,
+                    })){
                       moved = true;
                     }
                   });
@@ -15724,40 +15780,55 @@ function renderIcons(){
                   renderIcons();
                   if(moved) refreshOpenFolderWindows();
                 } else {
-                  restoreGroupLayer();
-                  const metrics = getGridMetrics();
-                  const occupied = buildOccupiedFromFs(null, ids, metrics, { visibleOnly: true });
-                  let fsDirty = false;
-                  let iconPosDirty = false;
+                  const folderTarget = getFolderDropTargetAt(e.clientX, e.clientY, dragEls, ids);
+                  if(folderTarget){
+                    restoreGroupLayer();
+                    let moved = false;
+                    ids.forEach(id => {
+                      if(moveItemToFolder(id, folderTarget.id, { save: false, iconPosCache, preferredPos: { x: 0, y: 0 } })){
+                        moved = true;
+                      }
+                    });
+                    saveIconPositions(iconPosCache);
+                    saveDesktopFs();
+                    renderIcons();
+                    if(moved) refreshOpenFolderWindows();
+                  } else {
+                    restoreGroupLayer();
+                    const metrics = getGridMetrics();
+                    const occupied = buildOccupiedFromFs(null, ids, metrics, { visibleOnly: true });
+                    let fsDirty = false;
+                    let iconPosDirty = false;
 
-                  startPositions.forEach(p => {
-                    const dx = e.clientX - startX;
-                    const dy = e.clientY - startY;
-                    let x = p.x + dx;
-                    let y = p.y + dy;
+                    startPositions.forEach(p => {
+                      const dx = e.clientX - startX;
+                      const dy = e.clientY - startY;
+                      let x = p.x + dx;
+                      let y = p.y + dy;
 
-                    if(state.gridSnap){
-                      const snapped = snapToGrid(x, y);
-                      x = snapped.x;
-                      y = snapped.y;
-                    }
+                      if(state.gridSnap){
+                        const snapped = snapToGrid(x, y);
+                        x = snapped.x;
+                        y = snapped.y;
+                      }
 
-                    const placed = placeOnFreeCell(x, y, occupied, metrics);
-                    p.el.style.left = placed.x + 'px';
-                    p.el.style.top = placed.y + 'px';
-                    p.el.style.transform = '';
-                    const current = getFsItem(p.id);
-                    const changed = !current || current.parentId != null || current.x !== placed.x || current.y !== placed.y;
-                    if(changed){
-                      upsertFsItem({ id: p.id, parentId: null, x: placed.x, y: placed.y }, { save: false, syncIconPos: true, iconPosCache });
-                      fsDirty = true;
-                      if(isAppLikeItem(current || { type: p.el.dataset.itemType })) iconPosDirty = true;
-                    }
-                    p.el.dataset.dragged = '1';
-                  });
+                      const placed = placeOnFreeCell(x, y, occupied, metrics);
+                      p.el.style.left = placed.x + 'px';
+                      p.el.style.top = placed.y + 'px';
+                      p.el.style.transform = '';
+                      const current = getFsItem(p.id);
+                      const changed = !current || current.parentId != null || current.x !== placed.x || current.y !== placed.y;
+                      if(changed){
+                        upsertFsItem({ id: p.id, parentId: null, x: placed.x, y: placed.y }, { save: false, syncIconPos: true, iconPosCache });
+                        fsDirty = true;
+                        if(isAppLikeItem(current || { type: p.el.dataset.itemType })) iconPosDirty = true;
+                      }
+                      p.el.dataset.dragged = '1';
+                    });
 
-                  if(iconPosDirty) debounceIconSave(()=> saveIconPositions(iconPosCache));
-                  if(fsDirty) saveDesktopFs();
+                    if(iconPosDirty) debounceIconSave(()=> saveIconPositions(iconPosCache));
+                    if(fsDirty) saveDesktopFs();
+                  }
                 }
               }
             }
@@ -15771,6 +15842,7 @@ function renderIcons(){
               p.el.dataset.dragged = '1';
             });
           }
+          setDockDropHighlight(false);
 
           dragging = false;
           pointerId = null;
@@ -15883,6 +15955,10 @@ function renderIcons(){
           startPositions.forEach(p => {
             p.el.style.transform = `translate(${dx}px, ${dy}px)`;
           });
+          if(isBlissOS()){
+            const dockTarget = getDockDropTargetAt(e.clientX, e.clientY);
+            setDockDropHighlight(!!dockTarget);
+          }
 
           e.preventDefault();
         };
@@ -17173,10 +17249,17 @@ function renderBlissOSDock(){
         inner.innerHTML = `
           <span class="blissos-dock-cap left" aria-hidden="true"></span>
           <span class="blissos-dock-mid"></span>
+          <span class="blissos-dock-right"></span>
           <span class="blissos-dock-cap right" aria-hidden="true"></span>
         `;
         const mid = inner.querySelector('.blissos-dock-mid');
-        normalized.forEach(item => {
+        const right = inner.querySelector('.blissos-dock-right');
+        let normalItems = normalized.filter(item => !isTrashDockItem(item));
+        if(isMobileDock() && normalItems.length > DOCK_MOBILE_MAX_NORMAL){
+          normalItems = normalItems.slice(0, DOCK_MOBILE_MAX_NORMAL);
+        }
+        const trashItem = normalized.find(isTrashDockItem);
+        normalItems.forEach(item => {
           const winId = getDockWindowIdForItem(item);
           const win = winId ? state.windows.get(winId) : null;
           const btn = document.createElement('button');
@@ -17195,6 +17278,10 @@ function renderBlissOSDock(){
           `;
           btn.addEventListener('click', (e)=>{
             e.stopPropagation();
+            if(btn.dataset.dragged === '1'){
+              btn.dataset.dragged = '0';
+              return;
+            }
             if(win){
               if(win.minimized){
                 restoreWindow(winId);
@@ -17212,8 +17299,51 @@ function renderBlissOSDock(){
             e.stopPropagation();
             openCtxMenu(e.clientX, e.clientY, 'dock', item.refId, { itemType: item.type, dockId: item.id });
           });
+          bindDockDrag(btn, item, mid, inner);
           mid.appendChild(btn);
         });
+        if(trashItem && right){
+          const winId = getDockWindowIdForItem(trashItem);
+          const win = winId ? state.windows.get(winId) : null;
+          const btn = document.createElement('button');
+          btn.className = 'blissos-dock-item';
+          btn.type = 'button';
+          btn.dataset.dockWinId = winId || '';
+          btn.dataset.dockType = 'trash';
+          btn.dataset.refId = 'trash';
+          if(openIds.has(winId)) btn.classList.add('open');
+          if(win && win.minimized) btn.classList.add('minimized');
+          const label = getDockItemLabel(trashItem);
+          btn.title = label;
+          btn.innerHTML = `
+            <span class="pixel" style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;">${getDockItemIconHtml(trashItem, 28)}</span>
+            <span class="dock-indicator"></span>
+          `;
+          btn.addEventListener('click', (e)=>{
+            e.stopPropagation();
+            if(btn.dataset.dragged === '1'){
+              btn.dataset.dragged = '0';
+              return;
+            }
+            if(win){
+              if(win.minimized){
+                restoreWindow(winId);
+              } else if(state.activeWindowId === winId){
+                minimizeApp(winId);
+              } else {
+                focusWindow(winId);
+              }
+            } else {
+              openIconById('trash');
+            }
+          });
+          btn.addEventListener('contextmenu', (e)=>{
+            e.preventDefault();
+            e.stopPropagation();
+            openCtxMenu(e.clientX, e.clientY, 'dock', 'trash', { itemType: 'trash', dockId: trashItem.id });
+          });
+          right.appendChild(btn);
+        }
         dock.innerHTML = '';
         dock.appendChild(inner);
       }
@@ -17398,8 +17528,41 @@ function getDockItemEl(appId){
 
 const DEFAULT_DOCK_ORDER = ['clothes','music','art','games','videos','about','contact','diev','settings','trash'];
 
+function isTrashDockItem(item){
+  return !!item && (item.type === 'trash' || (item.type === 'app' && item.refId === 'trash'));
+}
+
+function createTrashDockItem(){
+  return {
+    id: getDockItemKey('trash', 'trash'),
+    type: 'trash',
+    refId: 'trash',
+    pinned: 'right',
+    nonRemovable: true,
+    nonReorderable: true,
+    iconPath: getDockItemIconPath('trash', 'trash'),
+  };
+}
+
+function ensureTrashDockItem(items){
+  const list = Array.isArray(items) ? items.filter(it => !isTrashDockItem(it)) : [];
+  let trash = Array.isArray(items) ? items.find(isTrashDockItem) : null;
+  if(!trash) trash = createTrashDockItem();
+  trash = {
+    ...trash,
+    id: trash.id || getDockItemKey('trash', 'trash'),
+    type: 'trash',
+    refId: 'trash',
+    pinned: 'right',
+    nonRemovable: true,
+    nonReorderable: true,
+    iconPath: getDockItemIconPath('trash', 'trash'),
+  };
+  return list.concat(trash);
+}
+
 function getDefaultDockItems(){
-  return DEFAULT_DOCK_ORDER
+  const base = DEFAULT_DOCK_ORDER
     .filter(id => !!getAppById(id))
     .map(id => ({
       id: getDockItemKey('app', id),
@@ -17407,10 +17570,12 @@ function getDefaultDockItems(){
       refId: id,
       iconPath: getDockItemIconPath('app', id),
     }));
+  return ensureTrashDockItem(base);
 }
 
 function getDockWindowIdForItem(item){
   if(!item) return '';
+  if(isTrashDockItem(item)) return 'trash';
   if(item.type === 'folder') return getFolderWindowId(item.refId);
   if(item.type === 'txt') return getTxtWindowId(item.refId);
   return item.refId || '';
@@ -17421,6 +17586,7 @@ function getDockItemKey(type, refId){
 }
 
 function getDockItemIconPath(type, refId){
+  if(type === 'trash' || refId === 'trash') return getTrashIconFile();
   if(type === 'folder') return getFolderIconPath();
   if(type === 'txt') return getTxtIconPath();
   const app = getAppById(refId);
@@ -17431,6 +17597,10 @@ function getDockItemIconPath(type, refId){
 
 function getDockItemLabel(item){
   if(!item) return '';
+  if(isTrashDockItem(item)){
+    const app = getAppById('trash');
+    return app ? getIconLabel(app) : 'Trash';
+  }
   if(item.type === 'folder' || item.type === 'txt'){
     const fsItem = getFsItem(item.refId);
     return fsItem ? getFsItemLabel(fsItem) : '';
@@ -17441,6 +17611,13 @@ function getDockItemLabel(item){
 
 function getDockItemIconHtml(item, size = 28){
   if(!item) return iconSVG('file', state.settings.theme);
+  if(isTrashDockItem(item)){
+    const label = getDockItemLabel(item);
+    const src = getTrashIconFile();
+    const fallback = isBlissOS() ? getBlissOSFallbackPath(src) : '';
+    const fbAttr = fallback ? ` data-fallback-src="${fallback}"` : '';
+    return `<img class="pixel" src="${src}"${fbAttr} width="${size}" height="${size}" alt="${label}" style="display:block;" />`;
+  }
   if(item.type === 'folder' || item.type === 'txt'){
     const fsItem = getFsItem(item.refId);
     const label = getDockItemLabel(item);
@@ -17456,10 +17633,16 @@ function normalizeDockItems(items){
   const source = Array.isArray(items) ? items : [];
   const out = [];
   const seen = new Set();
+  let trash = null;
   source.forEach(raw => {
     if(!raw || !raw.type || !raw.refId) return;
-    const type = raw.type;
-    const refId = raw.refId;
+    const type = raw.type === 'trash' ? 'trash' : raw.type;
+    const refId = raw.refId || '';
+    if(type === 'trash' || refId === 'trash'){
+      if(trash) return;
+      trash = createTrashDockItem();
+      return;
+    }
     const key = getDockItemKey(type, refId);
     if(seen.has(key)) return;
     if(type === 'app' && !getAppById(refId)) return;
@@ -17475,46 +17658,285 @@ function normalizeDockItems(items){
       iconPath: getDockItemIconPath(type, refId),
     });
   });
-  return out;
+  return ensureTrashDockItem(trash ? out.concat(trash) : out);
 }
 
 function isDockableItem(type, refId){
+  if(type === 'trash' || refId === 'trash') return true;
   if(type === 'folder' || type === 'txt') return true;
   if(type === 'app') return !!getAppById(refId);
   return false;
 }
 
 function isDockItemPresent(type, refId){
-  const key = getDockItemKey(type, refId);
+  const key = getDockItemKey(type === 'trash' || refId === 'trash' ? 'trash' : type, refId === 'trash' ? 'trash' : refId);
   return (state.dockItems || []).some(item => (item.id || getDockItemKey(item.type, item.refId)) === key);
 }
 
+function getDockItemsWithoutTrash(){
+  return (state.dockItems || []).filter(item => !isTrashDockItem(item));
+}
+
+function isMobileDock(){
+  return !!state.isMobile;
+}
+
+function showDockFullMessage(){
+  showMessage('dialog.dockFull.title', 'dialog.dockFull.body');
+}
+
 function addDockItem(type, refId){
-  if(!isDockableItem(type, refId)) return false;
+  const targetType = (type === 'trash' || refId === 'trash') ? 'trash' : type;
+  const targetRef = (refId === 'trash') ? 'trash' : refId;
+  if(!isDockableItem(targetType, targetRef)) return false;
   if(!Array.isArray(state.dockItems)) state.dockItems = [];
-  if(isDockItemPresent(type, refId)) return false;
-  const item = {
-    id: getDockItemKey(type, refId),
-    type,
-    refId,
-    iconPath: getDockItemIconPath(type, refId),
-  };
-  state.dockItems.push(item);
+  if(isDockItemPresent(targetType, targetRef)) return false;
+  if(targetType !== 'trash' && isMobileDock()){
+    const normal = getDockItemsWithoutTrash();
+    if(normal.length >= DOCK_MOBILE_MAX_NORMAL){
+      showDockFullMessage();
+      return false;
+    }
+  }
+  if(targetType === 'trash'){
+    state.dockItems = ensureTrashDockItem(state.dockItems);
+  } else {
+    const normal = getDockItemsWithoutTrash();
+    const item = {
+      id: getDockItemKey(targetType, targetRef),
+      type: targetType,
+      refId: targetRef,
+      iconPath: getDockItemIconPath(targetType, targetRef),
+    };
+    normal.push(item);
+    state.dockItems = ensureTrashDockItem(normal);
+  }
   saveDockItems();
   renderBlissOSDock();
   return true;
 }
 
 function removeDockItem(type, refId){
+  if(type === 'trash' || refId === 'trash') return false;
   const key = getDockItemKey(type, refId);
   const before = state.dockItems.length;
   state.dockItems = state.dockItems.filter(item => (item.id || getDockItemKey(item.type, item.refId)) !== key);
   if(state.dockItems.length !== before){
+    state.dockItems = ensureTrashDockItem(state.dockItems);
     saveDockItems();
     renderBlissOSDock();
     return true;
   }
   return false;
+}
+
+function getDockInnerEl(){
+  const dock = $('#blissosDock');
+  return dock ? dock.querySelector('.blissos-dock-inner') : null;
+}
+
+function getDockMidEl(){
+  const inner = getDockInnerEl();
+  return inner ? inner.querySelector('.blissos-dock-mid') : null;
+}
+
+function isPointInRect(x, y, rect){
+  if(!rect) return false;
+  return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
+}
+
+function setDockDropHighlight(active){
+  const inner = getDockInnerEl();
+  if(inner) inner.classList.toggle('dock-drop-active', !!active);
+}
+
+function getDockInsertIndexFromClientX(clientX, excludeEl){
+  const mid = getDockMidEl();
+  if(!mid) return 0;
+  const items = Array.from(mid.querySelectorAll('.blissos-dock-item'))
+    .filter(el => el !== excludeEl && el.dataset.dockType !== 'trash');
+  for(let i = 0; i < items.length; i++){
+    const rect = items[i].getBoundingClientRect();
+    if(clientX < rect.left + rect.width / 2) return i;
+  }
+  return items.length;
+}
+
+function getDockDropTargetAt(x, y){
+  if(!isBlissOS()) return null;
+  const inner = getDockInnerEl();
+  if(!inner) return null;
+  const rect = inner.getBoundingClientRect();
+  if(!isPointInRect(x, y, rect)) return null;
+  const index = getDockInsertIndexFromClientX(x, null);
+  return { index, inner };
+}
+
+function addDockItemsAt(entries, index){
+  if(!Array.isArray(entries) || entries.length === 0) return false;
+  let changed = false;
+  let normal = getDockItemsWithoutTrash();
+  if(isMobileDock()){
+    const pendingKeys = new Set();
+    let pendingAdds = 0;
+    entries.forEach(entry => {
+      if(!entry) return;
+      const type = entry.type === 'trash' || entry.refId === 'trash' ? 'trash' : entry.type;
+      const refId = entry.refId === 'trash' ? 'trash' : entry.refId;
+      if(type === 'trash') return;
+      if(!isDockableItem(type, refId)) return;
+      const key = getDockItemKey(type, refId);
+      if(pendingKeys.has(key)) return;
+      if(isDockItemPresent(type, refId)) return;
+      pendingKeys.add(key);
+      pendingAdds += 1;
+    });
+    if(pendingAdds > 0 && (normal.length >= DOCK_MOBILE_MAX_NORMAL || (normal.length + pendingAdds) > DOCK_MOBILE_MAX_NORMAL)){
+      showDockFullMessage();
+      return false;
+    }
+  }
+  let insertAt = clamp(index, 0, normal.length);
+  entries.forEach(entry => {
+    if(!entry) return;
+    const type = entry.type === 'trash' || entry.refId === 'trash' ? 'trash' : entry.type;
+    const refId = entry.refId === 'trash' ? 'trash' : entry.refId;
+    if(type === 'trash'){
+      if(!isDockItemPresent('trash', 'trash')){
+        state.dockItems = ensureTrashDockItem(normal);
+        changed = true;
+      }
+      return;
+    }
+    if(isDockItemPresent(type, refId)) return;
+    if(!isDockableItem(type, refId)) return;
+    const item = {
+      id: getDockItemKey(type, refId),
+      type,
+      refId,
+      iconPath: getDockItemIconPath(type, refId),
+    };
+    normal.splice(insertAt, 0, item);
+    insertAt += 1;
+    changed = true;
+  });
+  if(changed){
+    state.dockItems = ensureTrashDockItem(normal);
+    saveDockItems();
+    renderBlissOSDock();
+  }
+  return changed;
+}
+
+function bindDockDrag(btn, item, midEl, innerEl){
+  if(!btn || !midEl || !innerEl) return;
+  let down = false;
+  let dragging = false;
+  let pointerId = null;
+  let startX = 0;
+  let lastX = 0;
+  let indicator = null;
+  let targetIndex = -1;
+
+  const cleanup = ()=>{
+    if(indicator && indicator.parentNode) indicator.remove();
+    indicator = null;
+    if(btn) btn.classList.remove('dock-dragging');
+    if(innerEl) innerEl.classList.remove('dock-reorder-active');
+    setDockDropHighlight(false);
+  };
+
+  const onPointerMove = (e)=>{
+    if(!down || (pointerId !== null && e.pointerId !== pointerId)) return;
+    lastX = e.clientX;
+    const dx = e.clientX - startX;
+    if(!dragging && Math.abs(dx) > 4){
+      dragging = true;
+      btn.classList.add('dock-dragging');
+      innerEl.classList.add('dock-reorder-active');
+      indicator = document.createElement('span');
+      indicator.className = 'dock-insert-line';
+      innerEl.appendChild(indicator);
+      btn.dataset.dragged = '1';
+    }
+    if(!dragging) return;
+    const index = getDockInsertIndexFromClientX(e.clientX, btn);
+    const items = Array.from(midEl.querySelectorAll('.blissos-dock-item'))
+      .filter(el => el !== btn && el.dataset.dockType !== 'trash');
+    const innerRect = innerEl.getBoundingClientRect();
+    let lineX = innerRect.left + 12;
+    if(items.length){
+      if(index >= items.length){
+        const lastRect = items[items.length - 1].getBoundingClientRect();
+        lineX = lastRect.right + 4;
+      } else {
+        const rect = items[index].getBoundingClientRect();
+        lineX = rect.left - 4;
+      }
+    }
+    if(indicator){
+      indicator.style.left = (lineX - innerRect.left) + 'px';
+      indicator.style.height = (innerRect.height - 12) + 'px';
+      indicator.style.top = '6px';
+    }
+    targetIndex = index;
+    setDockDropHighlight(isPointInRect(e.clientX, e.clientY, innerEl.getBoundingClientRect()));
+    e.preventDefault();
+  };
+
+  const onPointerUp = (e)=>{
+    if(!down || (pointerId !== null && e.pointerId !== pointerId)) return;
+    down = false;
+    try{ btn.releasePointerCapture(pointerId); } catch {}
+    document.removeEventListener('pointermove', onPointerMove);
+    document.removeEventListener('pointerup', onPointerUp);
+    document.removeEventListener('pointercancel', onPointerUp);
+    if(!dragging){
+      cleanup();
+      pointerId = null;
+      return;
+    }
+    const dockRect = innerEl.getBoundingClientRect();
+    const inDock = isPointInRect(e.clientX, e.clientY, dockRect);
+    if(!inDock){
+      removeDockItem(item.type, item.refId);
+      cleanup();
+      pointerId = null;
+      return;
+    }
+    const key = getDockItemKey(item.type, item.refId);
+    const normal = getDockItemsWithoutTrash();
+    const hasOverflow = isMobileDock() && normal.length > DOCK_MOBILE_MAX_NORMAL;
+    const visible = hasOverflow ? normal.slice(0, DOCK_MOBILE_MAX_NORMAL) : normal.slice();
+    const hidden = hasOverflow ? normal.slice(DOCK_MOBILE_MAX_NORMAL) : [];
+    const fromIndex = visible.findIndex(it => (it.id || getDockItemKey(it.type, it.refId)) === key);
+    if(fromIndex !== -1){
+      const moved = visible.splice(fromIndex, 1)[0];
+      const insertAt = clamp(targetIndex >= 0 ? targetIndex : fromIndex, 0, visible.length);
+      visible.splice(insertAt, 0, moved);
+      state.dockItems = ensureTrashDockItem(visible.concat(hidden));
+      saveDockItems();
+      renderBlissOSDock();
+    } else {
+      cleanup();
+    }
+    pointerId = null;
+  };
+
+  btn.addEventListener('pointerdown', (e)=>{
+    if(e.pointerType === 'mouse' && e.button !== 0) return;
+    if(isTrashDockItem(item)) return;
+    down = true;
+    dragging = false;
+    pointerId = e.pointerId;
+    startX = e.clientX;
+    lastX = e.clientX;
+    targetIndex = -1;
+    try{ btn.setPointerCapture(pointerId); } catch {}
+    document.addEventListener('pointermove', onPointerMove);
+    document.addEventListener('pointerup', onPointerUp);
+    document.addEventListener('pointercancel', onPointerUp);
+  });
 }
 
 function animateGenie(ghost, fromRect, toRect, opts = {}){
@@ -18226,6 +18648,7 @@ function renderBlissOSAppMenu(){
 
         const ctxBtn = target.closest('[data-ctx-action]');
         if(ctxBtn && ctxBtn.dataset && ctxBtn.dataset.ctxAction){
+          if(ctxBtn.disabled || ctxBtn.classList.contains('disabled')) return;
           e.preventDefault();
           e.stopPropagation();
           handleCtxAction(ctxBtn.dataset.ctxAction);
@@ -18304,6 +18727,7 @@ function renderBlissOSAppMenu(){
             const target = getEventTargetEl(ev);
             const btn = target && target.closest ? target.closest('[data-ctx-action]') : null;
             if(btn && btn.dataset && btn.dataset.ctxAction){
+              if(btn.disabled || btn.classList.contains('disabled')) return;
               ev.preventDefault();
               ev.stopPropagation();
               handleCtxAction(btn.dataset.ctxAction);
