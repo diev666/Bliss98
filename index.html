@@ -4399,6 +4399,7 @@ function renderTrashWindow(){
   const restoreAllBtn = win.querySelector('[data-trash-action="restoreAll"]');
   if(restoreBtn) restoreBtn.disabled = state.trash.size === 0;
   if(restoreAllBtn) restoreAllBtn.disabled = state.trash.size === 0;
+  smartFitWindow(win, 'tabChange');
 }
 
 function renderPoetryWindow(){
@@ -4413,6 +4414,7 @@ function renderPoetryWindow(){
     const id = item.dataset.poemId;
     item.classList.toggle('selected', state.poetry.selectedId === id);
   });
+  smartFitWindow(win, 'tabChange');
 }
 
 function renderSettingsWindow(){
@@ -4425,6 +4427,7 @@ function renderSettingsWindow(){
   applyI18nTo(win);
   initSettingsTabs(win);
   applySettingsIcons(win);
+  smartFitWindow(win, 'tabChange');
 }
 
 function updateOpenWindowTitleIcons(){
@@ -4493,12 +4496,12 @@ function renderGamesWindow(){
       });
       makeGameItemDraggable(item, id);
     });
-    if(!mobileGameView) autoFitWindow(win, 'games');
+    if(!mobileGameView) smartFitWindow(win, 'tabChange');
     return;
   }
 
   if(state.games.view === 'leaderboard'){
-    if(!mobileGameView) autoFitWindow(win, 'games');
+    if(!mobileGameView) smartFitWindow(win, 'tabChange');
     return;
   }
 
@@ -4510,7 +4513,7 @@ function renderGamesWindow(){
     initSnakeInWindow(win);
     mountMobileGameDock('snake', win);
   }
-  if(!mobileGameView) autoFitWindow(win, 'games');
+  if(!mobileGameView) smartFitWindow(win, 'tabChange');
 }
 
 function initGamesWindow(){
@@ -7890,15 +7893,15 @@ function initClothesWindow(winEl){
     updateOldCrtButtons(win);
     updateSoundUI(win);
     const content = win.querySelector('.content');
-    if(content){
-      content.dataset.fitKey = `settings:${tabId}`;
-      if(tabId === 'appearance'){
-        content.dataset.fitMinW = '560';
-      } else {
-        delete content.dataset.fitMinW;
+      if(content){
+        content.dataset.fitKey = `settings:${tabId}`;
+        if(tabId === 'appearance'){
+          content.dataset.fitMinW = '560';
+        } else {
+          delete content.dataset.fitMinW;
+        }
       }
-    }
-    autoFitWindow(win, 'settings');
+    smartFitWindow(win, 'tabChange');
   };
 
   const current = (state.settings.tab && panelMap.has(state.settings.tab))
@@ -13347,7 +13350,8 @@ function getDisplayTime(){
 
       // Delegate Media Player button clicks
       document.addEventListener('click', (e)=>{
-        const actBtn = ET(e).closest && ET(e).closest('[data-mp-action]');
+        const target = getEventTargetEl(e);
+        const actBtn = target && target.closest ? target.closest('[data-mp-action]') : null;
         if(actBtn){
           const action = actBtn.dataset.mpAction;
           if(action === 'toggle'){
@@ -13370,7 +13374,7 @@ function getDisplayTime(){
           }
         }
 
-        const pickBtn = ET(e).closest && ET(e).closest('[data-mp-pick]');
+        const pickBtn = target && target.closest ? target.closest('[data-mp-pick]') : null;
         if(pickBtn){
           const idx = Number(pickBtn.dataset.mpPick);
           state.mediaplayer.selected = new Set([idx]);
@@ -13433,7 +13437,9 @@ function getDisplayTime(){
 
       document.addEventListener('mouseover', (e)=>{
         if(!state.menuOpen) return;
-        const menuToggle = ET(e).closest && ET(e).closest('.menubar span[data-menu]');
+        const target = getEventTargetEl(e);
+        if(!target || !target.closest) return;
+        const menuToggle = target.closest('.menubar span[data-menu]');
         if(menuToggle){
           const winEl = menuToggle.closest('.window');
           const menuKey = menuToggle.dataset.menu;
@@ -13445,7 +13451,8 @@ function getDisplayTime(){
       document.addEventListener('selectstart', (e)=>{
         const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
         if(tag === 'input' || tag === 'textarea') return;
-        if(e.target && ET(e).closest && ET(e).closest('.content')) return;
+        const target = getEventTargetEl(e);
+        if(target && target.closest && target.closest('.content')) return;
         e.preventDefault();
       });
 
@@ -13881,8 +13888,9 @@ function renderIcons(){
         const onPointerDown = (e)=>{
           if($('#desktop').classList.contains('hidden')) return;
           if(e.pointerType === 'mouse' && e.button !== 0) return;
+          const tgt = getEventTargetEl(e);
           // Don't start a box if user is interacting with icons/windows/menus
-          if(e.target && ET(e).closest && (ET(e).closest('.icon') || ET(e).closest('.window') || ET(e).closest('#startMenu') || ET(e).closest('#ctxMenu'))){
+          if(tgt && tgt.closest && (tgt.closest('.icon') || tgt.closest('.window') || tgt.closest('#startMenu') || tgt.closest('#ctxMenu'))){
             return;
           }
 
@@ -14031,68 +14039,109 @@ function installAutoFitObserver(winEl, appId){
   const w = state.windows.get(appId);
   const observer = new MutationObserver(()=>{
     if(winEl.classList.contains('mobile-game')) return;
-    autoFitWindow(winEl, appId);
+    smartFitWindow(winEl, 'tabChange');
   });
   observer.observe(content, { childList: true, subtree: true, characterData: true });
   winEl.dataset.autoFitObserver = '1';
   if(w) w.autoFitObserver = observer;
 }
 
-function autoFitWindow(winEl, appId){
-  if(!winEl) return;
+const SMART_WINDOW = {
+  minWidth: 260,
+  minHeight: 220,
+  ratio: 1.25,
+  margin: 16,
+  threshold: 6,
+};
+
+function getSmartFitBounds(){
+  const area = $('#desktopArea').getBoundingClientRect();
+  const margin = Math.max(SMART_WINDOW.margin, Math.min(32, Math.floor(Math.min(area.width, area.height) * 0.05)));
+  const maxWidth = Math.max(SMART_WINDOW.minWidth, area.width - margin * 2);
+  const maxHeight = Math.max(SMART_WINDOW.minHeight, area.height - margin * 2);
+  return { area, maxWidth, maxHeight, margin };
+}
+
+function assignWindowRect(winEl, wstate, rect){
+  wstate.left = rect.left;
+  wstate.top = rect.top;
+  wstate.width = rect.width;
+  wstate.height = rect.height;
+  winEl.style.left = rect.left + 'px';
+  winEl.style.top = rect.top + 'px';
+  winEl.style.width = rect.width + 'px';
+  winEl.style.height = rect.height + 'px';
+}
+
+function smartFitWindow(winEl, mode = 'auto'){
+  if(!winEl || winEl.classList.contains('hidden')) return;
+  const appId = getWindowId(winEl);
+  if(!appId) return;
+  if(appId === 'mediaplayer') return;
   const w = state.windows.get(appId);
-  if(!w || w.userSized || w.fit || w.savedRect) return;
+  if(!w) return;
+  if(w.userSized && !['maximize','restore'].includes(mode)) return;
+  if(winEl.dataset.smartFitLock === '1') return;
+  const content = winEl.querySelector('.content');
+  if(!content) return;
   if(winEl.classList.contains('mobile-game')) return;
 
+  winEl.dataset.smartFitLock = '1';
   requestAnimationFrame(()=>{
     requestAnimationFrame(()=>{
-      const content = winEl.querySelector('.content');
-      if(!content) return;
-
+      const bounds = getSmartFitBounds();
+      const fitMinW = Math.max(SMART_WINDOW.minWidth, parseInt(content.dataset.fitMinW || '0', 10) || 0);
+      const fitMinH = Math.max(SMART_WINDOW.minHeight, parseInt(content.dataset.fitMinH || '0', 10) || 0);
       let { targetW, targetH } = getWindowContentTargetSize(winEl, appId);
       ({ targetW, targetH } = applyNiceSquareish(targetW, targetH));
-      
-      const currentRect = winEl.getBoundingClientRect();
-      if(Math.abs(targetW - currentRect.width) < 2 && Math.abs(targetH - currentRect.height) < 2) return;
+      let width = Math.max(targetW, fitMinW);
+      let height = Math.max(targetH, fitMinH);
 
+      width = clamp(width, fitMinW, bounds.maxWidth);
+      height = clamp(height, fitMinH, bounds.maxHeight);
+      const ratio = width / Math.max(1, height);
+      const inverse = 1 / SMART_WINDOW.ratio;
+      if(ratio > SMART_WINDOW.ratio){
+        width = Math.min(width, height * SMART_WINDOW.ratio);
+      } else if(ratio < inverse){
+        height = Math.min(height, width * SMART_WINDOW.ratio);
+      }
+      width = clamp(width, fitMinW, bounds.maxWidth);
+      height = clamp(height, fitMinH, bounds.maxHeight);
+
+      let normalized = normalizeWindowRect({ left: w.left, top: w.top, width, height }, bounds.area, bounds.margin);
       const fitKey = content.dataset.fitKey || '';
       if(fitKey){
         if(!w.fitCache) w.fitCache = {};
         const cached = w.fitCache[fitKey];
         if(cached){
-          cached.width = Math.max(cached.width, targetW);
-          cached.height = Math.max(cached.height, targetH);
-          targetW = cached.width;
-          targetH = cached.height;
-        } else {
-          w.fitCache[fitKey] = { width: targetW, height: targetH };
+          normalized.width = Math.max(normalized.width, cached.width);
+          normalized.height = Math.max(normalized.height, cached.height);
         }
+        w.fitCache[fitKey] = { width: normalized.width, height: normalized.height };
+        normalized = normalizeWindowRect({ left: normalized.left, top: normalized.top, width: normalized.width, height: normalized.height }, bounds.area, bounds.margin);
       }
-      
-      sizeWindowToContent(appId, targetW, targetH);
-      w.lastFitKey = fitKey;
+      const currentRect = winEl.getBoundingClientRect();
+      if(Math.abs(currentRect.width - normalized.width) < SMART_WINDOW.threshold && Math.abs(currentRect.height - normalized.height) < SMART_WINDOW.threshold){
+        delete winEl.dataset.smartFitLock;
+        return;
+      }
+      assignWindowRect(winEl, w, normalized);
+      w.lastSmartFit = { width: normalized.width, height: normalized.height, mode };
+      delete winEl.dataset.smartFitLock;
     });
   });
 }
 
-      function sizeWindowToContent(appId, targetW, targetH){
-  const winEl = document.getElementById(`win_${appId}`);
-  if(!winEl) return;
-  const w = state.windows.get(appId);
-  if(!w) return;
-
+function getMediaPlayerRect(){
   const area = $('#desktopArea').getBoundingClientRect();
-  const normalized = normalizeWindowRect({ left: w.left, top: w.top, width: targetW, height: targetH }, area, 16);
-
-  w.left = normalized.left;
-  w.top = normalized.top;
-  w.width = normalized.width;
-  w.height = normalized.height;
-
-  winEl.style.left = w.left + 'px';
-  winEl.style.top = w.top + 'px';
-  winEl.style.width = w.width + 'px';
-  winEl.style.height = w.height + 'px';
+  const margin = 24;
+  const maxSide = Math.max(240, Math.min(area.width - margin * 2, area.height - margin * 2));
+  const candidate = Math.min(maxSide, Math.max(320, Math.floor(maxSide * 0.65)));
+  const size = clamp(candidate, 280, 520);
+  const left = Math.round(clamp((area.width - size) / 2, margin, area.width - size - margin));
+  const top = Math.round(clamp((area.height - size) / 2, margin, area.height - size - margin));
+  return { left, top, width: size, height: size };
 }
 
       function animateAppLaunch(iconEl, winEl){
@@ -14148,10 +14197,11 @@ function autoFitWindow(winEl, appId){
         }
 
         let rect = defaultWindowRect();
-        
         const area = $('#desktopArea').getBoundingClientRect();
         const savedRect = getSavedWindowRect(appId);
-        if(savedRect){
+        if(appId === 'mediaplayer'){
+          rect = normalizeWindowRect(getMediaPlayerRect(), area, 16);
+        } else if(savedRect){
           rect = normalizeWindowRect(savedRect, area, 16);
         } else {
           rect = normalizeWindowRect(rect, area, 16);
@@ -14172,12 +14222,14 @@ function autoFitWindow(winEl, appId){
           height: rect.height,
           z: ++state.zTop,
           savedRect: Boolean(savedRect),
-          userSized: false,
+          userSized: appId === 'mediaplayer',
           autoFitObserver: null,
           lastFitKey: '',
           lastFitW: 0,
           lastFitH: 0,
           fitCache: null,
+          lastSmartFit: null,
+          mediaplayerFixed: appId === 'mediaplayer',
         };
         state.windows.set(appId, wstate);
         createWindowElement(wstate);
@@ -14332,71 +14384,28 @@ function applyNiceSquareish(targetW, targetH, opts = {}){
 
 function toggleFitWindow(appId) {
   const w = state.windows.get(appId);
-  if (!w) return;
-  
-  const winEl = document.getElementById('win_' + appId);
+  if(!w) return;
+  const winEl = document.getElementById(`win_${appId}`);
+  if(!winEl) return;
   const btn = winEl.querySelector('.wctl[data-action="max"]');
-  const content = winEl.querySelector('.content');
 
-  if (w.fit) {
-      w.fit = false;
-      winEl.classList.remove('fit');
-      if (btn) btn.textContent = '□';
-
-      if (w.prevRect) {
-        w.left = w.prevRect.left;
-        w.top = w.prevRect.top;
-        w.width = w.prevRect.width;
-        w.height = w.prevRect.height;
-        winEl.style.top = w.top + 'px';
-        winEl.style.left = w.left + 'px';
-        winEl.style.width = w.width + 'px';
-        winEl.style.height = w.height + 'px';
-        w.prevRect = null;
-      }
-  } else {
-      w.prevRect = { left: w.left, top: w.top, width: w.width, height: w.height };
-
-      w.fit = true;
-      winEl.classList.add('fit');
-      if (btn) btn.textContent = '❐';
-
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          let { targetW, targetH } = getWindowContentTargetSize(winEl, appId);
-          ({ targetW, targetH } = applyNiceSquareish(targetW, targetH));
-          
-          if (content) {
-            const fitKey = content.dataset.fitKey || '';
-            if (fitKey) {
-              if (!w.fitCache) w.fitCache = {};
-              const cached = w.fitCache[fitKey];
-              if (cached) {
-                cached.width = Math.max(cached.width, targetW);
-                cached.height = Math.max(cached.height, targetH);
-                targetW = cached.width;
-                targetH = cached.height;
-              } else {
-                w.fitCache[fitKey] = { width: targetW, height: targetH };
-              }
-            }
-          }
-
-          const area = $('#desktopArea').getBoundingClientRect();
-          const normalized = normalizeWindowRect({ left: w.left, top: w.top, width: targetW, height: targetH }, area, 16);
-
-          w.left = normalized.left;
-          w.top = normalized.top;
-          w.width = normalized.width;
-          w.height = normalized.height;
-          
-          winEl.style.left = w.left + 'px';
-          winEl.style.top = w.top + 'px';
-          winEl.style.width = w.width + 'px';
-          winEl.style.height = w.height + 'px';
-        });
-      });
+  if(w.fit){
+    w.fit = false;
+    winEl.classList.remove('fit');
+    if(btn) btn.textContent = '□';
+    if(w.prevRect){
+      assignWindowRect(winEl, w, w.prevRect);
+      w.prevRect = null;
+    }
+    smartFitWindow(winEl, 'restore');
+    return;
   }
+
+  w.prevRect = { left: w.left, top: w.top, width: w.width, height: w.height };
+  w.fit = true;
+  winEl.classList.add('fit');
+  if(btn) btn.textContent = '❐';
+  smartFitWindow(winEl, 'maximize');
 }
 
 
@@ -14491,8 +14500,9 @@ function toggleFitWindow(appId) {
         // Make windows focus on mousedown except when clicking on a control button (min/max/close).
         // On touch devices the first tap should trigger the action without requiring a second tap.
         el.addEventListener('pointerdown', (e)=>{
+          const actTarget = getEventTargetEl(e);
           // If the target element has a data-action (control buttons), defer focusing until the click handler.
-          if(e.target && ET(e).dataset && ET(e).dataset.action) return;
+          if(actTarget && actTarget.dataset && actTarget.dataset.action) return;
           e.stopPropagation();
           focusWindow(appId);
           closeStartMenu();
@@ -14502,7 +14512,8 @@ function toggleFitWindow(appId) {
           e.stopPropagation();
         });
         el.addEventListener('click', (e)=>{
-          const act = ET(e)?.dataset?.action;
+          const actTarget = getEventTargetEl(e);
+          const act = actTarget ? actTarget.dataset?.action : null;
           if(!act) return;
           e.stopPropagation();
           // Always bring the window to the front when clicking a control.
@@ -14514,7 +14525,8 @@ function toggleFitWindow(appId) {
         });
         el.addEventListener('pointerup', (e)=>{
           if(e.pointerType !== 'touch') return;
-          const act = ET(e)?.dataset?.action;
+          const actTarget = getEventTargetEl(e);
+          const act = actTarget ? actTarget.dataset?.action : null;
           if(!act) return;
           // Don't prevent default - let native click handler take care of it
           focusWindow(appId);
@@ -14525,7 +14537,12 @@ function toggleFitWindow(appId) {
         });
 
         makeDraggable(el, appId);
-        makeResizable(el, appId);
+        if(appId !== 'mediaplayer'){
+          makeResizable(el, appId);
+        } else {
+          const resizeHandle = el.querySelector('.resize');
+          if(resizeHandle) resizeHandle.style.display = 'none';
+        }
 
         if(appId === 'mediaplayer') { setTimeout(mpInitInWindow, 0); }
         if(appId === 'trash') { updateTrashIconUI(); }
@@ -14544,11 +14561,10 @@ function toggleFitWindow(appId) {
         applyWindowState(el, appId);
         
         // Auto-fit after content + i18n, unless a saved/manual size exists.
-        if (!wstate.savedRect) {
-          if (!wstate.savedRect) {
-                    installAutoFitObserver(el, appId);
-                    autoFitWindow(el, appId);
-                  }        }
+        if(!wstate.savedRect){
+          installAutoFitObserver(el, appId);
+          smartFitWindow(el, 'open');
+        }
         
         el.style.visibility = 'visible';
         if(state.animations){
@@ -14568,8 +14584,9 @@ function toggleFitWindow(appId) {
         const onPointerDown = (e)=>{
           // Ignore non-primary mouse buttons
           if(e.pointerType === 'mouse' && e.button !== 0) return;
+          const dragTarget = getEventTargetEl(e);
           // Ignore clicks on window control buttons
-          if(e.target && ET(e).dataset && ET(e).dataset.action) return;
+          if(dragTarget && dragTarget.dataset && dragTarget.dataset.action) return;
 
           e.preventDefault();
           dragging = true;
@@ -14764,7 +14781,8 @@ function toggleFitWindow(appId) {
         winEl.addEventListener('mousemove', (e)=>{
           if(resizing) return;
           // don't override cursor on controls/titlebar
-          if(e.target && ET(e).closest && (ET(e).closest('.titlebar') || ET(e).closest('.wctl'))) return;
+          const cursorTarget = getEventTargetEl(e);
+          if(cursorTarget && cursorTarget.closest && (cursorTarget.closest('.titlebar') || cursorTarget.closest('.wctl'))) return;
           const d = getDir(e.clientX, e.clientY);
           const c = cursorFor(d);
           winEl.style.cursor = c || '';
@@ -14777,7 +14795,8 @@ function toggleFitWindow(appId) {
         winEl.addEventListener('pointerdown', (e)=>{
           if(resizing) return;
           // ignore titlebar drag and window control clicks
-          if(e.target && ET(e).closest && (ET(e).closest('.titlebar') || ET(e).closest('.wctl'))) return;
+          const cursorTarget = getEventTargetEl(e);
+          if(cursorTarget && cursorTarget.closest && (cursorTarget.closest('.titlebar') || cursorTarget.closest('.wctl'))) return;
           const d = getDir(e.clientX, e.clientY);
           if(!d) return;
           beginResize(e, d);
@@ -15448,7 +15467,8 @@ function renderBlissOSAppMenu(){
         if(dopeSkateHandleKeyUp(e)) return;
       });
       document.addEventListener('input', (e)=>{
-        const soundSlider = e.target && ET(e).closest && ET(e).closest('[data-sound-slider]');
+        const target = getEventTargetEl(e);
+        const soundSlider = target && target.closest ? target.closest('[data-sound-slider]') : null;
         if(soundSlider && soundSlider.dataset && soundSlider.dataset.soundSlider){
           const val = clamp(parseFloat(soundSlider.value) / 100, 0, 1);
           if(soundSlider.dataset.soundSlider === 'master') setMasterVolume(val);
@@ -15457,7 +15477,21 @@ function renderBlissOSAppMenu(){
       });
       document.addEventListener('click', (e)=>{
         const target = getEventTargetEl(e);
-        if(!target || !target.closest) return;
+        if(!target || !target.closest){
+          closeStartMenu();
+          closeCtxMenu();
+          closeBlissOSMenu();
+          closeBlissOSAppMenu();
+          return;
+        }
+        const startArea = target.closest('#startMenu') || target.closest('#startBtn');
+        if(!startArea) closeStartMenu();
+        const ctxArea = target.closest('#ctxMenu');
+        if(!ctxArea) closeCtxMenu();
+        const inAppleMenu = target.closest('#blissosAppleMenu') || target.closest('[data-blissos-menu="apple"]');
+        if(!inAppleMenu) closeBlissOSMenu();
+        const inAppMenu = target.closest('#blissosAppMenuDrop') || target.closest('#blissosAppMenu');
+        if(!inAppMenu) closeBlissOSAppMenu();
         const poemItem = target.closest('[data-poem-id]');
         if(poemItem){
           const id = poemItem.dataset.poemId;
@@ -15590,7 +15624,7 @@ function renderBlissOSAppMenu(){
           closeBlissOSAppMenu();
           return;
         }
-        const blissAppMenuApp = ET(e).closest && ET(e).closest('[data-blissos-appmenu-app]');
+        const blissAppMenuApp = target.closest('[data-blissos-appmenu-app]');
         if(blissAppMenuApp && blissAppMenuApp.dataset && blissAppMenuApp.dataset.blissosAppmenuApp){
           e.preventDefault();
           e.stopPropagation();
@@ -15762,14 +15796,14 @@ function renderBlissOSAppMenu(){
           return;
         }
 
-        const ctxBtn = ET(e).closest && ET(e).closest('[data-ctx-action]');
+        const ctxBtn = target.closest('[data-ctx-action]');
         if(ctxBtn && ctxBtn.dataset && ctxBtn.dataset.ctxAction){
           e.preventDefault();
           e.stopPropagation();
           handleCtxAction(ctxBtn.dataset.ctxAction);
           closeCtxMenu();
         }
-        if(!ET(e).closest || (!ET(e).closest('.menu-drop') && !ET(e).closest('.menubar') && !ET(e).closest('#blissosMenuDrop') && !ET(e).closest('#blissosMenubar'))){
+        if(!target.closest('.menu-drop') && !target.closest('.menubar') && !target.closest('#blissosMenuDrop') && !target.closest('#blissosMenubar')){
           closeWindowMenu();
         }
       });
@@ -15824,16 +15858,6 @@ function renderBlissOSAppMenu(){
         updateTrashIconUI();
         initSfx();
         showLogin(true);
-      document.addEventListener('click', (e)=>{
-        closeStartMenu();
-        closeCtxMenu();
-        const target = getEventTargetEl(e);
-        if(!target || !target.closest) return;
-        const inAppleMenu = target.closest('#blissosAppleMenu') || target.closest('[data-blissos-menu="apple"]');
-        if(!inAppleMenu) closeBlissOSMenu();
-        const inAppMenu = target.closest('#blissosAppMenuDrop') || target.closest('#blissosAppMenu');
-        if(!inAppMenu) closeBlissOSAppMenu();
-      });
       document.addEventListener('pointerdown', (e)=>{
         const target = getEventTargetEl(e);
         const winEl = target && target.closest ? target.closest('.window') : null;
