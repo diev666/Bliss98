@@ -8995,6 +8995,35 @@ function loadOsTheme(){
   }
 }
 
+function getSavedOsTheme(){
+  try{
+    const raw = localStorage.getItem(OS_THEME_KEY);
+    if(raw === 'blissos' || raw === 'bliss98') return raw;
+  } catch {}
+  return null;
+}
+
+function detectDefaultOSForFirstVisit(){
+  const uaData = navigator.userAgentData;
+  if(uaData && typeof uaData.platform === 'string'){
+    const platform = uaData.platform.toLowerCase();
+    if(platform.includes('windows')) return 'bliss98';
+    if(platform.includes('mac')) return 'blissos';
+    if(platform.includes('android')) return 'bliss98';
+    if(platform.includes('ios')) return 'blissos';
+  }
+  const ua = (navigator.userAgent || '').toLowerCase();
+  const touchPoints = navigator.maxTouchPoints || 0;
+  if(/iphone|ipad|ipod/.test(ua)) return 'blissos';
+  if(ua.includes('android')) return 'bliss98';
+  if(ua.includes('windows nt')) return 'bliss98';
+  if(ua.includes('macintosh')){
+    if(touchPoints > 1) return 'blissos';
+    return 'blissos';
+  }
+  return null;
+}
+
 function loadBlissosAccent(){
   try{
     const raw = localStorage.getItem(BLISSOS_ACCENT_KEY);
@@ -18676,7 +18705,18 @@ function renderBlissOSAppMenu(){
         const saved = localStorage.getItem('bliss98_user');
         if(saved){ setUser(saved); $('#username').value = saved; }
 
-        state.settings.theme = loadOsTheme();
+        const savedOsTheme = getSavedOsTheme();
+        if(savedOsTheme){
+          state.settings.theme = savedOsTheme;
+        } else {
+          const autoOsTheme = detectDefaultOSForFirstVisit();
+          if(autoOsTheme){
+            state.settings.theme = autoOsTheme;
+            saveOsTheme();
+          } else {
+            state.settings.theme = loadOsTheme();
+          }
+        }
         state.settings.osProfiles = loadOsProfiles();
         state.settings.blissosAccent = loadBlissosAccent();
         
