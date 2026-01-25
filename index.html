@@ -170,7 +170,7 @@
   .games-tab, .games-item, .music-item,
   .blissos-menu-item, .blissos-menu-brand, .blissos-appmenu,
   .wctl, .settings-tab,
-  [data-set-theme], [data-set-lang], [data-set-wallpaper], [data-set-animations],
+  [data-set-theme], [data-set-lang], [data-set-wallpaper], [data-set-animations], [data-set-appopenanim],
   [data-set-scanlines], [data-set-darkmode], [data-set-blissos-darkmode], [data-set-retro],
   [data-set-clock], [data-set-oldcrt], [data-set-os-theme], [data-set-titlebar],
   [data-theme-custom], [data-games-tab], [data-music-id], [data-poem-id], [data-trash-id],
@@ -963,6 +963,19 @@
         pointer-events:none;
         z-index:9999;
         will-change:transform,clip-path,opacity;
+      }
+      .app-open-selection{
+        position:fixed;
+        pointer-events:none;
+        z-index:12000;
+        border:1px dotted var(--selection-border);
+        background:transparent;
+        box-sizing:border-box;
+        will-change:left,top,width,height,transform,opacity;
+        opacity:0.95;
+      }
+      body.dark .app-open-selection{
+        border-color:#9ec5ff;
       }
 
       .blissos-apple-menu{
@@ -3769,6 +3782,7 @@
           masterVolume: 0.8,
           systemVolume: 0.8,
           theme: 'bliss98',
+          appOpenAnim: true,
         },
         theme: {
           preset: 'default',
@@ -3842,6 +3856,7 @@
       const WALLPAPER_KEY = 'bliss98_wallpaper';
       const BLISSOS_ACCENT_KEY = 'bliss98_blissos_accent';
       const ANIMATIONS_KEY = 'bliss98_animations';
+      const APP_OPEN_ANIM_KEY = 'bliss98_app_open_anim';
       const SCANLINES_KEY = 'bliss98_scanlines';
       const CLOCK_KEY = 'bliss98_clock24';
       const OLDCRT_KEY = 'bliss98_oldcrt';
@@ -7884,6 +7899,7 @@ function initClothesWindow(winEl){
     });
     updateWallpaperButtons(win);
     updateAnimationButtons(win);
+    updateAppOpenAnimButtons(win);
     updateScanlinesButtons(win);
     updateRetroGlowButtons(win);
     updateDarkModeButtons(win);
@@ -8007,6 +8023,22 @@ function saveAnimations(){
   } catch {}
 }
 
+function loadAppOpenAnim(){
+  try{
+    const raw = localStorage.getItem(APP_OPEN_ANIM_KEY);
+    if(raw === null) return true;
+    return raw === '1';
+  } catch {
+    return true;
+  }
+}
+
+function saveAppOpenAnim(){
+  try{
+    localStorage.setItem(APP_OPEN_ANIM_KEY, state.settings.appOpenAnim ? '1' : '0');
+  } catch {}
+}
+
 function updateAnimationButtons(root=document){
   $$('[data-set-animations]', root).forEach(btn => {
     const on = btn.dataset.setAnimations === 'on';
@@ -8014,10 +8046,23 @@ function updateAnimationButtons(root=document){
   });
 }
 
+function updateAppOpenAnimButtons(root=document){
+  $$('[data-set-appopenanim]', root).forEach(btn => {
+    const on = btn.dataset.setAppopenanim === 'on';
+    btn.classList.toggle('pressed', on === state.settings.appOpenAnim);
+  });
+}
+
 function setAnimations(enabled){
   state.animations = !!enabled;
   saveAnimations();
   updateAnimationButtons();
+}
+
+function setAppOpenAnim(enabled){
+  state.settings.appOpenAnim = !!enabled;
+  saveAppOpenAnim();
+  updateAppOpenAnimButtons();
 }
 
 function updateScanlinesButtons(root=document){
@@ -8883,12 +8928,54 @@ function getVirtualIconById(id){
   return VIRTUAL_ICONS.find(v => v.id === id) || null;
 }
 
-function openIconById(id){
+function openAppFromDesktopIcon(appId, iconEl){
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(!state.settings.appOpenAnim || reduceMotion || !iconEl){
+    openApp(appId);
+    return;
+  }
+  cancelAppOpenAnimation({ revealPending: true });
+  const winEl = openApp(appId, { deferReveal: true, skipAnimOpen: true });
+  if(!winEl){
+    openApp(appId);
+    return;
+  }
+  let finished = false;
+  const finalize = ()=>{
+    if(finished) return;
+    finished = true;
+    revealWindow(appId, { skipAnim: true });
+    focusWindow(appId);
+    renderTaskButtons();
+  };
+  const timeoutId = window.setTimeout(finalize, 900);
+  waitForSmartFitCompletion(appId).then(targetRect => {
+    if(finished) return;
+    window.clearTimeout(timeoutId);
+    if(!targetRect){
+      finalize();
+      return;
+    }
+    animateAppOpenFromIcon(iconEl, targetRect, finalize, appId);
+  }).catch(finalize);
+}
+
+function openIconById(id, opts = {}){
+  const sourceEl = opts.sourceEl || null;
+  const isDesktopIcon = !!(opts.fromDesktop && sourceEl && sourceEl.closest && sourceEl.closest('#iconGrid'));
   if(id === 'snake'){
-    openApp('games');
     state.games.view = 'snake';
     state.games.selectedId = 'snake';
-    renderGamesWindow();
+    if(isDesktopIcon && !state.windows.has('games')){
+      openAppFromDesktopIcon('games', sourceEl);
+    } else {
+      openApp('games');
+      renderGamesWindow();
+    }
+    return;
+  }
+  if(isDesktopIcon && !state.windows.has(id)){
+    openAppFromDesktopIcon(id, sourceEl);
     return;
   }
   openApp(id);
@@ -9657,6 +9744,10 @@ function installLongPress(el, getTarget){
           'settings.animationsDesc': 'Toggle window animations.',
           'settings.animations.on': 'On',
           'settings.animations.off': 'Off',
+          'settings.appOpenAnim.title': 'App open animation',
+          'settings.appOpenAnim.desc': 'Animate a dotted selection box from the icon to the window.',
+          'settings.appOpenAnim.on': 'On',
+          'settings.appOpenAnim.off': 'Off',
           'settings.wallpaperTab': 'Wallpaper',
           'settings.wallpaperDesc': 'Choose a wallpaper for your desktop.',
           'settings.scanlinesTab': 'Scanlines',
@@ -10143,6 +10234,10 @@ function installLongPress(el, getTarget){
           'settings.animationsDesc': 'Ative ou desative as animações das janelas.',
           'settings.animations.on': 'Ligado',
           'settings.animations.off': 'Desligado',
+          'settings.appOpenAnim.title': 'Animacao ao abrir app',
+          'settings.appOpenAnim.desc': 'Anima uma caixa pontilhada do icone ate a janela.',
+          'settings.appOpenAnim.on': 'Ligado',
+          'settings.appOpenAnim.off': 'Desligado',
           'settings.wallpaperTab': 'Papel de parede',
           'settings.wallpaperDesc': 'Escolha um papel de parede para o desktop.',
           'settings.scanlinesTab': 'Scanlines',
@@ -12836,6 +12931,14 @@ Eu sou o buffalo branco extinto`
                   <button class="btn bevel" type="button" data-set-animations="on"><span data-i18n="settings.animations.on">On</span></button>
                   <button class="btn bevel" type="button" data-set-animations="off"><span data-i18n="settings.animations.off">Off</span></button>
                 </div>
+                <div class="settings-block" id="settingsAppOpenAnim">
+                  <strong data-i18n="settings.appOpenAnim.title">App open animation</strong>
+                  <p style="margin:6px 0 10px 0;" data-i18n="settings.appOpenAnim.desc">Animate a dotted selection box from the icon to the window.</p>
+                  <div class="settings-actions">
+                    <button class="btn bevel" type="button" data-set-appopenanim="on"><span data-i18n="settings.appOpenAnim.on">On</span></button>
+                    <button class="btn bevel" type="button" data-set-appopenanim="off"><span data-i18n="settings.appOpenAnim.off">Off</span></button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -13567,7 +13670,7 @@ function renderIcons(){
           // Double click open
           el.addEventListener('dblclick', (e)=>{
             e.stopPropagation();
-      openIconById(id);
+      openIconById(id, { sourceEl: el, fromDesktop: true });
     });
 
     makeIconDraggable(el);
@@ -14073,64 +14176,90 @@ function assignWindowRect(winEl, wstate, rect){
   winEl.style.height = rect.height + 'px';
 }
 
-function smartFitWindow(winEl, mode = 'auto'){
-  if(!winEl || winEl.classList.contains('hidden')) return;
-  const appId = getWindowId(winEl);
-  if(!appId) return;
-  if(appId === 'mediaplayer') return;
-  const w = state.windows.get(appId);
-  if(!w) return;
-  if(w.userSized && !['maximize','restore'].includes(mode)) return;
-  if(winEl.dataset.smartFitLock === '1') return;
+function getWindowRectFromState(wstate){
+  if(!wstate) return null;
+  return { left: wstate.left, top: wstate.top, width: wstate.width, height: wstate.height };
+}
+
+function smartFitWindow(winEl, mode = 'auto', opts = {}){
+  const appId = winEl ? getWindowId(winEl) : null;
+  const w = appId ? state.windows.get(appId) : null;
+  const onDone = (typeof opts.onDone === 'function') ? opts.onDone : null;
+  const finish = (rect)=>{
+    const out = rect || getWindowRectFromState(w);
+    if(onDone && out) onDone(out, { appId, wstate: w, mode });
+    return out;
+  };
+
+  if(!winEl || winEl.classList.contains('hidden') || !appId || !w || appId === 'mediaplayer'){
+    return Promise.resolve(finish(getWindowRectFromState(w)));
+  }
+  if(w.userSized && !['maximize','restore'].includes(mode)){
+    return Promise.resolve(finish(getWindowRectFromState(w)));
+  }
+  if(winEl.classList.contains('mobile-game')){
+    return Promise.resolve(finish(getWindowRectFromState(w)));
+  }
+  if(winEl.dataset.smartFitLock === '1' && w.smartFitPromise){
+    return w.smartFitPromise.then(rect => finish(rect)).catch(()=> finish(getWindowRectFromState(w)));
+  }
   const content = winEl.querySelector('.content');
-  if(!content) return;
-  if(winEl.classList.contains('mobile-game')) return;
+  if(!content){
+    return Promise.resolve(finish(getWindowRectFromState(w)));
+  }
 
-  winEl.dataset.smartFitLock = '1';
-  requestAnimationFrame(()=>{
+  const promise = new Promise(resolve => {
+    winEl.dataset.smartFitLock = '1';
     requestAnimationFrame(()=>{
-      const bounds = getSmartFitBounds();
-      const fitMinW = Math.max(SMART_WINDOW.minWidth, parseInt(content.dataset.fitMinW || '0', 10) || 0);
-      const fitMinH = Math.max(SMART_WINDOW.minHeight, parseInt(content.dataset.fitMinH || '0', 10) || 0);
-      let { targetW, targetH } = getWindowContentTargetSize(winEl, appId);
-      ({ targetW, targetH } = applyNiceSquareish(targetW, targetH));
-      let width = Math.max(targetW, fitMinW);
-      let height = Math.max(targetH, fitMinH);
+      requestAnimationFrame(()=>{
+        const bounds = getSmartFitBounds();
+        const fitMinW = Math.max(SMART_WINDOW.minWidth, parseInt(content.dataset.fitMinW || '0', 10) || 0);
+        const fitMinH = Math.max(SMART_WINDOW.minHeight, parseInt(content.dataset.fitMinH || '0', 10) || 0);
+        let { targetW, targetH } = getWindowContentTargetSize(winEl, appId);
+        ({ targetW, targetH } = applyNiceSquareish(targetW, targetH));
+        let width = Math.max(targetW, fitMinW);
+        let height = Math.max(targetH, fitMinH);
 
-      width = clamp(width, fitMinW, bounds.maxWidth);
-      height = clamp(height, fitMinH, bounds.maxHeight);
-      const ratio = width / Math.max(1, height);
-      const inverse = 1 / SMART_WINDOW.ratio;
-      if(ratio > SMART_WINDOW.ratio){
-        width = Math.min(width, height * SMART_WINDOW.ratio);
-      } else if(ratio < inverse){
-        height = Math.min(height, width * SMART_WINDOW.ratio);
-      }
-      width = clamp(width, fitMinW, bounds.maxWidth);
-      height = clamp(height, fitMinH, bounds.maxHeight);
-
-      let normalized = normalizeWindowRect({ left: w.left, top: w.top, width, height }, bounds.area, bounds.margin);
-      const fitKey = content.dataset.fitKey || '';
-      if(fitKey){
-        if(!w.fitCache) w.fitCache = {};
-        const cached = w.fitCache[fitKey];
-        if(cached){
-          normalized.width = Math.max(normalized.width, cached.width);
-          normalized.height = Math.max(normalized.height, cached.height);
+        width = clamp(width, fitMinW, bounds.maxWidth);
+        height = clamp(height, fitMinH, bounds.maxHeight);
+        const ratio = width / Math.max(1, height);
+        const inverse = 1 / SMART_WINDOW.ratio;
+        if(ratio > SMART_WINDOW.ratio){
+          width = Math.min(width, height * SMART_WINDOW.ratio);
+        } else if(ratio < inverse){
+          height = Math.min(height, width * SMART_WINDOW.ratio);
         }
-        w.fitCache[fitKey] = { width: normalized.width, height: normalized.height };
-        normalized = normalizeWindowRect({ left: normalized.left, top: normalized.top, width: normalized.width, height: normalized.height }, bounds.area, bounds.margin);
-      }
-      const currentRect = winEl.getBoundingClientRect();
-      if(Math.abs(currentRect.width - normalized.width) < SMART_WINDOW.threshold && Math.abs(currentRect.height - normalized.height) < SMART_WINDOW.threshold){
+        width = clamp(width, fitMinW, bounds.maxWidth);
+        height = clamp(height, fitMinH, bounds.maxHeight);
+
+        let normalized = normalizeWindowRect({ left: w.left, top: w.top, width, height }, bounds.area, bounds.margin);
+        const fitKey = content.dataset.fitKey || '';
+        if(fitKey){
+          if(!w.fitCache) w.fitCache = {};
+          const cached = w.fitCache[fitKey];
+          if(cached){
+            normalized.width = Math.max(normalized.width, cached.width);
+            normalized.height = Math.max(normalized.height, cached.height);
+          }
+          w.fitCache[fitKey] = { width: normalized.width, height: normalized.height };
+          normalized = normalizeWindowRect({ left: normalized.left, top: normalized.top, width: normalized.width, height: normalized.height }, bounds.area, bounds.margin);
+        }
+        const currentRect = winEl.getBoundingClientRect();
+        if(Math.abs(currentRect.width - normalized.width) < SMART_WINDOW.threshold && Math.abs(currentRect.height - normalized.height) < SMART_WINDOW.threshold){
+          delete winEl.dataset.smartFitLock;
+          resolve(finish(normalized));
+          return;
+        }
+        assignWindowRect(winEl, w, normalized);
+        w.lastSmartFit = { width: normalized.width, height: normalized.height, mode };
         delete winEl.dataset.smartFitLock;
-        return;
-      }
-      assignWindowRect(winEl, w, normalized);
-      w.lastSmartFit = { width: normalized.width, height: normalized.height, mode };
-      delete winEl.dataset.smartFitLock;
+        resolve(finish(normalized));
+      });
     });
   });
+
+  w.smartFitPromise = promise;
+  return promise;
 }
 
 function getMediaPlayerRect(){
@@ -14142,6 +14271,139 @@ function getMediaPlayerRect(){
   const left = Math.round(clamp((area.width - size) / 2, margin, area.width - size - margin));
   const top = Math.round(clamp((area.height - size) / 2, margin, area.height - size - margin));
   return { left, top, width: size, height: size };
+}
+
+function getViewportRectForWindow(appId){
+  const w = state.windows.get(appId);
+  if(!w) return null;
+  const area = $('#desktopArea').getBoundingClientRect();
+  return {
+    left: area.left + w.left,
+    top: area.top + w.top,
+    width: w.width,
+    height: w.height,
+  };
+}
+
+function waitForSmartFitCompletion(appId){
+  const w = state.windows.get(appId);
+  if(!w) return Promise.resolve(null);
+  const fallback = getViewportRectForWindow(appId);
+  return new Promise(resolve => {
+    requestAnimationFrame(()=>{
+      requestAnimationFrame(()=>{
+        const latest = w.smartFitPromise || Promise.resolve(getWindowRectFromState(w));
+        Promise.resolve(latest)
+          .then(()=> resolve(getViewportRectForWindow(appId) || fallback))
+          .catch(()=> resolve(fallback));
+      });
+    });
+  });
+}
+
+function revealWindowElement(winEl, wstate, opts = {}){
+  if(!winEl || !wstate) return;
+  const skipAnim = !!opts.skipAnim || !!wstate.skipAnimOpen || !state.animations || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  wstate.deferReveal = false;
+  winEl.style.visibility = 'visible';
+  if(skipAnim){
+    winEl.classList.remove('anim-open');
+    return;
+  }
+  winEl.addEventListener('animationend', ()=>{ winEl.classList.remove('anim-open'); }, { once:true });
+}
+
+function revealWindow(appId, opts = {}){
+  const winEl = document.getElementById(`win_${appId}`);
+  const wstate = state.windows.get(appId);
+  if(!winEl || !wstate) return;
+  revealWindowElement(winEl, wstate, opts);
+  if(opts.renderTasks) renderTaskButtons();
+  if(opts.focus) focusWindow(appId);
+}
+
+const appOpenAnimState = {
+  overlay: null,
+  animation: null,
+  token: 0,
+  appId: null,
+};
+
+function cancelAppOpenAnimation(opts = {}){
+  const pendingAppId = appOpenAnimState.appId;
+  if(appOpenAnimState.animation){
+    try{ appOpenAnimState.animation.cancel(); } catch {}
+  }
+  if(appOpenAnimState.overlay){
+    appOpenAnimState.overlay.remove();
+  }
+  appOpenAnimState.overlay = null;
+  appOpenAnimState.animation = null;
+  appOpenAnimState.appId = null;
+  if(opts.revealPending && pendingAppId && state.windows.has(pendingAppId)){
+    revealWindow(pendingAppId, { skipAnim: true, renderTasks: true });
+  }
+}
+
+function animateAppOpenFromIcon(iconEl, targetRect, onDone, appId){
+  if(!iconEl || !targetRect){
+    if(typeof onDone === 'function') onDone();
+    return;
+  }
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(reduceMotion){
+    if(typeof onDone === 'function') onDone();
+    return;
+  }
+  cancelAppOpenAnimation({ revealPending: true });
+  const startRect = iconEl.getBoundingClientRect();
+  if(!startRect.width || !startRect.height){
+    if(typeof onDone === 'function') onDone();
+    return;
+  }
+
+  const overlay = document.createElement('div');
+  overlay.className = 'app-open-selection';
+  overlay.style.left = `${startRect.left}px`;
+  overlay.style.top = `${startRect.top}px`;
+  overlay.style.width = `${startRect.width}px`;
+  overlay.style.height = `${startRect.height}px`;
+  document.body.appendChild(overlay);
+
+  const token = ++appOpenAnimState.token;
+  appOpenAnimState.overlay = overlay;
+  appOpenAnimState.appId = appId || null;
+
+  const duration = state.isMobile ? 240 : 210;
+  const easing = 'cubic-bezier(0.2, 0.7, 0.2, 1)';
+  let animation = null;
+  try{
+    animation = overlay.animate([
+      { left: `${startRect.left}px`, top: `${startRect.top}px`, width: `${startRect.width}px`, height: `${startRect.height}px`, opacity: 0.95 },
+      { left: `${targetRect.left}px`, top: `${targetRect.top}px`, width: `${targetRect.width}px`, height: `${targetRect.height}px`, opacity: 1 }
+    ], { duration, easing, fill: 'forwards' });
+  } catch {}
+
+  const finish = ()=>{
+    if(token !== appOpenAnimState.token) return;
+    cancelAppOpenAnimation();
+    if(typeof onDone === 'function') onDone();
+  };
+
+  if(animation){
+    appOpenAnimState.animation = animation;
+    animation.addEventListener('finish', finish, { once: true });
+    animation.addEventListener('cancel', finish, { once: true });
+  } else {
+    overlay.style.transition = `all ${duration}ms ${easing}`;
+    requestAnimationFrame(()=>{
+      overlay.style.left = `${targetRect.left}px`;
+      overlay.style.top = `${targetRect.top}px`;
+      overlay.style.width = `${targetRect.width}px`;
+      overlay.style.height = `${targetRect.height}px`;
+    });
+    window.setTimeout(finish, duration + 30);
+  }
 }
 
       function animateAppLaunch(iconEl, winEl){
@@ -14182,18 +14444,22 @@ function getMediaPlayerRect(){
         });
       }
 
-      function openApp(appId){
+      function openApp(appId, opts = {}){
         const app = APPS.find(a=>a.id===appId);
-        if(!app) return;
+        if(!app) return null;
+        const deferReveal = !!opts.deferReveal;
 
         if(state.windows.has(appId)){
           const w = state.windows.get(appId);
           w.minimized = false;
           const el = document.getElementById(`win_${appId}`);
-          if(el) el.classList.remove('hidden');
+          if(el){
+            el.classList.remove('hidden');
+            if(el.style.visibility === 'hidden') revealWindow(appId, { skipAnim: true });
+          }
           focusWindow(appId);
           renderTaskButtons();
-          return;
+          return el;
         }
 
         let rect = defaultWindowRect();
@@ -14230,18 +14496,24 @@ function getMediaPlayerRect(){
           fitCache: null,
           lastSmartFit: null,
           mediaplayerFixed: appId === 'mediaplayer',
+          deferReveal,
+          skipAnimOpen: !!opts.skipAnimOpen,
+          smartFitPromise: Promise.resolve(getWindowRectFromState({ left: rect.left, top: rect.top, width: rect.width, height: rect.height })),
         };
         state.windows.set(appId, wstate);
         createWindowElement(wstate);
-        focusWindow(appId);
-        renderTaskButtons();
+        const winEl = document.getElementById(`win_${appId}`);
+        if(!deferReveal){
+          focusWindow(appId);
+          renderTaskButtons();
+        }
         
         // Apply launch animation if enabled
-        const winEl = document.getElementById(`win_${appId}`);
-        if(winEl && state.animations && !window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+        if(!deferReveal && winEl && state.animations && !window.matchMedia('(prefers-reduced-motion: reduce)').matches){
           const iconEl = document.querySelector(`[data-app-id="${appId}"]`) || document.querySelector(`[data-blissos-open-app="${appId}"]`);
           animateAppLaunch(iconEl, winEl);
         }
+        return winEl;
       }
 
       function closeApp(appId){
@@ -14456,7 +14728,7 @@ function toggleFitWindow(appId) {
         el.style.height = wstate.height + 'px';
         el.style.zIndex = String(wstate.z);
         el.style.visibility = 'hidden';
-        if(state.animations) el.classList.add('anim-open');
+        if(state.animations && !wstate.skipAnimOpen) el.classList.add('anim-open');
 
         const bodyHTML = (CONTENT[appId] ? CONTENT[appId]() : `<h2>${wstate.title}</h2><p>Sem conteúdo.</p>`);
 
@@ -14561,14 +14833,15 @@ function toggleFitWindow(appId) {
         applyWindowState(el, appId);
         
         // Auto-fit after content + i18n, unless a saved/manual size exists.
+        let fitPromise = Promise.resolve(getWindowRectFromState(wstate));
         if(!wstate.savedRect){
           installAutoFitObserver(el, appId);
-          smartFitWindow(el, 'open');
+          fitPromise = smartFitWindow(el, 'open');
         }
+        wstate.smartFitPromise = fitPromise.catch(()=> getWindowRectFromState(wstate));
         
-        el.style.visibility = 'visible';
-        if(state.animations){
-          el.addEventListener('animationend', ()=>{ el.classList.remove('anim-open'); }, { once:true });
+        if(!wstate.deferReveal){
+          revealWindowElement(el, wstate);
         }
         if(appId === 'trash') updateTrashIconUI();
       }
@@ -15694,6 +15967,10 @@ function renderBlissOSAppMenu(){
         if(animBtn && animBtn.dataset && animBtn.dataset.setAnimations){
           setAnimations(animBtn.dataset.setAnimations === 'on');
         }
+        const openAnimBtn = target.closest('[data-set-appopenanim]');
+        if(openAnimBtn && openAnimBtn.dataset && openAnimBtn.dataset.setAppopenanim){
+          setAppOpenAnim(openAnimBtn.dataset.setAppopenanim === 'on');
+        }
         const scanBtn = target.closest('[data-set-scanlines]');
         if(scanBtn && scanBtn.dataset && scanBtn.dataset.setScanlines){
           setScanlines(scanBtn.dataset.setScanlines === 'on');
@@ -15833,6 +16110,7 @@ function renderBlissOSAppMenu(){
 
         state.gridSnap = loadGridSnap();
         state.animations = loadAnimations();
+        state.settings.appOpenAnim = loadAppOpenAnim();
         
         state.games.layout = loadGamesLayout();
         state.games.bigIcons = loadGamesBigIcons();
