@@ -16077,9 +16077,9 @@ function renderIcons(){
         function selectByRect(r){
           // Select icons whose bounding boxes intersect with the rubberband rect
           const icons = $$('.icon');
+          const area = areaEl.getBoundingClientRect();
           icons.forEach(icon => {
             const rect = icon.getBoundingClientRect();
-            const area = areaEl.getBoundingClientRect();
             const rel = {
               left: rect.left - area.left,
               right: rect.right - area.left,
