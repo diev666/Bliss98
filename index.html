@@ -2636,8 +2636,14 @@
         width:calc(100% / var(--skate-ui-scale));
       }
       #win_games.mobile-game .skate-hud{
+        position:absolute;
+        left:10px;
+        right:10px;
+        top:10px;
         transform:scale(var(--skate-ui-scale));
         transform-origin:top left;
+        z-index:4;
+        pointer-events:none;
       }
       #win_games.mobile-game .skate-balance{
         transform:scale(var(--skate-ui-scale));
@@ -2682,10 +2688,10 @@
       #win_games.mobile-game .skate-screen{
         flex:0 0 auto;
         padding:4px;
-        width:min(92vw, calc(100dvh - 420px));
-        max-width:92vw;
+        width:min(94vw, calc(100dvh - 360px));
+        max-width:94vw;
         height:auto;
-        max-height:calc(100dvh - 420px);
+        max-height:calc(100dvh - 360px);
         align-self:center;
         aspect-ratio:1/1;
       }
