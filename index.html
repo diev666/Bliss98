@@ -6465,6 +6465,7 @@ function initDopeSkateInWindow(winEl){
     menuOverlay: winEl.querySelector('#skateMenuOverlay'),
     overOverlay: winEl.querySelector('#skateOverOverlay'),
     canvasWrap: winEl.querySelector('.skate-canvas-wrap'),
+    hud: winEl.querySelector('#skateHud'),
     score: winEl.querySelector('[data-skate-score]'),
     best: winEl.querySelector('[data-skate-best]'),
     cds: winEl.querySelector('[data-skate-cds]'),
@@ -6757,6 +6758,7 @@ function dopeSkateShowMenu(panel){
   if(dopeSkate.els && dopeSkate.els.overOverlay){
     dopeSkate.els.overOverlay.classList.add('hidden');
   }
+  updateDopeSkateUI();
   dopeSkateSetPanel(panel);
   dopeSkateMenuEnsureFocus();
 }
@@ -6769,6 +6771,7 @@ function dopeSkateHideMenu(){
   if(dopeSkate.els && dopeSkate.els.menuOverlay){
     dopeSkate.els.menuOverlay.classList.add('hidden');
   }
+  updateDopeSkateUI();
   if(dopeSkate.menuFocusEl){
     dopeSkate.menuFocusEl.classList.remove('skate-focus');
     dopeSkate.menuFocusEl = null;
@@ -7439,6 +7442,10 @@ function dopeSkateCheckGamepad(){
 
 function updateDopeSkateUI(){
   if(!dopeSkate.els) return;
+  if(dopeSkate.els.hud){
+    const showHud = dopeSkate.running && !dopeSkate.paused && !dopeSkate.gameOver;
+    dopeSkate.els.hud.classList.toggle('hidden', !showHud);
+  }
   if(dopeSkate.els.score) dopeSkate.els.score.textContent = String(dopeSkate.scoreTotal);
   if(dopeSkate.els.combo) dopeSkate.els.combo.textContent = `${dopeSkate.combo.multiplier}x`;
   if(dopeSkate.els.cds) dopeSkate.els.cds.textContent = String(dopeSkate.cds);
