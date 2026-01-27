@@ -2618,6 +2618,7 @@
         width:100dvw;
         height:100dvh;
         min-height:100svh;
+        z-index:2001 !important;
       }
       #win_games.mobile-game .frame{
         height:100%;
@@ -2681,12 +2682,12 @@
       #win_games.mobile-game .skate-screen{
         flex:0 0 auto;
         padding:4px;
-        width:min(92vw, calc((100dvh - 420px) * 16 / 9));
+        width:min(92vw, calc(100dvh - 420px));
         max-width:92vw;
         height:auto;
         max-height:calc(100dvh - 420px);
         align-self:center;
-        aspect-ratio:16/9;
+        aspect-ratio:1/1;
       }
       #win_games.mobile-game .skate-canvas-wrap{
         min-height:auto;
@@ -6400,8 +6401,8 @@ function fitSkateCanvas(){
   // Measure container only; never drive layout from canvas to avoid resize feedback loops.
   const rect = wrap.getBoundingClientRect();
   const scale = Math.min(rect.width / dopeSkate.width, rect.height / dopeSkate.height);
-  let targetW = Math.max(1, Math.floor(rect.width));
-  let targetH = Math.max(1, Math.floor(rect.height));
+  let targetW = Math.max(1, Math.floor(dopeSkate.width * scale));
+  let targetH = Math.max(1, Math.floor(dopeSkate.height * scale));
   if(scale >= 1){
     const intScale = Math.max(1, Math.floor(scale));
     targetW = Math.max(1, Math.floor(dopeSkate.width * intScale));
@@ -6446,8 +6447,9 @@ function initDopeSkateInWindow(winEl){
   dopeSkate.renderTargetH = 0;
   dopeSkate.renderScaleX = 1;
   dopeSkate.renderScaleY = 1;
+  const mobile = isMobileGameMode();
   dopeSkate.width = 640;
-  dopeSkate.height = 360;
+  dopeSkate.height = mobile ? 640 : 360;
   canvas.width = dopeSkate.width;
   canvas.height = dopeSkate.height;
   dopeSkate.groundHeight = 64;
