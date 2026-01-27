@@ -9683,17 +9683,19 @@ function getDesktopPosFromClient(clientX, clientY){
 }
 
 function getFreeIconPlacement(parentId, preferred, containerEl, excludeIds){
-  const metrics = parentId == null
-    ? getGridMetrics()
+  const normalized = normalizeFolderNavId(parentId);
+  const isDesktop = normalized == null;
+  const metrics = isDesktop
+    ? (containerEl ? getGridMetricsForContainer(containerEl) : getGridMetrics())
     : (containerEl
       ? getGridMetricsForContainer(containerEl)
       : getGridMetricsForSize(FOLDER_VIEW_FALLBACK_SIZE.width, FOLDER_VIEW_FALLBACK_SIZE.height));
   const base = preferred || { x: 0, y: 0 };
-  const bounds = parentId == null
-    ? $('#desktopArea').getBoundingClientRect()
+  const bounds = isDesktop
+    ? (containerEl ? containerEl.getBoundingClientRect() : $('#desktopArea').getBoundingClientRect())
     : (containerEl ? containerEl.getBoundingClientRect() : FOLDER_VIEW_FALLBACK_SIZE);
   const clamped = clampIconPosToSize(base.x, base.y, bounds.width, bounds.height);
-  const occupied = buildOccupiedFromFs(parentId, excludeIds, metrics, { visibleOnly: parentId == null });
+  const occupied = buildOccupiedFromFs(normalized, excludeIds, metrics, { visibleOnly: isDesktop });
   return placeOnFreeCell(clamped.x, clamped.y, occupied, metrics);
 }
 
@@ -9817,6 +9819,13 @@ function getRelativeIconPosFromClient(containerEl, clientX, clientY){
   return clampIconPosToSize(localX, localY, rect.width, rect.height);
 }
 
+const DESKTOP_NAV_ID = 'desktop';
+
+function normalizeFolderNavId(navId){
+  if(navId == null || navId === '' || navId === DESKTOP_NAV_ID) return null;
+  return navId;
+}
+
 function getFolderWindowDropTargetAt(x, y, dragEls, draggedIds){
   if(!dragEls || dragEls.length === 0) return null;
   const target = getDropTargetElement(x, y, dragEls);
@@ -9834,8 +9843,9 @@ function getFolderWindowDropTargetAt(x, y, dragEls, draggedIds){
 
   const viewEl = target.closest('[data-folder-view="1"]');
   if(!viewEl || !viewEl.dataset) return null;
-  const folderId = viewEl.dataset.folderNavId;
-  if(!folderId) return null;
+  const rawNavId = viewEl.dataset.folderNavId;
+  const folderId = normalizeFolderNavId(rawNavId);
+  if(folderId == null && rawNavId !== DESKTOP_NAV_ID) return null;
   const canMoveAll = (draggedIds || []).every(id => canMoveItemToFolder(id, folderId));
   return canMoveAll ? { folderId, containerEl: viewEl, windowId: viewEl.dataset.folderWindowId || '' } : null;
 }
@@ -9870,14 +9880,19 @@ function getOpenFolderView(parentId){
 }
 
 function resolveFolderContainer(parentId, containerEl){
-  if(parentId == null) return null;
-  return containerEl || getOpenFolderView(parentId);
+  const normalized = normalizeFolderNavId(parentId);
+  if(normalized == null) return containerEl || null;
+  return containerEl || getOpenFolderView(normalized);
 }
 
 function resolvePreferredPos(parentId, opts, containerEl){
   const hasPoint = Number.isFinite(opts.clientX) && Number.isFinite(opts.clientY);
   if(!hasPoint) return opts.preferredPos || null;
-  if(parentId == null) return getDesktopPosFromClient(opts.clientX, opts.clientY);
+  const normalized = normalizeFolderNavId(parentId);
+  if(normalized == null){
+    if(containerEl) return getRelativeIconPosFromClient(containerEl, opts.clientX, opts.clientY);
+    return getDesktopPosFromClient(opts.clientX, opts.clientY);
+  }
   if(containerEl) return getRelativeIconPosFromClient(containerEl, opts.clientX, opts.clientY);
   return opts.preferredPos || null;
 }
@@ -10103,7 +10118,7 @@ function renderFolderPathbar(winEl, folderId){
   const host = winEl.querySelector('[data-folder-pathbar="1"]');
   if(!host || !wstate) return;
   const path = getFolderPath(folderId);
-  const rootId = wstate.folderId;
+  const rootId = DESKTOP_NAV_ID;
   const rootLabel = t('fs.desktop');
   const segments = [
     `<button class="path-seg" type="button" data-folder-nav-id="${rootId}"><span class="crumb">${getPathbarIconHtml('desktop', rootLabel)}<span class="crumb-label">${rootLabel}</span></span></button>`
@@ -10279,7 +10294,7 @@ function makeFolderItemDraggable(iconEl, winId, containerEl){
   let lastEvent = null;
   let startX = 0;
   let startY = 0;
-  let startParentId = containerEl ? (containerEl.dataset.folderNavId || '') : '';
+  let startParentId = containerEl ? normalizeFolderNavId(containerEl.dataset.folderNavId) : null;
   let group = [];
   let startPositions = [];
   let dxMin = 0;
@@ -10376,7 +10391,7 @@ function makeFolderItemDraggable(iconEl, winId, containerEl){
             : (desktopFolderTarget ? desktopFolderTarget.id : (desktopDrop ? null : startParentId));
           const targetContainer = folderWindowTarget ? folderWindowTarget.containerEl : (desktopDrop ? null : containerEl);
           const preferred = targetParentId == null
-            ? getDesktopPosFromClient(e.clientX, e.clientY)
+            ? (targetContainer ? getRelativeIconPosFromClient(targetContainer, e.clientX, e.clientY) : getDesktopPosFromClient(e.clientX, e.clientY))
             : (targetContainer ? getRelativeIconPosFromClient(targetContainer, e.clientX, e.clientY) : { x: 0, y: 0 });
 
           let moved = false;
@@ -10426,7 +10441,7 @@ function makeFolderItemDraggable(iconEl, winId, containerEl){
     closeCtxMenu();
     closeWindowMenu();
 
-    startParentId = containerEl ? (containerEl.dataset.folderNavId || startParentId) : startParentId;
+    startParentId = containerEl ? normalizeFolderNavId(containerEl.dataset.folderNavId || startParentId) : startParentId;
     clearIconSelectionExcept(containerEl);
     const selectedEls = containerEl ? Array.from(containerEl.querySelectorAll('.icon.selected')) : [];
     const isSelected = iconEl.classList.contains('selected');
@@ -10515,17 +10530,20 @@ function renderFolderWindow(winId, navId){
   const winEl = document.getElementById(`win_${winId}`);
   if(!winEl) return;
 
-  let currentId = navId || wstate.folderNavId || wstate.folderId;
-  let current = getFsItem(currentId);
-  if(!current || current.type !== 'folder' || state.trash.has(currentId)){
+  const requestedNavId = navId || wstate.folderNavId || wstate.folderId;
+  const isDesktopView = requestedNavId === DESKTOP_NAV_ID;
+  let currentId = isDesktopView ? null : requestedNavId;
+  let current = currentId ? getFsItem(currentId) : null;
+  if(!isDesktopView && (!current || current.type !== 'folder' || state.trash.has(currentId))){
     currentId = wstate.folderId;
     current = getFsItem(currentId);
     if(!current) return;
   }
-  wstate.folderNavId = currentId;
-  setWindowTitle(winId, current.name || t('fs.newFolderName'));
-  const navChangedForFit = currentId !== (wstate.lastRenderedNavId || '');
-  wstate.lastRenderedNavId = currentId;
+  wstate.folderNavId = isDesktopView ? DESKTOP_NAV_ID : currentId;
+  setWindowTitle(winId, isDesktopView ? t('fs.desktop') : (current.name || t('fs.newFolderName')));
+  const navKey = isDesktopView ? DESKTOP_NAV_ID : currentId;
+  const navChangedForFit = navKey !== (wstate.lastRenderedNavId || '');
+  wstate.lastRenderedNavId = navKey;
 
   const content = winEl.querySelector('.content');
   if(!content) return;
@@ -10540,7 +10558,7 @@ function renderFolderWindow(winId, navId){
   }
   const viewEl = shell ? shell.querySelector('[data-folder-view="1"]') : null;
   if(!viewEl) return;
-  viewEl.dataset.folderNavId = currentId;
+  viewEl.dataset.folderNavId = isDesktopView ? DESKTOP_NAV_ID : currentId;
   viewEl.dataset.folderWindowId = winId;
   viewEl.dataset.folderRootId = wstate.folderId;
 
@@ -10554,20 +10572,22 @@ function renderFolderWindow(winId, navId){
       const target = getEventTargetEl(e);
       if(target && target.closest && target.closest('.icon')) return;
       e.preventDefault();
+      const parentId = normalizeFolderNavId(viewEl.dataset.folderNavId);
       openCtxMenu(e.clientX, e.clientY, 'desktop', null, {
-        parentId: viewEl.dataset.folderNavId,
+        parentId,
         containerEl: viewEl,
       });
     });
     installLongPress(viewEl, ()=>({
       target: 'desktop',
       appId: null,
-      parentId: viewEl.dataset.folderNavId,
+      parentId: normalizeFolderNavId(viewEl.dataset.folderNavId),
       containerEl: viewEl,
     }));
     viewEl.dataset.bound = '1';
   }
 
+  const parentId = normalizeFolderNavId(viewEl.dataset.folderNavId);
   const orderedIds = APPS.filter(app => app.showOnDesktop !== false).map(app => app.id)
     .concat(VIRTUAL_ICONS.map(v => v.id));
   const orderIndex = new Map(orderedIds.map((id, idx) => [id, idx]));
@@ -10577,7 +10597,7 @@ function renderFolderWindow(winId, navId){
   let fsDirty = false;
   let iconPosDirty = false;
 
-  const children = getRenderableFsChildren(currentId).sort((a, b) => {
+  const children = getRenderableFsChildren(parentId).sort((a, b) => {
     const ia = orderIndex.has(a.id) ? orderIndex.get(a.id) : 1e6;
     const ib = orderIndex.has(b.id) ? orderIndex.get(b.id) : 1e6;
     if(ia !== ib) return ia - ib;
@@ -10605,8 +10625,8 @@ function renderFolderWindow(winId, navId){
       delete iconPosCache[item.id];
       iconPosDirty = true;
     }
-    if(placed.changed || item.parentId !== currentId || !Number.isFinite(item.x) || !Number.isFinite(item.y)){
-      upsertFsItem({ id: item.id, parentId: currentId, x: placed.x, y: placed.y }, { save: false, syncIconPos: true, iconPosCache });
+    if(placed.changed || item.parentId !== parentId || !Number.isFinite(item.x) || !Number.isFinite(item.y)){
+      upsertFsItem({ id: item.id, parentId, x: placed.x, y: placed.y }, { save: false, syncIconPos: true, iconPosCache });
       fsDirty = true;
       if(isAppLikeItem(item)) iconPosDirty = true;
     }
@@ -10620,7 +10640,7 @@ function renderFolderWindow(winId, navId){
     btn.style.top = placed.y + 'px';
     btn.dataset.appId = item.id;
     btn.dataset.itemType = item.type || 'app';
-    btn.dataset.parentId = currentId;
+    btn.dataset.parentId = parentId || '';
     btn.dataset.windowId = winId;
     if(item.type === 'folder') btn.dataset.folderId = item.id;
     btn.innerHTML = `
@@ -10653,7 +10673,7 @@ function renderFolderWindow(winId, navId){
       ev.stopPropagation();
       openCtxMenu(ev.clientX, ev.clientY, 'icon', item.id, {
         itemType: item.type,
-        parentId: currentId,
+        parentId,
         containerEl: viewEl,
       });
     });
@@ -10661,7 +10681,7 @@ function renderFolderWindow(winId, navId){
       target: 'icon',
       appId: item.id,
       itemType: item.type,
-      parentId: currentId,
+      parentId,
       containerEl: viewEl,
     }));
     makeFolderItemDraggable(btn, winId, viewEl);
@@ -10671,8 +10691,8 @@ function renderFolderWindow(winId, navId){
   viewEl.appendChild(fragment);
   if(iconPosDirty) saveIconPositions(iconPosCache);
   if(fsDirty) saveDesktopFs();
-  renderFolderPathbar(winEl, currentId);
-  scheduleFolderSmartFit(winEl, wstate, currentId, navChangedForFit ? 'navChange' : 'update');
+  renderFolderPathbar(winEl, parentId);
+  scheduleFolderSmartFit(winEl, wstate, navKey, navChangedForFit ? 'navChange' : 'update');
 }
 
 function saveTxtFileContent(txtId, content){
@@ -13162,7 +13182,9 @@ function installLongPress(el, getTarget){
         if((action === 'fs:newTxtInFolder' || action === 'fs:newFolderInFolder') && winId && isFolderWindowId(winId)){
           const wstate = state.windows.get(winId);
           if(!wstate) return;
-          const parentId = wstate.folderNavId || wstate.folderId;
+          const parentId = wstate.folderNavId === DESKTOP_NAV_ID
+            ? null
+            : (normalizeFolderNavId(wstate.folderNavId) || wstate.folderId);
           const containerEl = resolveFolderContainer(parentId, null);
           if(action === 'fs:newTxtInFolder'){
             const created = createTxtFile({ parentId, containerEl });
@@ -17479,6 +17501,14 @@ function getAppDisplay(appId){
   if(appId === 'bliss'){
     const iconHtml = `<img class="pixel" src="./assets/siteicon/bliss.png" data-fallback-src="./assets/siteicon/bliss.png" width="16" height="16" alt="" style="display:block;" />`;
     return { label:'Bliss', iconHtml };
+  }
+  if(appId && state.windows.has(appId)){
+    const wstate = state.windows.get(appId);
+    if(wstate && wstate.kind === 'folder'){
+      const label = wstate.title || t('fs.newFolderName');
+      const iconHtml = getThemedIconHtml(wstate, label, 16);
+      return { label, iconHtml };
+    }
   }
   const app = getAppById(appId);
   if(!app){
